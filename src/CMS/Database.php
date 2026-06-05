@@ -30,9 +30,9 @@ class Database extends \PDO
      * 
      * @param string $sql 실행할 SQL 문장
      * @param array|null $arguments SQL 문에 바인딩할 데이터 배열
-     * @return \PDOStatement|\PDO 실행 결과 객체를 반환
+     * @return \PDOStatement|false 실행 결과 객체 또는 실패 시 false 반환
      */
-    public function runSql(string $sql, $arguments = null)
+    public function runSql(string $sql, ?array $arguments = null) : \PDOStatement|false
     {
         // 파라미터가 없는 경우
         if (!$arguments) {
@@ -41,7 +41,8 @@ class Database extends \PDO
         
         // 파라미터가 있는 경우
         $statement = $this->prepare($sql);
-        $statement->execute($arguments);
-        return $statement;
+        $status = $statement->execute($arguments);
+
+        return ($status == false) ? false : $statement;
     }
 }
