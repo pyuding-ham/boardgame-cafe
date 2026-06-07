@@ -14,9 +14,6 @@ if (DEV === false) {
     register_shutdown_function('handle_shutdown');
 }
 
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
 date_default_timezone_set('Asia/Seoul');
 mb_internal_encoding('UTF-8');
 
@@ -33,7 +30,7 @@ $twig = new Twig\Environment($loader, $twig_options);
 
 // Twig 전역 변수 등록
 $twig->addGlobal('doc_root', DOC_ROOT);
-$twig->addGlobal('session', $_SESSION);
+$twig->addGlobal('session', $cms->getSession());
 
 if (DEV === true) {
     $twig->addExtension(new \Twig\Extension\DebugExtension());

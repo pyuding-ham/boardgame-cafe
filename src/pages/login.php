@@ -1,5 +1,4 @@
 <?php
-
 $errors = [];
 $username = '';
 
@@ -15,13 +14,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
         $member = $cms->getMember()->login($username, $password);
 
         if ($member) {
-            // 세션 하이재킹 방지를 위한 세션 ID 재발급
-            session_regenerate_id(true);
-
-            $_SESSION['user_id'] = $member['id'];
-            $_SESSION['username'] = $member['username'];
-            $_SESSION['nickname'] = $member['nickname'];
-            $_SESSION['role'] = $member['role'];
+            $cms->getSession()->create($member);
 
             header('Location: ' . DOC_ROOT);
             exit;
