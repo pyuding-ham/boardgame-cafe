@@ -12,15 +12,9 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if (empty($errors)) {
-        // DB에서 해당 아이디의 회원 정보 조회
-        $sql = "SELECT * FROM user WHERE username = :username;";
-        $statement = $db->runSql($sql, [$username]);
+        $member = $cms->getMember()->login($username, $password);
 
-        $member = $statement ? $statement->fetch() : null;
-
-        // 사용자가 존재하고 암호화된 비밀번호가 일치하는지 검증
-        if ($member && password_verify($password, $member['password'])) {
-
+        if ($member) {
             // 세션 하이재킹 방지를 위한 세션 ID 재발급
             session_regenerate_id(true);
 
