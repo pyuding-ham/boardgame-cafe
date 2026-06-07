@@ -16,7 +16,7 @@ class Member
     public function get(int $id)
     {
         $sql = "SELECT id, username, nickname, email, profile_image, role, created_at
-                  FROM users
+                  FROM user
                 WHERE id = :id;";
         $stmt = $this->db->runSql($sql, ['id' => $id]);
         return $stmt ? $stmt->fetch() : false;
@@ -28,7 +28,7 @@ class Member
     public function login(string $username, string $password)
     {
         $sql = "SELECT id, username, nickname, email, profile_image, role, created_at
-                  FROM users
+                  FROM user
                 WHERE username = :username;";
         $stmt = $this->db->runSql($sql, ['username' => $username]);
         $member = $stmt ? $stmt->fetch() : false;
