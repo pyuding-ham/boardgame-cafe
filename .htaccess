@@ -1,0 +1,22 @@
+# 1. PHP 기본 기본 설정 (개발 환경용)
+php_value  default_charset     "utf-8"
+php_value  max_execution_time  30
+php_value  memory_limit        64M
+php_flag   file_uploads        on
+php_value  post_max_size       10M
+php_value  upload_max_filesize 10M
+
+# 2. 에러 로깅 설정 (배포 시에는 display_errors를 off로 변경)
+php_value  error_reporting     -1
+php_flag   display_errors      on
+php_flag   log_errors          on
+
+# 3. 주소 체계(Rewrite Engine) 설정
+RewriteEngine On
+
+# 실제 존재하는 파일(-f)이나 디렉토리(-d)에 대한 요청은 그대로 통과
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# 그 외의 모든 주소 요청은 public/index.php로 전달
+RewriteRule ^(.*)$ public/index.php [L,QSA]
