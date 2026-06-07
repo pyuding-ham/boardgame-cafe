@@ -21,10 +21,7 @@ date_default_timezone_set('Asia/Seoul');
 mb_internal_encoding('UTF-8');
 
 // 4. 데이터베이스 객체 생성
-/** @var string $dsn */
-/** @var string $username */
-/** @var string $password */
-$db = new \BoardgameCafe\CMS\Database($dsn, $username, $password);
+$cms = new \BoardgameCafe\CMS\CMS($dsn, $username, $password);
 unset($dsn, $username, $password);
 
 // 5. Twig 템플릿 엔진 설정
