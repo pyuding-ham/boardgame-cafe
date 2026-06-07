@@ -31,6 +31,10 @@ class ComposerStaticInitfb9f629fe8337560dd413e7a6ac6cb57
         array (
             'PHPMailer\\PHPMailer\\' => 20,
         ),
+        'B' =>
+        array (
+            'BoardgameCafe\\' => 14,
+        ),
     );
 
     public static $prefixDirsPsr4 = array (
@@ -49,6 +53,10 @@ class ComposerStaticInitfb9f629fe8337560dd413e7a6ac6cb57
         'PHPMailer\\PHPMailer\\' =>
         array (
             0 => __DIR__ . '/..' . '/phpmailer/phpmailer/src',
+        ),
+        'BoardgameCafe\\' =>
+        array (
+            0 => __DIR__ . '/../..' . '/src',
         ),
     );
 

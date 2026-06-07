@@ -5,8 +5,9 @@ define('DOMAIN', 'http://localhost:8888');
 
 // 2. 디렉토리 경로 최적화
 define('ROOT_PATH', dirname(__DIR__, 1)); // 최상위 루트 폴더 경로
+define('PROJECT_NAME', 'boardgame-cafe');
 define('ROOT_FOLDER', 'public');
-define('DOC_ROOT', '/' . ROOT_FOLDER . '/');
+define('DOC_ROOT', '/' . PROJECT_NAME . '/');
 
 if (DEV) {
     ini_set('display_errors', 1);

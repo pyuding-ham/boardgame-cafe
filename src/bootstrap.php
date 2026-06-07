@@ -1,6 +1,6 @@
 <?php
 // 1. 애플리케이션 루트 경로 정의
-define('APP_ROOT', dirname(__FILE__), 2);
+define('APP_ROOT', dirname(__FILE__, 2));
 
 // 2. 핵심 파일 및 라이브러리 로드
 require APP_ROOT . '/src/functions.php';

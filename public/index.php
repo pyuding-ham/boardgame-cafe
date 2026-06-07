@@ -15,7 +15,7 @@ if ($parts[0] != 'admin') {
 }
 $id = filter_var($id, FILTER_VALIDATE_INT);
 
-$php_page = APP_ROOT . '/src/pages' . $page . '.php';
+$php_page = APP_ROOT . '/src/pages/' . $page . '.php';
 
 if (!file_exists($php_page)) {
     $php_page = APP_ROOT . '/src/pages/page-not-found.php';
