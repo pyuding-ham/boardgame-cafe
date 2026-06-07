@@ -20,7 +20,7 @@ $server = 'localhost';
 $db = 'boardgame_cafe';
 $port = '3306';
 $charset = 'utf8mb4';
-$username = 'root';
+$username = 'web_user';
 $password = '12345';
 
 $dsn = "$type:host=$server;dbname=$db;port=$port;charset=$charset";
