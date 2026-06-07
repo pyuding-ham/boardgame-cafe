@@ -25,7 +25,8 @@ class Session
      */
     public function create($member)
     {
-        session_regenerate_id(true); // 세션 하이재킹 방지
+        // 세션 하이재킹 방지
+        session_regenerate_id(true);
 
         $_SESSION['id'] = $member['id'];
         $_SESSION['username'] = $member['username'];

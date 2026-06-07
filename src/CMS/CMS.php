@@ -12,6 +12,10 @@ class CMS
         $this->db = new Database($dsn, $username, $password);
     }
 
+    public function getDb() {
+        return $this->db;
+    }
+
     public function getMember() {
         if ($this->member === null) {
             $this->member = new Member($this->db);
@@ -21,7 +25,7 @@ class CMS
 
     public function getSession() {
         if ($this->session === null) {
-            $this->session = new Session($this->db);
+            $this->session = new Session();
         }
         return $this->session;
     }

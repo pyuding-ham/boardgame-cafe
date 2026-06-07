@@ -42,4 +42,33 @@ class Member
         // 인증 실패 시 false 반환
         return false;
     }
+
+    /**
+     * 회원가입 시 데이터 저장
+     */
+    public function register(string $username, string $password, string $nickname, string $email): bool
+    {
+        // 아이디 중복 체크
+        $sqlCheck = "SELECT id FROM user WHERE username = :username;";
+        $stmtCheck = $this->db->runSql($sqlCheck, ['username' => $username]);
+        if ($stmtCheck && $stmtCheck->fetch()) {
+            return false; // 이미 존재하는 아이디
+        }
+        
+        // 비밀번호 암호화 및 등록
+        $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+
+        $sql = "INSERT INTO user (username, password, nickname, email)
+                VALUES (:username, :password, :nickname, :email;";
+
+        $argument = [
+            'username' => $username,
+            'password' => $hashed_password,
+            'nickname' => $nickname,
+            'email'    => $email
+        ];
+
+        $result = $this->db->runSql($sql, $argument);
+        return $result !== false;
+    }
 }
