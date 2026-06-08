@@ -15,6 +15,6 @@ $stmt = $cms->getDb()->runSql($sql, ['username' => $username]);
 if ($stmt && $stmt->fetch()) {
     echo json_encode(['status' => 'exists', 'message' => '이미 사용 중인 아이디입니다.']);
 } else {
-    echo json_encode(['status' => 'exists', 'message' => '사용 가능한 아이디입니다.']);
+    echo json_encode(['status' => 'available', 'message' => '사용 가능한 아이디입니다.']);
 }
 exit;

@@ -44,12 +44,16 @@ document.getElementById('btnCheckUsername').addEventListener('click', function()
         .then(response => response.json())
         .then(data => {
             alert(data.message);
-            if (data.status === 'exists') {
+            if (data.status === 'available') {
                 // 사용 가능 확인
                 isUsernameChecked = true;
                 checkedUsername = username;
             } else {
                 isUsernameChecked = false;
+                checkedUsername = "";
+
+                usernameInput.focus();
+                usernameInput.select();
             }
         })
         .catch(error => {
