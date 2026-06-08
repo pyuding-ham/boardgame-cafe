@@ -27,7 +27,7 @@ class Member
      */
     public function login(string $username, string $password)
     {
-        $sql = "SELECT id, username, nickname, email, profile_image, role, created_at
+        $sql = "SELECT id, username, password, nickname, email, profile_image, role, created_at
                   FROM user
                 WHERE username = :username;";
         $stmt = $this->db->runSql($sql, ['username' => $username]);
