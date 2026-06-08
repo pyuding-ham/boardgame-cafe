@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}보드트립{% endblock %}</title>
+    <meta name="description" content="{% block description %}보드게임으로 떠나는 특별한 여행, 프리미엄 보드게임 공간 보드트립.{% endblock %}">
+    <link rel="shortcut icon" type="image/png" href="{{ doc_root }}img/favicon.ico">
+    {% block styles %}{% endblock %}
+</head>
+<body>
+    <header>
+        <a class="skip-link" href="#content">본문 바로가기</a>
+
+        <!-- 상단 메뉴-->
+        <nav class="member-menu">
+            <div class="container">
+                {% if not is_logged_in %}
+                    <a href="{{ doc_root }}login" class="nav-item nav-link">로그인</a>
+                    <a href="{{ doc_root }}register" class="nav-item nav-link">회원가입</a>
+                {% else %}
+                    <!-- 로그인 했을 때 -->
+                    <a href="{{ doc_root }}member/{{ user.id }}">마이페이지</a>
+                    {% if user.role == 'admin' %}
+                        <a href="{{ doc_root }}admin/index">관리자</a>
+                    {% endif %}
+                    <a href="{{ doc_root }}logout">로그아웃</a>
+                {% endif %}
+            </div>
+        </nav>
+
+        <!-- 메인 네비게이션 바 -->
+        <div class="container">
+            <div class="logo">
+                <a href="{{ doc_root }}"><img src="{{ doc_root }}img/logo.png" alt="보드트립 로고"></a>
+            </div>
+            <nav>
+                <ul id="menu">
+                    <li><a href="{{ doc_root }}boardgame">게임소개</a></li>
+                    <li><a href="{{ doc_root }}location">지점소개</a></li>
+                    <li><a href="{{ doc_root }}board/notice">공지사항</a></li>
+                    <li><a href="{{ doc_root }}board/review">이용후기</a></li>
+                    <li><a href="{{ doc_root }}contact-us">메일문의</a></li>
+                    {% if is_logged_in %}
+                        <li><a href="{{ doc_root }}reservation">예약하기</a></li>
+                    {% endif %}
+                    {% if table_no is defined and table_no is not empty %}
+                        <a href="{{ doc_root }}order.php?table={{ table_no }}">주문하기</a>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main id="content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="logo">
+                <a href="{{ doc_root }}"><img src="{{ doc_root }}img/logo.png" alt="보드트립 로고"></a>
+            </div>
+            <span class="copyright">&copy; {{ 'now'|date('Y') }} Board Trip. All rights reserved.</span>
+        </div>
+    </footer>
+
+    {% blcok scripts %}{% endblock %}
+</body>
+</html>
