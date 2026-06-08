@@ -25,7 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ? '' : '올바른 이메일 주소를 입력해 주세요.';
 
     $errors['password'] = Validate::isPassword($user['password'])
-        ? '' : '비밀번호는 최소 8자 이상이어야 하며 대문자, 소문자, 숫자, 특수문자를 모두 포함해야 합니다.';
+        ? '' : '비밀번호는 최소 10자 이상이어야 하며 영문과 숫자를 모두 포함해야 합니다.';
 
     $errors['confirm'] = ($user['password'] === $confirm)
         ? '' : '비밀번호와 비밀번호 확인이 일치하지 않습니다.';

@@ -62,10 +62,38 @@ document.getElementById('btnCheckUsername').addEventListener('click', function()
 document.getElementById('registerForm').addEventListener('submit', function(e) {
     const currentUsername = document.getElementById('username').value.trim();
 
+    // 1. 아이디 중복체크 여부 확인
     if (!isUsernameChecked || currentUsername !== checkedUsername) {
         // 폼 제출 중단
         e.preventDefault();
         alert('아이디 중복체크를 먼저 진행해 주세요.');
+    }
+
+    // 비밀번호 input ID
+    const passwordInput = document.getElementById('password');
+    // 비밀번호 확인 input ID
+    const confirmInput = document.getElementById('confirm');
+
+    const password = passwordInput.value;
+    const confirm = confirmInput.value;
+
+    // 2. 비밀번호 검증
+    // 영문(대문자 또는 소문자)과 숫자가 모두 포함된 10자 이상이어야 함
+    const passwordRegex = /^(?=.*[a-z])(?=.*\d)[a-z\d]{10,}$/i;
+
+    if (!passwordRegex.test(password)) {
+        e.preventDefault();
+        alert('비밀번호는 최소 10자 이상이어야 하며 영문과 숫자를 모두 포함해야 합니다.');
+        passwordInput.focus();
+        return;
+    }
+
+    // 3. 비밀번호 일치 확인 검사
+    if (password !== confirm) {
+        e.preventDefault();
+        alert('비밀번호와 비밀번호 확인이 일치하지 않습니다.');
+        confirmInput.focus();
+        return;
     }
 });
 </script>

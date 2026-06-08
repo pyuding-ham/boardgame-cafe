@@ -27,9 +27,8 @@ class Validate
 
     public static function isPassword(string $password)
     {
-        if (mb_strlen($password) >= 8
-            and preg_match('/[A-Z]/', $password)
-            and preg_match('/[a-z]/', $password)
+        if (mb_strlen($password) >= 10
+            and preg_match('/[a-z]/i', $password)
             and preg_match('/[0-9]/', $password)
         ) {
             return true;
