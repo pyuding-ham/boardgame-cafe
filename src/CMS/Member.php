@@ -59,7 +59,7 @@ class Member
         $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
         $sql = "INSERT INTO user (username, password, nickname, email)
-                VALUES (:username, :password, :nickname, :email;";
+                VALUES (:username, :password, :nickname, :email);";
 
         $argument = [
             'username' => $username,

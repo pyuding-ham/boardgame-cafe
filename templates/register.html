@@ -20,11 +20,12 @@
     <input type="email" id="email" name="email" value="{{ user.email }}" required>
     {% if errors.email %}<span class="error">{{ errors.email }}</span>{% endif %}
 
-    <button type="submit">회원가입</button>
+    <button type="submit">가입하기</button>
 </form>
 
 <script>
 let isUsernameChecked = false;
+let checkedUsername = "";
 
 document.getElementById('btnCheckUsername').addEventListener('click', function() {
     const usernameInput = document.getElementById('username');
@@ -43,9 +44,10 @@ document.getElementById('btnCheckUsername').addEventListener('click', function()
         .then(response => response.json())
         .then(data => {
             alert(data.message);
-            if (data.status === 'success') {
+            if (data.status === 'exists') {
                 // 사용 가능 확인
                 isUsernameChecked = true;
+                checkedUsername = username;
             } else {
                 isUsernameChecked = false;
             }
@@ -56,14 +58,11 @@ document.getElementById('btnCheckUsername').addEventListener('click', function()
         });
 });
 
-// 아이디 창의 글자가 바뀌면 다시 중복체크를 하도록 리셋
-document.getElementById('username').addEventListener('input', function() {
-    isUsernameChecked = false;
-});
-
 // 폼 제출 시 중복체크를 안 했다면 막기
 document.getElementById('registerForm').addEventListener('submit', function(e) {
-    if (!isUsernameChecked) {
+    const currentUsername = document.getElementById('username').value.trim();
+
+    if (!isUsernameChecked || currentUsername !== checkedUsername) {
         // 폼 제출 중단
         e.preventDefault();
         alert('아이디 중복체크를 먼저 진행해 주세요.');
