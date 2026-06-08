@@ -14,6 +14,9 @@ php_flag   log_errors          on
 # 3. 주소 체계(Rewrite Engine) 설정
 RewriteEngine On
 
+# 루트 주소(/boardgame-cafe/)로 들어오면 바로 public/index.php로 연결
+RewriteRule ^$ public/index.php [L,QSA]
+
 # 실제 존재하는 파일(-f)이나 디렉토리(-d)에 대한 요청은 그대로 통과
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
