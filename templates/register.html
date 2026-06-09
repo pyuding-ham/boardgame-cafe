@@ -1,3 +1,6 @@
+{% extends 'layout.html' %}
+
+{% block content %}
 <form action="" method="POST" id="registerForm">
     <label for="username">아이디</label>
     <input type="text" id="username" name="username" value="{{ user.username }}" required>
@@ -22,7 +25,9 @@
 
     <button type="submit">가입하기</button>
 </form>
+{% endblock %}
 
+{% block scripts %}
 <script>
 let isUsernameChecked = false;
 let checkedUsername = "";
@@ -101,3 +106,4 @@ document.getElementById('registerForm').addEventListener('submit', function(e) {
     }
 });
 </script>
+{% endblock %}
