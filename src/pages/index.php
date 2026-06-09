@@ -1,6 +1,6 @@
 <?php
-$user = isset($_SESSION['user_role']) ? $_SESSION : null;
-$is_logged_in = isset($user['user_role']);
+$user = isset($_SESSION['role']) ? $_SESSION : null;
+$is_logged_in = isset($user['role']);
 
 $data = [
     'user' => $user,
