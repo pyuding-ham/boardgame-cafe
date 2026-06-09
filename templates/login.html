@@ -1,3 +1,6 @@
+{% extends 'layout.html' %}
+
+{% block content %}
 <form action="" method="POST">
     {% if errors.login %}
         <p class="error">{{ errors.login }}</p>
@@ -16,3 +19,4 @@
     </div>
     <button type="submit">로그인</button>
 </form>
+{% endblock %}
