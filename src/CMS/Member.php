@@ -18,7 +18,9 @@ class Member
         $sql = "SELECT id, username, nickname, email, profile_image, role, created_at
                   FROM user
                 WHERE id = :id;";
+
         $stmt = $this->db->runSql($sql, ['id' => $id]);
+
         return $stmt ? $stmt->fetch() : false;
     }
 
@@ -30,7 +32,9 @@ class Member
         $sql = "SELECT id, username, password, nickname, email, profile_image, role, created_at
                   FROM user
                 WHERE username = :username;";
+
         $stmt = $this->db->runSql($sql, ['username' => $username]);
+
         $member = $stmt ? $stmt->fetch() : false;
 
         // 회원이 존재하고 비밀번호가 일치하는지 확인
@@ -51,6 +55,7 @@ class Member
         // 아이디 중복 체크
         $sqlCheck = "SELECT id FROM user WHERE username = :username;";
         $stmtCheck = $this->db->runSql($sqlCheck, ['username' => $username]);
+
         if ($stmtCheck && $stmtCheck->fetch()) {
             return false; // 이미 존재하는 아이디
         }
@@ -69,6 +74,21 @@ class Member
         ];
 
         $result = $this->db->runSql($sql, $argument);
+
         return $result !== false;
+    }
+
+    /**
+     * 이메일로 아이디 찾기
+     */
+    public function findUsername(string $email)
+    {
+        $sql = "SELECT username FROM user WHERE email = :email;";
+        
+        $stmt = $this->db->runSql($sql, ['email' => $email]);
+
+        $user = $stmt ? $stmt->fetch() : false;
+
+        return $user ? $user['username'] : false;
     }
 }
