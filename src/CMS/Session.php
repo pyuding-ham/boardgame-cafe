@@ -33,4 +33,23 @@ class Session
         $_SESSION['nickname'] = $member['nickname'];
         $_SESSION['role'] = $member['role'];
     }
+
+    /**
+     * 로그아웃 시 세션 및 쿠키 파기
+     */
+    public function delete()
+    {
+        $_SESSION = [];
+        $param = session_get_cookie_params();
+        setcookie(
+            session_name(),
+            '',
+            time() - 2400,
+            $param['path'],
+            $param['domain'],
+            $param['secure'],
+            $param['httponly']
+        );
+        session_destroy();
+    }
 }
