@@ -82,6 +82,9 @@ class Member
         return true;
     }
 
+    /**
+     * 회원가입 시 아이디와 이메일 중복 체크
+     */
     public function checkDuplicate($username, $email): array
     {
         $result = [
@@ -89,7 +92,6 @@ class Member
             'email' => false,
         ];
 
-        // 아이디와 이메일 중복 체크
         $sqlCheck = "SELECT username, email FROM user WHERE username = :username OR email = :email;";
         $stmtCheck = $this->db->runSql($sqlCheck, [
             'username' => $username,
