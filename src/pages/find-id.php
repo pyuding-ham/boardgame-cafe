@@ -13,7 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if (empty($errors)) {
-        $username = $cms->getMember()->findUsername($email);
+        $username = $cms->getMember()->getUsernameByEmail($email);
 
         if ($username) {
             $found_username = $username;

@@ -39,6 +39,20 @@ class Member
     }
 
     /**
+     * 이메일로 아이디 찾기
+     */
+    public function getUsernameByEmail(string $email)
+    {
+        $sql = "SELECT username FROM user WHERE email = :email;";
+        
+        $stmt = $this->db->runSql($sql, ['email' => $email]);
+
+        $user = $stmt ? $stmt->fetch() : false;
+
+        return $user ? $user['username'] : false;
+    }
+
+    /**
      * 로그인 처리를 위해 username으로 회원 정보 조회
      */
     public function login(string $username, string $password)
@@ -78,14 +92,14 @@ class Member
         $sql = "INSERT INTO user (username, password, nickname, email)
                 VALUES (:username, :password, :nickname, :email);";
 
-        $argument = [
+        $arguments = [
             'username' => $username,
             'password' => $hashed_password,
             'nickname' => $nickname,
             'email'    => $email,
         ];
 
-        $result = $this->db->runSql($sql, $argument);
+        $result = $this->db->runSql($sql, $arguments);
 
         if ($result === false) {
             throw new Exception('회원가입 처리 중 데이터베이스 오류가 발생');
@@ -124,19 +138,5 @@ class Member
         }
         
         return $result;
-    }
-
-    /**
-     * 이메일로 아이디 찾기
-     */
-    public function findUsername(string $email)
-    {
-        $sql = "SELECT username FROM user WHERE email = :email;";
-        
-        $stmt = $this->db->runSql($sql, ['email' => $email]);
-
-        $user = $stmt ? $stmt->fetch() : false;
-
-        return $user ? $user['username'] : false;
     }
 }
