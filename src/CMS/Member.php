@@ -1,6 +1,8 @@
 <?php
 namespace BoardgameCafe\CMS;
 
+use Exception;
+
 class Member
 {
     protected $db;
@@ -50,14 +52,12 @@ class Member
     /**
      * 회원가입 시 데이터 저장
      */
-    public function register(string $username, string $password, string $nickname, string $email): bool
+    public function register(string $username, string $password, string $nickname, string $email): array|bool
     {
-        // 아이디 중복 체크
-        $sqlCheck = "SELECT id FROM user WHERE username = :username;";
-        $stmtCheck = $this->db->runSql($sqlCheck, ['username' => $username]);
+        $isDuplicated = $this->checkDuplicate($username, $email);
 
-        if ($stmtCheck && $stmtCheck->fetch()) {
-            return false; // 이미 존재하는 아이디
+        if ($isDuplicated['username'] === true || $isDuplicated['email'] === true) {
+            return $isDuplicated;
         }
         
         // 비밀번호 암호화 및 등록
@@ -70,12 +70,46 @@ class Member
             'username' => $username,
             'password' => $hashed_password,
             'nickname' => $nickname,
-            'email'    => $email
+            'email'    => $email,
         ];
 
         $result = $this->db->runSql($sql, $argument);
 
-        return $result !== false;
+        if ($result === false) {
+            throw new Exception('회원가입 처리 중 데이터베이스 오류가 발생');
+        }
+
+        return true;
+    }
+
+    public function checkDuplicate($username, $email): array
+    {
+        $result = [
+            'username' => false,
+            'email' => false,
+        ];
+
+        // 아이디와 이메일 중복 체크
+        $sqlCheck = "SELECT username, email FROM user WHERE username = :username OR email = :email;";
+        $stmtCheck = $this->db->runSql($sqlCheck, [
+            'username' => $username,
+            'email' => $email,
+        ]);
+
+        if ($stmtCheck) {
+            while ($row = $stmtCheck->fetch()) {
+                if ($row['username'] === $username) {
+                    // 아이디 중복 발생
+                    $result['username'] = true;
+                }
+                if ($row['email'] === $email) {
+                    // 이메일 중복 발생
+                    $result['email'] = true;
+                }
+            }
+        }
+        
+        return $result;
     }
 
     /**

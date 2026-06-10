@@ -9,7 +9,7 @@ $errors = [];
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // 2. 입력값 받기 및 XSS 방지
     $user['username'] = trim($_POST['username'] ?? '');
-    $user['nickname'] = $purifier->purify(trim($_POST['username'] ?? ''));
+    $user['nickname'] = $purifier->purify(trim($_POST['nickname'] ?? ''));
     $user['email'] = trim($_POST['email'] ?? '');
     $user['password'] = $_POST['password'];
     $confirm = $_POST['confirm'] ?? '';
@@ -34,20 +34,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // 3. 에러가 없다면 DB 저장
     if (!$invalid) {
-        $result = $cms->getMember()->register(
-            $user['username'],
-            $user['password'],
-            $user['nickname'],
-            $user['email'],
-        );
+        try {
+            $result = $cms->getMember()->register(
+                $user['username'],
+                $user['password'],
+                $user['nickname'],
+                $user['email'],
+            );
 
-        if ($result === false) {
-            $errors['username'] = '이미 사용 중인 아이디입니다.';
-        } else {
-            // 회원가입 성공 시 로그인 페이지로 이동
-            header('Location: ' . DOC_ROOT . 'login');
-            exit;
+            if (is_array($result)) {
+                if ($result['username'] === true) {
+                    $errors['username'] = '이미 사용 중인 아이디입니다.';
+                }
+                if ($result['email'] === true) {
+                    $errors['email'] = '이미 사용 중인 이메일입니다.';
+                }
+            } else {
+                // 회원가입 성공 시 로그인 페이지로 이동
+                header('Location: ' . DOC_ROOT . 'login');
+                exit;
+            }
+
+        } catch (Exception $e) {
+            $errors['system'] = $e->getMessage();
         }
+        
     }
 }
 
