@@ -27,6 +27,18 @@ class Member
     }
 
     /**
+     * 이메일로 회원 번호 조회
+     */
+    public function getIdByEmail(string $email)
+    {
+        $sql = "SELECT id
+                  FROM member
+                WHERE email = :email;";
+
+        return $this->db->runSql($sql, ['email' => $email])->fetchColumn();
+    }
+
+    /**
      * 로그인 처리를 위해 username으로 회원 정보 조회
      */
     public function login(string $username, string $password)
