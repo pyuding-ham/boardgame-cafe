@@ -26,7 +26,18 @@ $password = '12345';
 
 $dsn = "$type:host=$server;dbname=$db;port=$port;charset=$charset";
 
-// 4. 파일 업로드 설정
+// 4. SMTP 서버 설정
+$email_config = [
+    'server'      => '://gmail.com',
+    'port'        => '587',
+    'username'    => 'w3cream@gmail.com',
+    'password'    => 'wkkkigwrrpnofjpv',
+    'security'    => 'tls',
+    'admin_email' => 'w3cream@gmail.com',
+    'debug'       => (DEV) ? 2 : 0,
+];
+
+// 5. 파일 업로드 설정
 define('MEDIA_TYPES', ['image/jpeg', 'image/png', 'image/gif', 'image/webp']);
 define('FILE_EXTENSIONS', ['jpeg', 'jpg', 'png', 'gif', 'webp']);
 define('MAX_SIZE', 2097152);
@@ -34,6 +45,6 @@ define('MAX_SIZE', 2097152);
 // 업로드 절대경로 (public/uploads/ 폴더로 고정)
 define('UPLOADS_PATH', ROOT_PATH . DIRECTORY_SEPARATOR . ROOT_FOLDER . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR);
 
-// 5. 외부 API 및 다국어 설정
+// 6. 외부 API 및 다국어 설정
 // define('KAKAO_MAP_API_KEY', '');
 define('DEFAULT_LANG', 'ko');
