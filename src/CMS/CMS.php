@@ -4,7 +4,7 @@ namespace BoardgameCafe\CMS;
 class CMS
 {
     protected $db = null;
-    protected $member = null;
+    protected $user = null;
     protected $session = null;
 
     public function __construct($dsn, $username, $password)
@@ -16,11 +16,11 @@ class CMS
         return $this->db;
     }
 
-    public function getMember() {
-        if ($this->member === null) {
-            $this->member = new Member($this->db);
+    public function getUser() {
+        if ($this->user === null) {
+            $this->user = new user($this->db);
         }
-        return $this->member;
+        return $this->user;
     }
 
     public function getSession() {

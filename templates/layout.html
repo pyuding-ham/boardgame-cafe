@@ -13,14 +13,14 @@
         <a class="skip-link" href="#content">본문 바로가기</a>
 
         <!-- 상단 메뉴-->
-        <nav class="member-menu">
+        <nav class="user-menu">
             <div class="container">
                 {% if not is_logged_in %}
                     <a href="{{ doc_root }}login" class="nav-item nav-link">로그인</a>
                     <a href="{{ doc_root }}register" class="nav-item nav-link">회원가입</a>
                 {% else %}
                     <!-- 로그인 했을 때 -->
-                    <a href="{{ doc_root }}member/{{ user.id }}">마이페이지</a>
+                    <a href="{{ doc_root }}mypage/{{ user.id }}">마이페이지</a>
                     {% if user.role == 'admin' %}
                         <a href="{{ doc_root }}admin/index">관리자</a>
                     {% endif %}

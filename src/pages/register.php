@@ -35,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // 3. 에러가 없다면 DB 저장
     if (!$invalid) {
         try {
-            $result = $cms->getMember()->register(
+            $result = $cms->getUser()->register(
                 $user['username'],
                 $user['password'],
                 $user['nickname'],

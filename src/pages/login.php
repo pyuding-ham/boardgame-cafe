@@ -11,10 +11,10 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if (empty($errors)) {
-        $member = $cms->getMember()->login($username, $password);
+        $user = $cms->getUser()->login($username, $password);
 
-        if ($member) {
-            $cms->getSession()->create($member);
+        if ($user) {
+            $cms->getSession()->create($user);
 
             header('Location: ' . DOC_ROOT);
             exit;

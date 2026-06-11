@@ -23,15 +23,15 @@ class Session
     /**
      * 로그인 성공 시 새로운 세션 생성
      */
-    public function create($member)
+    public function create($user)
     {
         // 세션 하이재킹 방지
         session_regenerate_id(true);
 
-        $_SESSION['id'] = $member['id'];
-        $_SESSION['username'] = $member['username'];
-        $_SESSION['nickname'] = $member['nickname'];
-        $_SESSION['role'] = $member['role'];
+        $_SESSION['id'] = $user['id'];
+        $_SESSION['username'] = $user['username'];
+        $_SESSION['nickname'] = $user['nickname'];
+        $_SESSION['role'] = $user['role'];
     }
 
     /**

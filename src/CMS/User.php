@@ -3,7 +3,7 @@ namespace BoardgameCafe\CMS;
 
 use Exception;
 
-class Member
+class User
 {
     protected $db;
 
@@ -32,7 +32,7 @@ class Member
     public function getIdByEmail(string $email)
     {
         $sql = "SELECT id
-                  FROM member
+                  FROM user
                 WHERE email = :email;";
 
         return $this->db->runSql($sql, ['email' => $email])->fetchColumn();
@@ -63,12 +63,12 @@ class Member
 
         $stmt = $this->db->runSql($sql, ['username' => $username]);
 
-        $member = $stmt ? $stmt->fetch() : false;
+        $user = $stmt ? $stmt->fetch() : false;
 
         // 회원이 존재하고 비밀번호가 일치하는지 확인
-        if ($member && password_verify($password, $member['password'])) {
+        if ($user && password_verify($password, $user['password'])) {
             // 인증 성공 시 회원 데이터 반환
-            return $member;
+            return $user;
         }
 
         // 인증 실패 시 false 반환

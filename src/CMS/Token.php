@@ -16,12 +16,12 @@ class Token
     public function create(int $id, string $purpose): string
     {
         $arguments['token'] = bin2hex(random_bytes(64));
-        $arguments['member_id'] = $id;
+        $arguments['user_id'] = $id;
         $arguments['expires'] = date("Y-m-d H:i:s", strtotime('+30 minutes'));
         $arguments['purpose'] = $purpose;
 
-        $sql = "INSERT INTO token (token, member_id, expires, purpose)
-                VALUES (:token, :member_id, :expires, :purpose);";
+        $sql = "INSERT INTO token (token, user_id, expires, purpose)
+                VALUES (:token, :user_id, :expires, :purpose);";
 
         $this->db->runSql($sql, $arguments);
 
@@ -31,9 +31,9 @@ class Token
     /**
      * 토큰 유효성 체크
      */
-    public function getMemberId(string $token, string $purpose): ?int
+    public function getUserId(string $token, string $purpose): ?int
     {
-        $sql = "SELECT member_id
+        $sql = "SELECT user_id
                   FROM token
                 WHERE token = :token AND purpose = :purpose
                   AND expires > NOW();";
