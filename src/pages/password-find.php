@@ -20,11 +20,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $id = $cms->getUser()->getIdByEmail($email);
         
         if ($id) {
-            // 회원 정보가 있을 때만 토큰 생성 및 메일 발송
             $token   = $cms->getToken()->create($id, 'password_reset');
             $link    = DOMAIN . DOC_ROOT . 'password-reset.php?token=' . $token;
-            
-            // 한국어 이메일 설정
             $subject = '[보드트립] 비밀번호 재설정 링크 안내';
             $body    = '안녕하세요. 보드게임카페 보드트립입니다.<br><br>' .
                        '아래 링크를 클릭하시면 비밀번호 재설정 페이지로 이동합니다.<br>' .
@@ -33,7 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             try {
                 $mail = new \BoardgameCafe\Email\Email($email_config);
-                $mail->sendEmail($email_config['admin_email'], $email, $subject, $body);
+                $mail->sendEmail($email, $subject, $body, $email_config['admin_email']);
                 $sent = true;
             } catch (\Exception $e) {
                 error_log('[메일 발송 실패] 대상: ' . $email . ' / 에러 내용: ' . $e->getMessage());
@@ -48,4 +45,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $data['error'] = $error;
 $data['sent']  = $sent;
 
-echo $twig->render('password-lost.html', $data);
+echo $twig->render('password-find.html', $data);
