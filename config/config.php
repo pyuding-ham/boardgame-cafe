@@ -28,12 +28,12 @@ $dsn = "$type:host=$server;dbname=$db;port=$port;charset=$charset";
 
 // 4. SMTP 서버 설정
 $email_config = [
-    'server'      => '://gmail.com',
+    'server'      => 'smtp.naver.com',
     'port'        => '587',
-    'username'    => 'w3cream@gmail.com',
-    'password'    => 'wkkkigwrrpnofjpv',
+    'username'    => 'unionster@naver.com',
+    'password'    => 'MDM4CUQX2CPH',
     'security'    => 'tls',
-    'admin_email' => 'w3cream@gmail.com',
+    'admin_email' => 'unionster@naver.com',
     'debug'       => (DEV) ? 2 : 0,
 ];
 
