@@ -23,8 +23,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-echo $twig->render('find-id.html', [
+$data = [
     'errors' => $errors,
     'email' => $email,
     'found_username' => $found_username,
-]);
+];
+
+echo $twig->render('find-id.html', $data);
