@@ -1,6 +1,8 @@
 <?php
 namespace BoardgameCafe\CMS;
 
+use Exception;
+
 class Token
 {
     protected $db;
@@ -26,6 +28,31 @@ class Token
         $this->db->runSql($sql, $arguments);
 
         return $arguments['token'];
+    }
+
+    /**
+     * 토큰 삭제
+     */
+    public function delete(string $token): bool
+    {
+        $sql = "DELETE FROM token
+                WHERE token = :token;";
+
+        try {
+            $stmt = $this->db->runSql($sql, [
+                'token' => $token,
+            ]);
+
+            if ($stmt && $stmt->rowCount() > 0) {
+                return true;
+            }
+
+            return false;
+
+        } catch (Exception $e) {
+            error_log('[토큰 삭제 실패] 토큰 값: ' . $token . ' / 에러 내용: ' . $e->getMessage());
+            return false;
+        }
     }
 
     /**
