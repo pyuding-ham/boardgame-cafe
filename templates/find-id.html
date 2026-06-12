@@ -5,14 +5,30 @@
     <p>회원님의 아이디는 <strong>{{ found_username }} 입니다.</strong></p>
     <a href="{{ doc_root }}login" class="btn">로그인하러 가기</a>
 {% else %}
-    <form action="" method="POST">
-        {% if errors.find %}
-            <div class="error">{{ errors.find }}</div>
-        {% endif %}
-        
-        <input type="email" id="email" name="email" value="{{ email }}" placeholder="이메일 주소 입력">
-        
-        <button type="submit">아이디 찾기</button>
-    </form>
+<form action="" method="POST" id="findIdForm">
+    {% if errors.find %}
+        <div class="error">{{ errors.find }}</div>
+    {% endif %}
+    
+    <input type="email" id="email" name="email" value="{{ email }}" placeholder="이메일 주소 입력">
+    
+    <button type="submit">아이디 찾기</button>
+</form>
 {% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('findIdForm').addEventListener('submit', function(e) {
+    const emailInput = document.getElementById('email');
+    const email = emailInput.value.trim();
+
+    if (!email) {
+        e.preventDefault();
+        alert('이메일을 입력해 주세요.');
+        emailInput.focus();
+        return;
+    }
+});
+</script>
 {% endblock %}
