@@ -1,6 +1,8 @@
 <?php
 declare(strict_types = 1);
 
+use BoardgameCafe\Validate\Validate;
+
 $errors = [];
 $email = '';
 $found_username = null;
@@ -10,6 +12,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (empty($email)) {
         $errors['find'] = '이메일을 입력해 주세요.';
+        
+    } elseif (!Validate::isEmail($email)) {
+        $errors['find'] = '올바른 이메일 주소를 입력해 주세요.';
     }
 
     if (empty($errors)) {
