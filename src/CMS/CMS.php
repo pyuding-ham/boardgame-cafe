@@ -6,6 +6,7 @@ class CMS
     protected $db = null;
     protected $user = null;
     protected $session = null;
+    protected $token = null;
 
     public function __construct($dsn, $username, $password)
     {
@@ -28,5 +29,13 @@ class CMS
             $this->session = new Session();
         }
         return $this->session;
+    }
+
+    
+    public function getToken() {
+        if ($this->token === null) {
+            $this->token = new Token($this->db);
+        }
+        return $this->token;
     }
 }
