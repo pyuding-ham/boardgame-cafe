@@ -139,4 +139,31 @@ class User
         
         return $result;
     }
+
+    public function passwordUpdate(int $id, string $password): bool
+    {
+        $hash = password_hash($password, PASSWORD_DEFAULT);
+        
+        $sql = "UPDATE user
+                SET password = :password
+                WHERE id = :id;";
+
+        try {
+            $stmt = $this->db->runSql($sql, [
+                'id' => $id,
+                'password' => $hash,
+            ]);
+
+            if ($stmt && $stmt->rowCount() > 0) {
+                return true;
+            }
+            
+            return false;
+
+        } catch (\Exception $e) {
+            error_log('[비밀번호 변경 실패] 회원 ID: ' . $id . ' / 에러 내용: ' . $e->getMessage());
+            return false;
+        }
+       
+    }
 }
