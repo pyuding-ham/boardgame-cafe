@@ -34,18 +34,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors['confirm'] = '비밀번호와 비밀번호 확인이 일치하지 않습니다.';
     }
 
-    if (!empty($errors)) {
-        $errors['message'] = '입력하신 비밀번호 정보를 다시 확인해 주세요.';
-        
-    } else {
+    if (empty($errors)) {
         $isUpdated = $cms->getUser()->passwordUpdate($id, $password);
 
         if ($isUpdated) {
             $user = $cms->getUser()->get($id);
             
             if ($user && !empty($user['email'])) {
-                $subject = '[보드게임카페] 비밀번호가 성공적으로 변경되었습니다.';
-                $body = '안녕하세요. 보드게임카페입니다.<br><br>' .
+                $subject = '[보드트립] 비밀번호가 성공적으로 변경되었습니다.';
+                $body = '안녕하세요. 보드게임카페 보드트립입니다.<br><br>' .
                         '회원님의 비밀번호가 ' . date('Y-m-d H:i:s') . '에 정상적으로 변경되었습니다.<br>' .
                         '만약 본인이 비밀번호를 변경하지 않았다면, 즉시 관리자 메일(' . $email_config['admin_email'] . ')로 문의해 주시기 바랍니다.';
                 
@@ -66,3 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 }
+
+$data['errors'] = $errors;
+
+echo $twig->render('password-reset.html', $data);
