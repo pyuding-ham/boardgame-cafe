@@ -1,25 +1,52 @@
 {% extends 'layout.html' %}
 
 {% block content %}
-<form action="" method="POST">
+<form action="" method="POST" id="loginForm">
     {% if errors.login %}
-        <p class="error">{{ errors.login }}</p>
+    <div class="alert alert-danger" role="alert">
+        {{ errors.login }}
+    </div>
     {% endif %}
 
     <div class="form-group">
         <label for="username">아이디</label>
         <input type="text" id="username" name="username" value="{{ username }}" required>
-        {% if errors.username %}<span class="error">{{ errors.username }}</span>{% endif %}
     </div>
 
     <div class="form-group">
         <label for="password">비밀번호</label>
         <input type="password" id="password" name="password" required>
-        {% if errors.password %}<span class="error">{{ errors.password }}</span>{% endif %}
     </div>
     <button type="submit">로그인</button>
 
     <a href="{{ doc_root }}user-find-id" class="btn">아이디 찾기</a>
     <a href="{{ doc_root }}password-find" class="btn">비밀번호 찾기</a>
 </form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('loginForm').addEventListener('submit', function(e) {
+    const usernameInput = document.getElementById('username');
+    const username = usernameInput.value.trim();
+    const passwordInput = document.getElementById('password');
+    const password = passwordInput.value.trim();
+
+    // 아이디 필수 입력 값 검사
+    if (!username) {
+        e.preventDefault();
+        alert('아이디를 입력해 주세요.');
+        usernameInput.focus();
+        return;
+    }
+
+    // 비밀번호 필수 입력 값 검사
+    if (!password) {
+        e.preventDefault();
+        alert('비밀번호를 입력해 주세요.');
+        passwordInput.focus();
+        return;
+    }
+});
+</script>
 {% endblock %}
