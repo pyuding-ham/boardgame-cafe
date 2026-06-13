@@ -1,7 +1,7 @@
 <?php
 // 1. 개발 모드 및 도메인 정의
 define('DEV', true);
-define('DOMAIN', 'http://localhost:8888');
+define('DOMAIN', 'http://localhost');
 
 // 2. 디렉토리 경로 최적화
 define('ROOT_PATH', dirname(__DIR__, 1)); // 최상위 루트 폴더 경로
