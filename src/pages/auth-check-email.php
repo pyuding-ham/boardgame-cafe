@@ -37,15 +37,13 @@ $stmt = $cms->getDb()->runSql($sql, ['email' => $email]);
 if ($stmt && $stmt->fetch()) {
     echo json_encode([
         'status' => 'exists',
-        'message' => '이미 사용 중인 이메일입니다.',
-        JSON_UNESCAPED_UNICODE
-    ]);
+        'message' => '이미 사용 중인 이메일입니다.'
+    ], JSON_UNESCAPED_UNICODE);
 } else {
     echo json_encode([
         'status' => 'available',
-        'message' => '사용 가능한 이메일입니다.',
-        JSON_UNESCAPED_UNICODE
-    ]);
+        'message' => '사용 가능한 이메일입니다.'
+    ], JSON_UNESCAPED_UNICODE);
 }
 
 exit;
