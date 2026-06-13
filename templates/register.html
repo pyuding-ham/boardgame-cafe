@@ -56,7 +56,7 @@ document.getElementById('btnCheckUsername').addEventListener('click', function()
 
     // 백엔드 중복체크 API 호출 (doc_root 상수 활용)
     // 추후 오류 발생 시 물음표 앞 슬래시(/) 삭제
-    const url = '{{ doc_root }}check-username/?username=' + encodeURIComponent(username);
+    const url = '{{ doc_root }}auth-check-username/?username=' + encodeURIComponent(username);
 
     fetch(url)
         .then(response => response.json())
@@ -91,7 +91,7 @@ document.getElementById('btnCheckEmail').addEventListener('click', function() {
 
     // 백엔드 중복체크 API 호출 (doc_root 상수 활용)
     // 추후 오류 발생 시 물음표 앞 슬래시(/) 삭제
-    const url = '{{ doc_root }}check-email/?email=' + encodeURIComponent(email);
+    const url = '{{ doc_root }}auth-check-email/?email=' + encodeURIComponent(email);
 
     fetch(url)
         .then(response => response.json())
