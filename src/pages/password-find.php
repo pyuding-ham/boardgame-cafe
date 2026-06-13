@@ -13,7 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = '이메일을 입력해 주세요.';
 
     } elseif (!Validate::isEmail($email)) {
-        $error = '올바른 이메일 형식이 아닙니다.';
+        $error = '올바른 이메일 주소를 입력해 주세요.';
     }
     
     if ($error === '') {
