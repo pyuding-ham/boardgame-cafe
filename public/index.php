@@ -1,16 +1,18 @@
 <?php
 include '../src/bootstrap.php';
 
-$raw_uri = urldecode($_SERVER['REQUEST_URI']);
+$raw_uri = urldecode(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH));
 $path = mb_strtolower($raw_uri, 'UTF-8');
 $path = substr($path, strlen(DOC_ROOT));
+$path = trim($path, '/'); 
 $parts = explode('/', $path);
 
 if ($parts[0] != 'admin') {
-    $page = $parts[0] ?: 'index';
+    $page = $parts[0] ? str_replace('.php', '', $parts[0]) : 'index';
     $id = $parts[1] ?? null;
 } else {
-    $page = 'admin/' . ($parts[1] ?? '');
+    $admin_page = isset($parts[1]) ? str_replace('.php', '', $parts[1]) : '';
+    $page = 'admin/' . $admin_page;
     $id = $parts[2] ?? null;
 }
 $id = filter_var($id, FILTER_VALIDATE_INT);
