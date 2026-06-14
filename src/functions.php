@@ -5,10 +5,13 @@ function redirect(string $location, array $parameters = [], int $response_code =
     if (!empty($parameters)) {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
+            session_regenerate_id(true); 
         }
         foreach ($parameters as $key => $value) {
             $_SESSION['_flash_' . $key] = $value;
         }
+
+        session_write_close();
     }
 
     // 외부 URL (http:// 또는 https://)이 아닌 경우 DOT_ROOT 추가
