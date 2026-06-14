@@ -56,7 +56,7 @@ if(!$id) {
     
                 $cms->getToken()->delete($token);
     
-                redirect('login/', ['success' => '비밀번호가 성공적으로 변경되었습니다. 새로운 비밀번호로 로그인해 주세요.']);
+                redirect('login/', ['status' => 'reset_success']);
             } else {
                 $errors['message'] = '비밀번호 변경 중 데이터베이스 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.';
             }

@@ -1,6 +1,19 @@
 <?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
 $errors = [];
 $username = '';
+
+// 비밀번호 재설정에서 보낸 상태 저장
+$status = $_SESSION['_flash_status'] ?? null;
+if ($status) {
+    unset($_SESSION['_flash_status']);
+}
+
+// 메시지는 새로고침 시 사라짐
+unset($_SESSION['_flash_success'], $_SESSION['_flash_warning']);
 
 if($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = trim($_POST['username'] ?? '');
@@ -24,7 +37,8 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-echo $twig->render('login.html', [
-    'errors' => $errors,
-    'username' => $username
-]);
+$data['errors'] = $errors;
+$data['username'] = $username;
+$data['status'] = $status;
+
+echo $twig->render('login.html', $data);

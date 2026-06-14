@@ -1,13 +1,20 @@
 {% extends 'layout.html' %}
 
 {% block content %}
-<form action="" method="POST" id="loginForm">
-    {% if errors.login %}
-    <div class="alert alert-danger" role="alert">
-        {{ errors.login }}
-    </div>
-    {% endif %}
+{# 비밀번호 재설정 성공 상태 #}
+{% if status == 'reset_success' %}
+    비밀번호가 성공적으로 변경되었습니다.<br>
+    새로운 비밀번호로 로그인해 주세요.
+{% endif %}
 
+{# 로그인 에러 메시지 #}
+{% if errors.login %}
+<div class="alert alert-danger" role="alert">
+    {{ errors.login }}
+</div>
+{% endif %}
+
+<form action="" method="POST" id="loginForm">
     <div class="form-group">
         <label for="username">아이디</label>
         <input type="text" id="username" name="username" value="{{ username }}" required>
