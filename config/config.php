@@ -34,7 +34,7 @@ $email_config = [
     'password'    => 'MDM4CUQX2CPH',
     'security'    => 'tls',
     'admin_email' => 'unionster@naver.com',
-    'debug'       => (DEV) ? 2 : 0,
+    'debug'       => 0,
 ];
 
 // 5. 파일 업로드 설정

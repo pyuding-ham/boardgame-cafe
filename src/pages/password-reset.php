@@ -20,6 +20,8 @@ if(!$id) {
     exit;
 }
 
+$cms->getSession()->delete();
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password = trim($_POST['password'] ?? '');
     $confirm  = trim($_POST['confirm'] ?? '');
