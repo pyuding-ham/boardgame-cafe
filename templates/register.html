@@ -11,24 +11,27 @@
     <label for="username">아이디</label>
     <input type="text" id="username" name="username" value="{{ user.username }}" required>
     <button type="button" id="btnCheckUsername">아이디 중복체크</button>
-    {% if errors.username %}<span class="error">{{ errors.username }}</span>{% endif %}
+    <div class="form-text">아이디는 4~20자의 영문, 숫자, 언더바(_)만 가능합니다.</div>
+    {% if errors.username %}<div class="form-text is-danger">{{ errors.username }}</div>{% endif %}
 
     <label for="password">비밀번호</label>
     <input type="password" id="password" name="password" required>
-    {% if errors.password %}<span class="error">{{ errors.password }}</span>{% endif %}
-
+    {% if errors.password %}<div class="form-text is-danger">{{ errors.password }}</div>{% endif %}
+    
     <label for="confirm">비밀번호 확인</label>
     <input type="password" id="confirm" name="confirm" required>
-    {% if errors.confirm %}<span class="error">{{ errors.confirm }}</span>{% endif %}
+    <div class="form-text">비밀번호는 최소 10자 이상이어야 하며 영문과 숫자를 모두 포함해야 합니다.</div>
+    {% if errors.confirm %}<div class="form-text is-danger">{{ errors.confirm }}</div>{% endif %}
 
     <label for="nickname">닉네임</label>
     <input type="text" id="nickname" name="nickname" value="{{ user.nickname }}" required>
-    {% if errors.nickname %}<span class="error">{{ errors.nickname }}</span>{% endif %}
+    <div class="form-text">닉네임은 2~10자 사이여야 합니다.</div>
+    {% if errors.nickname %}<div class="form-text is-danger">{{ errors.nickname }}</div>{% endif %}
 
     <label for="email">이메일</label>
     <input type="email" id="email" name="email" value="{{ user.email }}" required>
     <button type="button" id="btnCheckEmail">이메일 중복체크</button>
-    {% if errors.email %}<span class="error">{{ errors.email }}</span>{% endif %}
+    {% if errors.email %}<div class="form-text is-danger">{{ errors.email }}</div>{% endif %}
 
     <button type="submit">가입하기</button>
 </form>
@@ -36,21 +39,42 @@
 
 {% block scripts %}
 <script>
-// 아이디 관련 변수
+// 아이디 유효성 검사 정규식 (4~20자의 영문, 숫자, 언더바(_))
+const usernameRegex = /^[a-z0-9_]{4,20}$/i;
+// 비밀번호 유효성 검사 정규식 (영문과 숫자가 모두 포함된 10자 이상)
+const passwordRegex = /^(?=.*[a-z])(?=.*\d)[a-z\d]{10,}$/i;
+// 이메일 유효성 검사 정규식
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+// 중복체크 관련 상태 변수
 let isUsernameChecked = false;
-let checkedUsername = "";
-
-// 이메일 관련 변수
 let isEmailChecked = false;
-let checkedEmail = "";
 
-// 1. 아이디 중복체크
-document.getElementById('btnCheckUsername').addEventListener('click', function() {
+document.getElementById('username').addEventListener('input', function() {
+    isUsernameChecked = false;
+});
+document.getElementById('email').addEventListener('input', function() {
+    isEmailChecked = false;
+});
+
+// 아이디 중복체크
+document.getElementById('btnCheckUsername').addEventListener('click', function(e) {
+    e.preventDefault();
+
     const usernameInput = document.getElementById('username');
     const username = usernameInput.value.trim();
 
+    // 아이디 필수 입력 값 검사
     if (!username) {
         alert('아이디를 입력해 주세요.');
+        usernameInput.focus();
+        return;
+    }
+
+    // 아이디 유효성 검사
+    if (!usernameRegex.test(username)) {
+        alert('아이디는 4~20자의 영문, 숫자, 언더바(_)만 가능합니다.');
+        usernameInput.focus();
         return;
     }
 
@@ -65,10 +89,8 @@ document.getElementById('btnCheckUsername').addEventListener('click', function()
             if (data.status === 'available') {
                 // 사용 가능 확인
                 isUsernameChecked = true;
-                checkedUsername = username;
             } else {
                 isUsernameChecked = false;
-                checkedUsername = "";
                 usernameInput.focus();
                 usernameInput.select();
             }
@@ -79,13 +101,24 @@ document.getElementById('btnCheckUsername').addEventListener('click', function()
         });
 });
 
-// 2. 이메일 중복체크
-document.getElementById('btnCheckEmail').addEventListener('click', function() {
+// 이메일 중복체크
+document.getElementById('btnCheckEmail').addEventListener('click', function(e) {
+    e.preventDefault();
+
     const emailInput = document.getElementById('email');
     const email = emailInput.value.trim();
 
+    // 이메일 필수 입력 값 검사
     if (!email) {
         alert('이메일을 입력해 주세요.');
+        emailInput.focus();
+        return;
+    }
+
+    // 이메일 유효성 검사
+    if (!emailRegex.test(email)) {
+        alert('올바른 이메일 주소를 입력해 주세요.');
+        emailInput.focus();
         return;
     }
 
@@ -100,10 +133,8 @@ document.getElementById('btnCheckEmail').addEventListener('click', function() {
             if (data.status === 'available') {
                 // 사용 가능 확인
                 isEmailChecked = true;
-                checkedEmail = email;
             } else {
                 isEmailChecked = false;
-                checkedEmail = "";
                 emailInput.focus();
                 emailInput.select();
             }
@@ -114,55 +145,101 @@ document.getElementById('btnCheckEmail').addEventListener('click', function() {
         });
 });
 
-// 폼 제출 시 중복체크를 안 했다면 막기
+// 폼 제출 시 최종 유효성 검사
 document.getElementById('registerForm').addEventListener('submit', function(e) {
-    const currentUsername = document.getElementById('username').value.trim();
-    const currentEmail = document.getElementById('email').value.trim();
+    e.preventDefault();
 
-    // 아이디 중복체크 여부 확인
-    if (!isUsernameChecked || currentUsername !== checkedUsername) {
-        // 폼 제출 중단
-        e.preventDefault();
+    // 1. 아이디 검사
+    const usernameInput = document.getElementById('username');
+    const username = usernameInput.value.trim();
+
+    if (!username) {
+        alert('아이디를 입력해 주세요.');
+        usernameInput.focus();
+        return;
+    }
+    
+    if (!usernameRegex.test(username)) {
+        alert('아이디는 4~20자의 영문, 숫자, 언더바(_)만 가능합니다.');
+        usernameInput.focus();
+        return;
+    }
+
+    if (!isUsernameChecked) {
         alert('아이디 중복체크를 먼저 진행해 주세요.');
-        document.getElementById('username').focus();
+        usernameInput.focus();
         return;
     }
 
-    // 이메일 중복체크 여부 확인
-    if (!isEmailChecked || currentEmail !== checkedEmail) {
-        // 폼 제출 중단
-        e.preventDefault();
-        alert('이메일 중복체크를 먼저 진행해 주세요.');
-        document.getElementById('email').focus();
-        return;
-    }
-
-    // 비밀번호 input ID
+    // 2. 비밀번호 검사
     const passwordInput = document.getElementById('password');
-    // 비밀번호 확인 input ID
+    const password = passwordInput.value.trim();
     const confirmInput = document.getElementById('confirm');
+    const confirm = confirmInput.value.trim();
 
-    const password = passwordInput.value;
-    const confirm = confirmInput.value;
-
-    // 2. 비밀번호 검증
-    // 영문(대문자 또는 소문자)과 숫자가 모두 포함된 10자 이상이어야 함
-    const passwordRegex = /^(?=.*[a-z])(?=.*\d)[a-z\d]{10,}$/i;
+    if (!password) {
+        alert('비밀번호를 입력해 주세요.');
+        passwordInput.focus();
+        return;
+    }
 
     if (!passwordRegex.test(password)) {
-        e.preventDefault();
         alert('비밀번호는 최소 10자 이상이어야 하며 영문과 숫자를 모두 포함해야 합니다.');
         passwordInput.focus();
         return;
     }
 
-    // 3. 비밀번호 일치 확인 검사
+    if (!confirm) {
+        alert('비밀번호 확인을 입력해 주세요.');
+        confirmInput.focus();
+        return;
+    }
+
     if (password !== confirm) {
-        e.preventDefault();
         alert('비밀번호와 비밀번호 확인이 일치하지 않습니다.');
         confirmInput.focus();
         return;
     }
+
+    // 3. 닉네임 검사
+    const nicknameInput = document.getElementById('nickname');
+    const nickname = nicknameInput.value.trim();
+
+    if (!nickname) {
+        alert('닉네임을 입력해 주세요.');
+        nicknameInput.focus();
+        return;
+    }
+
+    if (nickname.length < 2 || nickname.length > 10) {
+        alert("닉네임은 2~10자 사이여야 합니다.");
+        nicknameInput.focus();
+        return;
+    }
+
+    // 4. 이메일 검사
+    const emailInput = document.getElementById('email');
+    const email = emailInput.value.trim();
+
+    if (!email) {
+        alert('이메일을 입력해 주세요.');
+        emailInput.focus();
+        return;
+    }
+
+    if (!emailRegex.test(email)) {
+        alert('올바른 이메일 주소를 입력해 주세요.');
+        emailInput.focus();
+        return;
+    }
+
+    if (!isEmailChecked || email !== checkedEmail) {
+        alert('이메일 중복체크를 먼저 진행해 주세요.');
+        emailInput.focus();
+        return;
+    }
+
+    this.submit();
 });
 </script>
 {% endblock %}
