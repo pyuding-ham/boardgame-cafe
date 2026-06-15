@@ -233,7 +233,7 @@ document.getElementById('registerForm').addEventListener('submit', function(e) {
         return;
     }
 
-    if (!isEmailChecked || email !== checkedEmail) {
+    if (!isEmailChecked) {
         alert('이메일 중복체크를 먼저 진행해 주세요.');
         emailInput.focus();
         return;
