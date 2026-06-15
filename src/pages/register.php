@@ -50,8 +50,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $errors['email'] = '이미 사용 중인 이메일입니다.';
                 }
             } else {
-                // 회원가입 성공 시 로그인 페이지로 이동
-                header('Location: ' . DOC_ROOT . 'login');
+                // 회원가입 성공 시 페이지 이동
+                redirect('register-success/', [
+                    'status' => 'register_success',
+                    'nickname' => $user['nickname'],
+                ]);
                 exit;
             }
 
