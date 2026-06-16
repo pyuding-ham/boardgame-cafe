@@ -1,0 +1,65 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="container mypage-container">
+    <div class="row align-items-start justify-content-between mypage-profile-header mb-5">
+        <!-- 프로필 이미지 및 텍스트 정보 -->
+        <div class="col-12 col-md-8 profile-info">
+            <div class="d-flex align-items-start">
+                <div class="flex-shrink-0 profile-img">
+                    {% if user.profile_image %}
+                        <img src="{{ doc_root }}uploads/{{ user.profile_image }}" alt="{{ user.nickname }}" class="rounded-circle">
+                    {% else %}
+                        <img src="{{ doc_root }}public/uploads/user-blank.png" alt="" class="rounded-circle">
+                    {% endif %}
+                </div>
+                <div class="flex-grow-1 ms-4 profile-details">
+                    <h3 class="mypage-nickname">{{ user.nickname }} <small class="text-muted">({{ user.role }})</small></h3>
+                    <p class="mb-1 text-secondary"><span>아이디</span> {{ user.username }}</p>
+                    <p class="mb-1 text-third"><span>이메일</span> {{ user.email }}</p>
+                    <p class="mb-0 text-muted"><span>가입일</span> {{ user.created_at|date('Y-m-d') }}</p>
+                </div>
+            </div>
+        </div>
+        <!-- 회원정보 수정 버튼 -->
+        <div class="col-12 col-md-4 text-md-end mt-3 mt-md-0 profile-action">
+            <a href="{{ doc_root }}user-edit" class="btn btn-outline-primary">회원정보 수정</button>
+        </div>
+    </div>
+
+    <div class="row mypage-common-section mb-5">
+        <div class="col-12 col-md-6 reservation mb-4 mb-md-0">
+            <h4 class="fw-bold mb-3">나의 예약 현황</h4>
+            <div class="border p-4 rounded">내용</div>
+            <div class="border p-4 rounded">내용</div>
+            <div class="border p-4 rounded">내용</div>
+        </div>
+        <div class="col-12 col-md-6 review">
+            <h4 class="fw-bold mb-3">내가 쓴 이용후기</h4>
+            <div class="border p-4 rounded">내용</div>
+            <div class="border p-4 rounded">내용</div>
+            <div class="border p-4 rounded">내용</div>
+        </div>
+    </div>
+
+    {% if user.role === 'admin'  %}
+    <div class="row mypage-admin-section pt-4 border-top">
+        <div class="col-12 mb-3">
+            <h3>관리자 작성 게시판</h3>
+        </div>
+        <div class="col-12 col-md-6 notice mb-4 mb-md-0">
+            <h4 class="section-title">공지사항</h4>
+            <div class="border p-4 rounded-3 bg-light">공지사항 3개 노출 영역</div>
+            <div class="border p-4 rounded-3 bg-light">공지사항 3개 노출 영역</div>
+            <div class="border p-4 rounded-3 bg-light">공지사항 3개 노출 영역</div>
+        </div>
+        <div class="col-12 col-md-6 branch">
+            <h4 class="section-title">지점소개</h4>
+            <div class="border p-4 rounded-3 bg-light">지점소개 3개 노출 영역</div>
+            <div class="border p-4 rounded-3 bg-light">지점소개 3개 노출 영역</div>
+            <div class="border p-4 rounded-3 bg-light">지점소개 3개 노출 영역</div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
