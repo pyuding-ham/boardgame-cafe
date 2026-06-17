@@ -78,7 +78,7 @@ class User
     /**
      * 회원가입 시 데이터 저장
      */
-    public function register(string $username, string $password, string $email): array|bool
+    public function register(string $username, string $password, string $email): array|string|bool
     {
         $isDuplicated = $this->checkDuplicate($username, $email);
 
@@ -110,7 +110,7 @@ class User
             throw new Exception('회원가입 처리 중 데이터베이스 오류가 발생');
         }
 
-        return true;
+        return $randomNickname;
     }
 
     /**
