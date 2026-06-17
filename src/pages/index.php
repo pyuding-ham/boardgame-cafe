@@ -1,2 +1,8 @@
 <?php
-echo $twig->render('index.html');
+$user = isset($_SESSION['id']) ? $_SESSION : null;
+
+$data = [
+    'user' => $user,
+];
+
+echo $twig->render('index.html', $data);
