@@ -89,10 +89,26 @@ class User
         // 비밀번호 암호화 및 등록
         $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
+        // 임시 닉네임 생성 부분
         $adjectives = ['달리는', '행복한', '귀여운', '노래하는', '반짝이는', '말랑한'];
         $animals = ['햄스터', '토끼', '고양이', '쿼카', '고래', '댕댕이'];
-        $baseNickname = $adjectives[array_rand($adjectives)] . ' ' . $animals[array_rand($animals)];
-        $randomNickname = $baseNickname . '_' . rand(1, 999);
+
+        // 기존 임시 닉네임과 중복되지 않도록 함
+        while (true) {
+            $baseNickname = $adjectives[array_rand($adjectives)] . ' ' . $animals[array_rand($animals)];
+            $randomNickname = $baseNickname . '_' . rand(1, 999);
+
+            $sql = "SELECT COUNT(*) as count FROM user WHERE nickname = :nickname";
+            $statement = $this->db->runSql($sql, ['nickname' => $randomNickname]);
+
+            if ($statement !== false) {
+                $row = $statement->fetch();
+                
+                if (isset($row['count']) && $row['count'] == 0) {
+                    break; 
+                }
+            }
+        }
 
         $sql = "INSERT INTO user (username, password, nickname, email)
                 VALUES (:username, :password, :nickname, :email);";
