@@ -78,7 +78,7 @@ class User
     /**
      * 회원가입 시 데이터 저장
      */
-    public function register(string $username, string $password, string $nickname, string $email): array|bool
+    public function register(string $username, string $password, string $email): array|bool
     {
         $isDuplicated = $this->checkDuplicate($username, $email);
 
@@ -89,13 +89,18 @@ class User
         // 비밀번호 암호화 및 등록
         $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
+        $adjectives = ['달리는', '행복한', '귀여운', '노래하는', '반짝이는', '말랑한'];
+        $animals = ['햄스터', '토끼', '고양이', '쿼카', '고래', '댕댕이'];
+        $baseNickname = $adjectives[array_rand($adjectives)] . ' ' . $animals[array_rand($animals)];
+        $randomNickname = $baseNickname . '_' . rand(1, 999);
+
         $sql = "INSERT INTO user (username, password, nickname, email)
                 VALUES (:username, :password, :nickname, :email);";
 
         $arguments = [
             'username' => $username,
             'password' => $hashed_password,
-            'nickname' => $nickname,
+            'nickname' => $randomNickname,
             'email'    => $email,
         ];
 
