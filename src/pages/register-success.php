@@ -1,10 +1,6 @@
 <?php
 declare(strict_types = 1);
 
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
 $status = $_SESSION['_flash_status'] ?? null;
 $nickname = $_SESSION['_flash_nickname'] ?? null;
 
