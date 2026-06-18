@@ -178,13 +178,12 @@ class User
 
         try {
             $sql = "UPDATE user
-                    SET nickname = :nickname, email = :email, role = :role
+                    SET nickname = :nickname, email = :email
                     WHERE id = :id;";
 
             $this->db->runSql($sql, [
                 'nickname' => $user['nickname'],
                 'email' => $user['email'],
-                'role' => $user['role'],
                 'id' => $user['id'],
             ]);
 
