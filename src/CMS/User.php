@@ -161,6 +161,45 @@ class User
         return $result;
     }
 
+    /**
+     * 회원정보 변경
+     */
+    public function update(array $user): bool
+    {
+        // 닉네임 중복 검사
+        if ($this->isNicknameExists($user['nickname'], $user['id'])) {
+            throw new \Exception("이미 사용 중인 닉네임입니다.");
+        }
+
+        // 이메일 중복 검사
+        if ($this->isEmailExists($user['email'], $user['id'])) {
+            throw new \Exception("이미 사용 중인 이메일입니다.");
+        }
+
+        try {
+            $sql = "UPDATE user
+                    SET nickname = :nickname, email = :email, role = :role
+                    WHERE id = :id;";
+
+            $this->db->runSql($sql, [
+                'nickname' => $user['nickname'],
+                'email' => $user['email'],
+                'role' => $user['role'],
+                'id' => $user['id'],
+            ]);
+
+            return true;
+
+        } catch (\PDOException $e) {
+            error_log("[DB 에러] 회원 ID: " . $user['id'] . ' / 에러 내용: ' . $e->getMessage());
+            throw new \Exception("데이터베이스 처리 중 오류가 발생했습니다.");
+
+        } catch (\Exception $e) {
+            error_log("[시스템 에러] " . $e->getMessage());
+            throw new \Exception("시스템 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
+        }
+    }
+
     public function passwordUpdate(int $id, string $password): bool
     {
         $hash = password_hash($password, PASSWORD_DEFAULT);
@@ -186,5 +225,31 @@ class User
             return false;
         }
        
+    }
+
+    // 닉네임 중복 검사
+    public function isNicknameExists(string $nickname, int $id): bool
+    {
+        $sql = "SELECT id FROM user WHERE nickname = :nickname AND id != :id LIMIT 1;";
+        
+        $result = $this->db->runSql($sql, [
+            'nickname' => $nickname,
+            'id' => $id,
+        ])->fetch();
+
+        return !empty($result);
+    }
+
+    // 이메일 중복 검사
+    public function isEmailExists(string $email, int $id): bool
+    {
+        $sql = "SELECT id FROM user WHERE email = :email AND id != :id LIMIT 1;";
+        
+        $result = $this->db->runSql($sql, [
+            'email' => $email,
+            'id' => $id,
+        ])->fetch();
+
+        return !empty($result);
     }
 }
