@@ -19,8 +19,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $user['id']       = $currentUserId;
 
     // 2. Validate 클래스를 이용한 유효값 검사
-    $errors['nickname'] = Validate::isUsername($user['nickname']) 
-        ? '' : '닉네임은 4~20자의 영문, 숫자, 언더바(_)만 가능합니다';
+    $errors['nickname'] = Validate::isText($user['nickname'], 2, 10)
+        ? '' : '닉네임은 2~10자 사이여야 합니다.';
 
     $errors['email'] = Validate::isEmail($user['email'])
         ? '' : '올바른 이메일 주소를 입력해 주세요.';
