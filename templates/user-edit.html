@@ -1,0 +1,221 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="container user-edit-container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-12 col-sm-9 col-md-7">
+            <form action="#" method="POST" id="userEditForm">
+                {% if errors.system %}
+                    <div class="mb-5">
+                        <div class="text-danger small fw-bold d-flex align-items-center justify-content-center p-2 mb-3 bg-danger bg-opacity-10 rounded">
+                            <i class="bi bi-exclamation-circle-fill me-2"></i>
+                            <span>{{ errors.system }}</span>
+                        </div>
+                    </div>
+                {% endif %}
+                <div class="mb-4">
+                    <label for="nickname" class="form-label fw-bold">닉네임</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control {{ errors.nickname ? 'is-invalid' : '' }}" id="nickname" name="nickname" value="{{ user.nickname }}" required>
+                        <button class="btn btn-outline-secondary" type="button" id="btnCheckNickname">닉네임 중복체크</button>
+                    </div>
+                    {% if errors.nickname %}
+                        <div class="invalid-feedback fw-bold">
+                            <i class="bi bi-exclamation-circle me-1"></i> {{ errors.nickname }}
+                        </div>
+                        <div class="form-text is-danger">{{ errors.nickname }}</div>
+                    {% else %}
+                        <div class="form-text">닉네임은 2~10자 사이여야 합니다.</div>
+                    {% endif %}
+                </div>
+                <div class="mb-5">
+                    <label for="email" class="form-label fw-bold">이메일</label>
+                    <div class="input-group">
+                        <input type="email" class="form-control" id="email" name="email" value="{{ user.email }}" required>
+                        <button class="btn btn-outline-secondary" type="button" id="btnCheckEmail">이메일 중복체크</button>
+                    </div>
+                    {% if errors.email %}<div class="form-text is-danger">{{ errors.email }}</div>{% endif %}
+                </div>
+            
+                <div class="d-flex justify-content-center gap-2 mt-5">
+                    <a href="{{ doc_root }}mypage/{{ user.id }}" class="btn btn-outline-secondary px-4">취소하기</a>
+                    <button class="btn btn-primary px-4" type="submit">변경하기</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// 이메일 유효성 검사 정규식
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+// 닉네임, 이메일 기존 값 저장
+const originalNickname = document.getElementById('nickname').value.trim();
+const originalEmail = document.getElementById('email').value.trim();
+
+// 중복체크 확인 상태 관리 변수
+let isNicknameChecked = false;
+let isEmailChecked = false;
+
+// 사용자가 키보드를 입력하면 중복체크 상태를 초기화함
+document.getElementById('nickname').addEventListener('input', function() {
+    isNicknameChecked = false;
+});
+document.getElementById('email').addEventListener('input', function() {
+    isEmailChecked = false;
+});
+
+// 닉네임 중복체크
+document.getElementById('btnCheckNickname').addEventListener('click', function(e) {
+    e.preventDefault();
+
+    const nicknameInput = document.getElementById('nickname');
+    const nickname = nicknameInput.value.trim();
+
+    // 닉네임 필수 입력 값 검사
+    if (!nickname) {
+        alert('닉네임을 입력해 주세요.');
+        nicknameInput.focus();
+        return;
+    }
+
+    // 닉네임 유효성 검사
+    if (nickname.length < 2 || nickname.length > 10) {
+        alert('닉네임은 2~10자 사이여야 합니다.');
+        nicknameInput.focus();
+        return;
+    }
+
+    // 기존 닉네임과 같으면 통과
+    if (nickname === originalNickname) {
+        alert('현재 사용 중인 닉네임입니다.');
+        isNicknameChecked = true;
+        return;
+    }
+
+    // 백엔드 중복체크 API 호출 (doc_root 상수 활용)
+    const url = '{{ doc_root }}auth-check-nickname/?nickname=' + encodeURIComponent(nickname);
+
+    fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            alert(data.message);
+            if (data.status === 'available') {
+                // 사용 가능 확인
+                isNicknameChecked = true;
+            } else {
+                isNicknameChecked = false;
+                nicknameInput.focus();
+                nicknameInput.select();
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('오류가 발생했습니다. 다시 시도해 주세요.');
+        });
+});
+
+// 이메일 중복체크
+document.getElementById('btnCheckEmail').addEventListener('click', function(e) {
+    e.preventDefault();
+
+    const emailInput = document.getElementById('email');
+    const email = emailInput.value.trim();
+
+    // 이메일 필수 입력 값 검사
+    if (!email) {
+        alert('이메일을 입력해 주세요.');
+        emailInput.focus();
+        return;
+    }
+
+    // 이메일 유효성 검사
+    if (!emailRegex.test(email)) {
+        alert('올바른 이메일 주소를 입력해 주세요.');
+        emailInput.focus();
+        return;
+    }
+
+    // 기존 이메일과 같으면 통과
+    if (email === originalEmail) {
+        alert('현재 사용 중인 이메일입니다.');
+        isEmailChecked = true;
+        return;
+    }
+
+    // 백엔드 중복체크 API 호출 (doc_root 상수 활용)
+    const url = '{{ doc_root }}auth-check-email/?email=' + encodeURIComponent(email);
+
+    fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            alert(data.message);
+            if (data.status === 'available') {
+                isEmailChecked = true;
+            } else {
+                isEmailChecked = false;
+                emailInput.focus();
+                emailInput.select();
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('오류가 발생했습니다. 다시 시도해 주세요.');
+        });
+});
+
+// 폼 제출 시 최종 유효성 검사
+document.getElementById('userEditForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    // 1. 닉네임 검사
+    const nicknameInput = document.getElementById('nickname');
+    const nickname = nicknameInput.value.trim();
+
+    if (!nickname) {
+        alert('닉네임을 입력해 주세요.');
+        nicknameInput.focus();
+        return;
+    }
+    
+    if (nickname.length < 2 || nickname.length > 10) {
+        alert('닉네임은 2~10자 사이여야 합니다.');
+        nicknameInput.focus();
+        return;
+    }
+
+    if (nickname !== originalNickname && !isNicknameChecked) {
+        alert('닉네임 중복체크를 먼저 진행해 주세요.');
+        nicknameInput.focus();
+        return;
+    }
+
+    // 2. 이메일 검사
+    const emailInput = document.getElementById('email');
+    const email = emailInput.value.trim();
+
+    if (!email) {
+        alert('이메일을 입력해 주세요.');
+        emailInput.focus();
+        return;
+    }
+
+    if (!emailRegex.test(email)) {
+        alert('올바른 이메일 주소를 입력해 주세요.');
+        emailInput.focus();
+        return;
+    }
+
+    if (email !== originalEmail && !isEmailChecked) {
+        alert('이메일 중복체크를 먼저 진행해 주세요.');
+        emailInput.focus();
+        return;
+    }
+
+    this.submit();
+});
+</script>
+{% endblock %}
