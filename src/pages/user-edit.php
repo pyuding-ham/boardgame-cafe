@@ -32,7 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             $cms->getUser()->update($user);
 
-            redirect('mypage/', [
+            redirect('mypage/' . $user['id'], [
                 'status' => 'update_success'
             ]);
             exit;
