@@ -13,6 +13,14 @@
                         </div>
                     </div>
                 {% endif %}
+                {% if errors.message %}
+                    <div class="mb-5">
+                        <div class="text-danger small fw-bold d-flex align-items-center justify-content-center p-2 mb-3 bg-danger bg-opacity-10 rounded">
+                            <i class="bi bi-exclamation-circle-fill me-2"></i>
+                            <span>{{ errors.message }}</span>
+                        </div>
+                    </div>
+                {% endif %}
                 <div class="mb-4">
                     <label for="nickname" class="form-label fw-bold">닉네임</label>
                     <div class="input-group">
@@ -154,6 +162,7 @@ document.getElementById('btnCheckEmail').addEventListener('click', function(e) {
         .then(data => {
             alert(data.message);
             if (data.status === 'available') {
+                // 사용 가능 확인
                 isEmailChecked = true;
             } else {
                 isEmailChecked = false;

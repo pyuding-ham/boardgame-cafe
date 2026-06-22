@@ -9,7 +9,7 @@ if (!$currentUserId) {
     exit;
 }
 
-$user = $cms->getUser()->get($currentUserId); 
+$user = $currentUser = $cms->getUser()->get($currentUserId); 
 $errors = [];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -18,12 +18,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $user['email']    = trim($_POST['email'] ?? '');
     $user['id']       = $currentUserId;
 
-    // 2. Validate 클래스를 이용한 유효값 검사
-    $errors['nickname'] = Validate::isText($user['nickname'], 2, 10)
-        ? '' : '닉네임은 2~10자 사이여야 합니다.';
+    $isNicknameChanged = ($user['nickname'] !== $currentUser['nickname']);
+    $isEmailChanged    = ($user['email'] !== $currentUser['email']);
 
-    $errors['email'] = Validate::isEmail($user['email'])
-        ? '' : '올바른 이메일 주소를 입력해 주세요.';
+    // 2. 필수 입력 값 검사 및 유효성 검사 및 중복 검사
+    if (empty($user['nickname'])) {
+        $errors['nickname'] = '닉네임을 입력해 주세요.';
+    } elseif (!Validate::isText($user['nickname'], 2, 10)) {
+        $errors['nickname'] = '닉네임은 2~10자 사이여야 합니다.';
+    }  elseif ($isNicknameChanged && $cms->getUser()->isNicknameExists($user['nickname'], $currentUserId)) { 
+        $errors['nickname'] = '이미 다른 회원이 사용 중인 닉네임입니다.';
+    }
+
+    if (empty($user['email'])) {
+        $errors['email'] = '이메일을 입력해 주세요.';
+    } elseif (!Validate::isEmail($user['email'])) {
+        $errors['email'] = '올바른 이메일 주소를 입력해 주세요.';
+    } elseif ($isEmailChanged && $cms->getUser()->isEmailExists($user['email'], $currentUserId)) { 
+        $errors['email'] = '이미 다른 회원이 사용 중인 이메일입니다.';
+    }
+
+    if (!$isNicknameChanged && !$isEmailChanged) {
+        $errors['message'] = "변경된 정보가 없습니다.";
+    }
 
     $invalid = implode($errors);
 
