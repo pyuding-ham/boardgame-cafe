@@ -3,6 +3,8 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
+// 로그인한 상태면 회원 ID 저장
+$currentUserId = $_SESSION['id'] ?? null;
 
 // 2. 애플리케이션 루트 경로 정의
 define('APP_ROOT', dirname(__FILE__, 2));

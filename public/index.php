@@ -13,9 +13,7 @@ if ($parts[0] != 'admin') {
 } else {
     $admin_page = isset($parts[1]) ? str_replace('.php', '', $parts[1]) : '';
     $page = 'admin/' . $admin_page;
-    $id = $parts[2] ?? null;
 }
-$id = filter_var($id, FILTER_VALIDATE_INT);
 
 $php_page = APP_ROOT . '/src/pages/' . $page . '.php';
 

@@ -24,7 +24,7 @@
                     <a href="{{ doc_root }}register" class="nav-item nav-link">회원가입</a>
                 {% else %}
                     <!-- 로그인 했을 때 -->
-                    <a href="{{ doc_root }}mypage/{{ user.id }}">마이페이지</a>
+                    <a href="{{ doc_root }}mypage">마이페이지</a>
                     {% if user.role == 'admin' %}
                         <a href="{{ doc_root }}admin/index">관리자</a>
                     {% endif %}
