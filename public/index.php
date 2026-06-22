@@ -9,7 +9,11 @@ $parts = explode('/', $path);
 
 if ($parts[0] != 'admin') {
     $page = $parts[0] ? str_replace('.php', '', $parts[0]) : 'index';
-    $id = $parts[1] ?? null;
+    $urlParam = $parts[1] ?? null; 
+
+    if ($page === 'board') {
+        $boardId = $urlParam ? (int)$urlParam : null; 
+    }
 } else {
     $admin_page = isset($parts[1]) ? str_replace('.php', '', $parts[1]) : '';
     $page = 'admin/' . $admin_page;
