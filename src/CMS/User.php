@@ -27,6 +27,25 @@ class User
     }
 
     /**
+     * ID로 회원 비밀번호 조회
+     */
+    public function getPassword(int $id): bool|string
+    {
+        $sql = "SELECT password 
+                FROM user 
+                WHERE id = :id;";
+
+        $stmt = $this->db->runSql($sql, ['id' => $id]);
+
+        if ($stmt) {
+            $result = $stmt->fetch();
+            return $result ? $result['password'] : false; 
+        }
+
+        return false;
+    }
+
+    /**
      * 이메일로 회원 번호 조회
      */
     public function getIdByEmail(string $email)
