@@ -94,6 +94,7 @@ if (empty($errors['invalid_token']) && $_SERVER['REQUEST_METHOD'] === 'POST') {
                 $cms->getToken()->delete($token);
             }
 
+            $cms->getSession()->delete();
             redirect('login/', ['status' => 'reset_success']);
             exit;
 
