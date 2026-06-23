@@ -245,7 +245,55 @@ class User
        
     }
 
-    // 닉네임 중복 검사
+    // 회원 아이디 중복 검사
+    public function isUsernameExists(string $username, ?int $id = null): bool
+    {
+        // 회원가입일 때
+        if (empty($id)) {
+            $sql = "SELECT id FROM user WHERE username = :username LIMIT 1;";
+            $params = [
+                'username' => $username,
+            ];
+
+        // 회원정보 변경일 때
+        } else {
+            $sql = "SELECT id FROM user WHERE username = :username AND id != :id LIMIT 1;";
+            $params = [
+                'username' => $username,
+                'id' => $id,
+            ];
+        }
+                
+        $result = $this->db->runSql($sql, $params)->fetch();
+
+        return !empty($result);
+    }
+
+    // 회원 이메일 중복 검사
+    public function isEmailExists(string $email, ?int $id = null): bool
+    {
+        // 회원가입일 때
+        if (empty($id)) {
+            $sql = "SELECT id FROM user WHERE email = :email LIMIT 1;";
+            $params = [
+                'email' => $email,
+            ];
+
+        // 회원정보 변경일 때
+        } else {
+            $sql = "SELECT id FROM user WHERE email = :email AND id != :id LIMIT 1;";
+            $params = [
+                'email' => $email,
+                'id' => $id,
+            ];
+        }
+                
+        $result = $this->db->runSql($sql, $params)->fetch();
+
+        return !empty($result);
+    }
+
+    // 회원 닉네임 중복 검사
     public function isNicknameExists(string $nickname, int $id): bool
     {
         $sql = "SELECT id FROM user WHERE nickname = :nickname AND id != :id LIMIT 1;";
@@ -258,16 +306,4 @@ class User
         return !empty($result);
     }
 
-    // 이메일 중복 검사
-    public function isEmailExists(string $email, int $id): bool
-    {
-        $sql = "SELECT id FROM user WHERE email = :email AND id != :id LIMIT 1;";
-        
-        $result = $this->db->runSql($sql, [
-            'email' => $email,
-            'id' => $id,
-        ])->fetch();
-
-        return !empty($result);
-    }
 }
