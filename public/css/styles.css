@@ -41,3 +41,35 @@
 .btn-profile-delete:hover .bi {
     color: #0d6efd;
 }
+
+/* 토스트 팝업 */
+.toast-container {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.toast-message {
+    background-color: #333;
+    color: #fff;
+    padding: 12px 24px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    font-size: 14px;
+    font-family: sans-serif;
+    text-align: center;
+    animation: fadeInOutCenter 2.8s forwards; 
+}
+
+@keyframes fadeInOutCenter {
+    0% { opacity: 0; transform: translateY(-20px); }
+    15% { opacity: 1; transform: translateY(0); }
+    85% { opacity: 1; transform: translateY(0); }
+    100% { opacity: 0; transform: translateY(-20px); }
+}

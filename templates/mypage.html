@@ -1,6 +1,12 @@
 {% extends 'layout.html' %}
 
 {% block content %}
+{# 토스트 팝업 #}
+<div id="toast-container" class="toast-container"></div>
+{# 백엔드에서 넘겨준 status 값이 있다면 자바스크립트로 토스트 실행 #}
+{% if status == 'update_success' %}
+    <script>window.addEventListener('DOMContentLoaded', () => showToast('회원 정보가 성공적으로 변경되었습니다.'));</script>
+{% endif %}
 <div class="container mypage-container">
     <div class="row align-items-start justify-content-between mypage-profile-header mb-5">
         <!-- 프로필 이미지 및 텍스트 정보 -->
@@ -63,4 +69,25 @@
     </div>
     {% endif %}
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // 토스트 팝업
+    function showToast(message) {
+        const container = document.getElementById('toast-container');
+        if (!container) return;
+    
+        const toast = document.createElement('div');
+        toast.className = 'toast-message';
+        toast.innerText = message;
+    
+        container.appendChild(toast);
+    
+        // 애니메이션이 끝나는 2.8초 뒤에 메모리에서 안전하게 제거
+        setTimeout(() => {
+            toast.remove();
+        }, 2800);
+    }
+</script>
 {% endblock %}

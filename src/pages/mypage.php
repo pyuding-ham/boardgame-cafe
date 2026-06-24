@@ -7,6 +7,12 @@ if (!$currentUserId) {
     exit;
 }
 
+// 회원정보 변경에서 보낸 상태 저장
+$status = $_SESSION['_flash_status'] ?? null;
+if ($status) {
+    unset($_SESSION['_flash_status']);
+}
+
 // 기본 정보 조회
 $userInfo = $cms->getUser()->get($currentUserId);
 
@@ -21,6 +27,7 @@ $bookingList = []; // 더미 데이터 처리
 // 내가 쓴 글 조회
 $postList = []; // 더미 데이터 처리
 
+$data['status'] = $status;
 $data['user'] = $userInfo;
 $data['bookings'] = $bookingList;
 $data['posts'] = $postList;
