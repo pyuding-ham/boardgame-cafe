@@ -309,4 +309,15 @@ class User
         return !empty($result);
     }
 
+    // 프로필 이미지 삭제
+    public function deleteImage(int $id): bool
+    {
+        $sql = "UPDATE user
+                SET profile_image = null
+                WHERE id = :id;";
+        
+        $result = $this->db->runSql($sql, ['id' => $id]);
+        
+        return $result !== false;
+    }
 }

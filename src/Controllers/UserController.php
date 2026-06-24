@@ -31,9 +31,28 @@ class UserController
 
         $isNicknameChanged = ($user['nickname'] !== $currentUser['nickname']);
         $isEmailChanged    = ($user['email'] !== $currentUser['email']);
-        $isImageUploaded   = (isset($fileData['profile_image']['tmp_name']) && !empty($fileData['profile_image']['tmp_name']));
+        $isImageUploaded   = (isset($fileData['profile_file_input']['tmp_name']) && !empty($fileData['profile_file_input']['tmp_name']));
+        // 프로필 이미지 삭제 여부
+        $isImageDeleted = (isset($postData['delete_image_flag']) && $postData['delete_image_flag'] === '1');
 
-        // 2. 필수 입력 값 검사 및 유효성 검사 및 중복 검사
+        // 2. 프로필 이미지 삭제
+        if ($isImageDeleted) {
+            $deleteResult = $this->deleteProfileImage($currentUser);
+            
+            if (!$deleteResult['success']) {
+                $errors['profile_image'] = '이미지 파일을 삭제하지 못했습니다.';
+
+                return [
+                    'success' => false, 
+                    'errors' => $errors,
+                    'user' => $currentUser,
+                ];
+            }
+            
+            $currentUser['profile_image'] = null;
+        }
+
+        // 3. 필수 입력 값 검사 및 유효성 검사 및 중복 검사
         if (empty($user['nickname'])) {
             $errors['nickname'] = '닉네임을 입력해 주세요.';
         } elseif (!Validate::isText($user['nickname'], 2, 10)) {
@@ -51,7 +70,7 @@ class UserController
         }
 
         // 아무것도 변경되지 않았을 때
-        if (!$isNicknameChanged && !$isEmailChanged && !$isImageUploaded) {
+        if (!$isNicknameChanged && !$isEmailChanged && !$isImageUploaded && !$isImageDeleted) {
             $errors['message'] = "변경된 정보가 없습니다.";
             return ['success' => false, 'errors' => $errors, 'user' => $user];
         }
@@ -61,9 +80,9 @@ class UserController
             return ['success' => false, 'errors' => $errors, 'user' => $user];
         }
 
-        // 3. 이미지 업로드 처리 (Intervention Image)
+        // 4. 이미지 업로드 처리 (Intervention Image)
         $maxFileSize = 1 * 1024 * 1024; 
-        if ($fileData['profile_image']['size'] > $maxFileSize) {
+        if ($fileData['profile_file_input']['size'] > $maxFileSize) {
             $errors['profile_image'] = '프로필 이미지는 최대 1MB까지만 업로드할 수 있습니다.';
             return ['success' => false, 'errors' => $errors, 'user' => $user];
         }
@@ -71,7 +90,7 @@ class UserController
         if ($isImageUploaded) {
             try {
                 $manager = new ImageManager(new Driver());
-                $image = $manager->read($fileData['profile_image']['tmp_name']);
+                $image = $manager->read($fileData['profile_file_input']['tmp_name']);
                 // 300x300 정사각형 크롭
                 $image->cover(300, 300);
 
@@ -99,7 +118,7 @@ class UserController
             }
         }
 
-        // 4. DB 저장 단계
+        // 5. DB 저장 단계
         try {
             $this->cms->getUser()->update($user);
             return ['success' => true, 'user' => $user];
@@ -114,5 +133,33 @@ class UserController
             }
             return ['success' => false, 'errors' => $errors, 'user' => $user];
         }
+    }
+
+    /**
+     * 프로필 이미지 삭제 처리 메서드
+     */
+    public function deleteProfileImage(array $currentUser): array
+    {
+        $currentImage = $currentUser['profile_image'] ?? null;
+
+        // 1. 기존 이미지가 있다면 물리적 파일 삭제
+        if (!empty($currentImage)) {
+            $filePath = APP_ROOT . '/public/uploads/profiles/' . $currentImage; 
+            
+            if (file_exists($filePath)) {
+                if (!unlink($filePath)) {
+                    $errors['profile_image'] = '서버에서 이미지 파일을 삭제하지 못했습니다.';
+                    return ['success' => false, 'errors' => $errors];
+                }
+            }
+        }
+
+        // 2. DB 업데이트 단계
+        if (!$this->cms->getUser()->deleteImage((int)$currentUser['id'])) {
+            $errors['system'] = '데이터베이스 오류가 발생했습니다.';
+            return ['success' => false, 'errors' => $errors];
+        }
+
+        return ['success' => true];
     }
 }
