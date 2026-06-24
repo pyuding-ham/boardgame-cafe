@@ -9,3 +9,10 @@
 .input-group .toggle-password i {
     font-size: 1.15rem;
 }
+
+/* 프로필 이미지 */
+#userEditForm img.profile {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+}

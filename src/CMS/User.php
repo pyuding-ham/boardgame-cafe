@@ -197,12 +197,15 @@ class User
 
         try {
             $sql = "UPDATE user
-                    SET nickname = :nickname, email = :email
+                    SET nickname = :nickname,
+                        email = :email,
+                        profile_image = :profile_image
                     WHERE id = :id;";
 
             $this->db->runSql($sql, [
                 'nickname' => $user['nickname'],
                 'email' => $user['email'],
+                'profile_image' => $user['profile_image'] ?? null,
                 'id' => $user['id'],
             ]);
 
