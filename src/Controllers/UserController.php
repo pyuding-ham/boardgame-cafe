@@ -120,7 +120,13 @@ class UserController
 
         // 5. DB 저장 단계
         try {
+            // DB 회원정보 업데이트
             $this->cms->getUser()->update($user);
+
+            // 세션 정보 갱신
+            $this->cms->getSession()->update($user); 
+
+            // 성공 응답 리턴
             return ['success' => true, 'user' => $user];
 
         } catch (Exception $e) {

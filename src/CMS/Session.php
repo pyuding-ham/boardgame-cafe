@@ -35,6 +35,14 @@ class Session
     }
 
     /**
+     * 회원정보 변경 시 세션 갱신
+     */
+    public function update($user)
+    {
+        $this->create($user);
+    }
+
+    /**
      * 로그아웃 시 세션 및 쿠키 파기
      */
     public function delete()
