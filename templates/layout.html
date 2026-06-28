@@ -25,8 +25,8 @@
                 {% else %}
                     <!-- 로그인 했을 때 -->
                     <a href="{{ doc_root }}mypage">마이페이지</a>
-                    {% if user.role == 'admin' %}
-                        <a href="{{ doc_root }}admin/index">관리자</a>
+                    {% if session.role == 'admin' %}
+                        <a href="{{ doc_root }}admin">관리자</a>
                     {% endif %}
                     <a href="{{ doc_root }}logout">로그아웃</a>
                 {% endif %}
