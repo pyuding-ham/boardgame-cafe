@@ -1,0 +1,100 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="container board-container my-5">
+    <!-- 타이틀 영역 -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="fw-bold mb-0">{{ board_title }}</h2>
+    </div>
+    
+    <p class="text-muted small mb-3">총 <strong class="text-primary">{{ total_count }}</strong>개의 글</p>
+
+    <!-- 테이블 영역 -->
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead class="table-light border-top border-bottom">
+                <tr>
+                    <th scope="col" class="text-center py-3">번호</th>
+                    <th scope="col" class="py-3">제목</th>
+                    <th scope="col" class="text-center py-3">작성자</th>
+                    <th scope="col" class="text-center py-3">작성일</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if list is empty %}
+                    <tr>
+                        <td colspan="4" class="text-center text-muted py-5 border-bottom">
+                            <i class="bi bi-exclamation-circle d-block fs-4 mb-2"></i>
+                            검색 결과가 없거나 등록된 게시글이 없습니다.
+                        </td>
+                    </tr>
+                {% else %}
+                    {% for item in list %}
+                        <tr class="{% if item.is_pinned == 1 %}table-light fw-bold{% endif %} border-bottom">
+                            <td class="text-center py-3">
+                                {% if item.is_pinned == 1 %}
+                                    <span class="badge bg-secondary text-white fw-normal">공지</span>
+                                {% else %}
+                                    {{ item.id }}
+                                {% endif %}
+                            </td>
+                            <td class="py-3">
+                                <a href="{{ doc_root }}board/{{ board_name }}/view/{{ item.id }}" class="text-decoration-none text-dark link-primary d-block text-truncate">
+                                    {{ item.title }}
+                                </a>
+                            </td>
+                            <td class="text-center text-secondary small py-3">{{ item.nickname }}</td>
+                            <td class="text-center text-muted small py-3">{{ item.created_at|date('Y-m-d') }}</td>
+                        </tr>
+                    {% endfor %}
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 페이지네이션 -->
+    {% if total_pages > 1 %}
+        <nav class="d-flex justify-content-center gap-1 mt-4 mb-4">
+            {% for p in 1..total_pages %}
+                <a class="page-num-link {% if p == current_page %}active{% endif %}" 
+                href="{{ doc_root }}board/{{ board_name }}/page/{{ p }}">
+                    {{ p }}
+                </a>
+            {% endfor %}
+        </nav>
+    {% endif %}
+
+    <!-- 검색 및 글쓰기 버튼 영역 -->
+    <div class="board-search d-flex justify-content-center align-items-center position-relative mt-4">
+
+        <!-- 1. 검색 폼 -->
+        <form action="{{ doc_root }}board/{{ board_name }}" method="post" class="row g-1 justify-content-center">
+            <!-- 검색 조건 선택 -->
+            <div class="col-auto">
+                <select name="search_type" class="form-select form-select-sm border-secondary-subtle">
+                    <option value="all" {% if search_type == 'all' %}selected{% endif %}>전체</option>
+                    <option value="title" {% if search_type == 'title' %}selected{% endif %}>제목</option>
+                    <option value="content" {% if search_type == 'content' %}selected{% endif %}>내용</option>
+                </select>
+            </div>
+            <!-- 검색 키워드 인풋 -->
+            <div class="col">
+                <input type="text" name="keyword" value="{{ keyword }}" class="form-control form-control-sm border-secondary-subtle" placeholder="검색어를 입력해 주세요.">
+            </div>
+            <!-- 검색 버튼 -->
+            <div class="col-auto">
+                <button type="submit" class="btn btn-dark btn-sm px-3">검색</button>
+            </div>
+        </form>
+
+        <!-- 2. 글쓰기 버튼 -->
+        <!-- 관리자 권한만 글쓰기 버튼 노출 -->
+        {% if session.role == 'admin' %}
+            <a href="{{ doc_root }}board/{{ board_name }}/write" class="btn btn-primary btn-sm rounded-1 px-3 text-nowrap position-absolute end-0">
+                <i class="bi bi-pencil"></i> 글쓰기
+            </a>
+        {% endif %}
+
+    </div>
+</div>
+{% endblock %}

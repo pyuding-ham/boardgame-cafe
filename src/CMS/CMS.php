@@ -7,6 +7,7 @@ class CMS
     protected $user = null;
     protected $session = null;
     protected $token = null;
+    protected $board = null;
 
     public function __construct($dsn, $username, $password)
     {
@@ -37,5 +38,12 @@ class CMS
             $this->token = new Token($this->db);
         }
         return $this->token;
+    }
+
+    public function getBoard() {
+        if ($this->board === null) {
+            $this->board = new Board($this->db);
+        }
+        return $this->board;
     }
 }

@@ -1,0 +1,60 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="container board-view-container my-5">
+    <!-- 타이틀 영역 -->
+    <div class="board-view__title-zone d-flex justify-content-between align-items-center mb-3">
+        <h2 class="fw-bold mb-0">{{ board_title }}</h2>
+    </div>
+
+    <!-- 게시글 상단 영역 -->
+    <div class="board-view__header border p-4 rounded bg-light mb-4">
+        <div class="d-flex align-items-center gap-2 mb-3">
+            {% if article.is_pinned == 1 %}
+                <span class="badge bg-secondary text-white fw-normal">공지</span>
+            {% endif %}
+            <h4 class="fw-bold mb-0">{{ article.title }}</h4>
+        </div>
+        
+        <div class="row pt-3 border-top text-secondary small g-2">
+            <div class="col-12 col-md-6">
+                <span class="me-3"><strong class="text-dark">작성자</strong> {{ article.nickname }}</span>
+            </div>
+            <div class="col-12 col-md-6 text-md-end">
+                <span class="text-muted"><strong class="text-dark">작성일</strong> {{ article.created_at|date('Y-m-d H:i') }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 첨부파일 영역 -->
+    {% if article.files is not empty %}
+        <div class="board-view__files border p-3 rounded bg-light mb-4">
+            <div class="fw-bold text-dark small mb-2"><i class="bi bi-paperclip"></i> 첨부파일 ({{ article.files|length }})</div>
+            <div class="d-flex flex-column gap-1">
+                {% for file in article.files %}
+                    <div class="small">
+                        <a href="{{ doc_root }}{{ file.file_path }}" class="text-decoration-none text-secondary link-primary" download="{{ file.org_name }}">
+                            <i class="bi bi-file-earmark-arrow-down text-muted me-1"></i> {{ file.org_name }}
+                        </a>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- 게시글 본문 영역 -->
+    <div class="board-view__content border p-4 rounded bg-white mb-4 fs-6">{{ article.content }}</div>
+
+    <!-- 게시글 하단 버튼 구역 -->
+    <div class="board-view__footer d-flex justify-content-between align-items-center pt-3 border-top">
+        <a href="{{ doc_root }}board/{{ board_name }}" class="btn btn-secondary px-4 rounded-1 small">목록으로</a>
+        
+        {% if session.role == 'admin' %}
+            <div>
+                <a href="{{ doc_root }}admin/notice-edit?id={{ article.id }}" class="btn btn-outline-primary me-1 rounded-1 small">수정</a>
+                <a href="{{ doc_root }}admin/notice-delete?id={{ article.id }}" class="btn btn-outline-danger rounded-1 small" onclick="return confirm('이 공지사항을 정말 삭제하시겠습니까?');">삭제</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
