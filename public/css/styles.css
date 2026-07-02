@@ -121,3 +121,9 @@
     line-height: 1.8;
     white-space: pre-wrap;
 }
+
+/* 게시글 쓰기 에디터 */
+.editor-wrapper #editor {
+    height: 400px;
+    font-size: 16px;
+}

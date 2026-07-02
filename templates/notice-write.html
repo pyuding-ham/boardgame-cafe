@@ -1,0 +1,244 @@
+{% extends 'layout.html' %}
+
+{% block styles %}
+<link href="{{ doc_root }}public/css/vendor/quill/quill.snow.css" rel="stylesheet" />
+{% endblock %}
+
+{% block content %}
+<div class="container notice-write-container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-12 col-sm-10 col-md-8">
+             <!-- 타이틀 영역 -->
+            <div class="board-view__title-zone d-flex justify-content-between mb-3">
+                <h2 class="fw-bold mb-0">{{ board_title }}</h2>
+            </div>
+
+            <!-- 글쓰기 영역 -->
+            <form method="POST" id="noticeWriteForm" enctype="multipart/form-data">
+                {% if errors.system is defined and errors.system %}
+                    <div class="mb-4">
+                        <div class="text-danger small fw-bold d-flex align-items-center justify-content-center p-2 mb-3 bg-danger bg-opacity-10 rounded">
+                            <i class="bi bi-exclamation-circle-fill me-2"></i>
+                            <span>{{ errors.system }}</span>
+                        </div>
+                    </div>
+                {% endif %}
+
+                <!-- 게시글 상단에 고정 -->
+                <div class="mb-4 bg-light p-3 rounded d-flex align-items-center justify-content-between">
+                    <span class="fw-bold text-secondary small"><i class="bi bi-gear-fill me-1"></i> 게시글 설정</span>
+                    <div class="form-check form-switch m-0">
+                        <input class="form-check-input" type="checkbox" role="switch" id="is_pinned" name="is_pinned" value="1" {{ (article.is_pinned is defined and article.is_pinned == 1) ? 'checked' : '' }}>
+                        <label class="form-check-label fw-bold text-dark small" for="is_pinned">이 게시글을 상단에 고정합니다.</label>
+                    </div>
+                </div>
+
+                <!-- 제목 영역 -->
+                <div class="mb-4">
+                    <label for="title" class="form-label fw-bold">제목</label>
+                    <input type="text" class="form-control {{ (errors.title is defined and errors.title) ? 'is-invalid' : '' }}" id="title" name="title" value="{{ article.title is defined ? article.title : '' }}" maxlength="100" required>
+                    {% if errors.title is defined and errors.title %}
+                        <div class="invalid-feedback fw-bold">
+                            <i class="bi bi-exclamation-circle me-1"></i> {{ errors.title }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- 본문 에디터 영역 -->
+                <div class="mb-4">
+                    <label class="form-label fw-bold">내용</label>
+                    <div class="editor-wrapper {{ (errors.content is defined and errors.content) ? 'border border-danger rounded' : '' }}">
+                        <div id="editor">
+                            {{ (article.content is defined) ? article.content|raw : '' }}
+                        </div>
+                    </div>
+                    <input type="hidden" name="content" id="contentInput">
+                    
+                    {% if errors.content is defined and errors.content %}
+                        <div class="text-danger small fw-bold mt-2">
+                            <i class="bi bi-exclamation-circle me-1"></i> {{ errors.content }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- 동적 첨부파일 영역 -->
+                <div class="mb-5">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <label class="form-label fw-bold m-0">첨부파일 <span class="text-muted small fw-normal">(최대 3개, 파일 당 10MB 제한)</span></label>
+                        <button type="button" class="btn btn-sm btn-outline-primary" id="btn-add-file">
+                            <i class="bi bi-plus-circle-fill me-1"></i> 파일 추가
+                        </button>
+                    </div>
+
+                    <div id="file-input-container">
+                        <div class="file-row d-flex align-items-center gap-2 mb-2">
+                            <input class="form-control form-control-sm" type="file" name="attached_files[]">
+                            <button type="button" class="btn btn-sm btn-outline-danger btn-remove-file">
+                                <i class="bi bi-dash-circle-fill"></i>
+                            </button>
+                        </div>
+                    </div>
+                    {% if errors.files is defined and errors.files %}
+                        <div class="text-danger small fw-bold mt-2">
+                            <i class="bi bi-exclamation-circle me-1"></i> {{ errors.files }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- 하단 버튼 -->
+                <div class="d-flex justify-content-center gap-2 mt-5">
+                    <a href="{{ doc_root }}board/{{ board_name }}" class="btn btn-outline-secondary px-4">취소하기</a>
+                    <button class="btn btn-primary px-4" type="submit" id="btnSubmit">작성하기</button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ doc_root }}public/js/vendor/quill/quill.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (typeof Quill === 'undefined') return;
+
+    // 1. Quill 에디터 초기화
+    const quill = new Quill('#editor', {
+        theme: 'snow',
+        placeholder: '',
+        modules: {
+            toolbar: [
+                [{ 'header': [1, 2, 3, false] }],
+                ['bold', 'italic', 'underline', 'strike'],
+                ['blockquote', 'code-block'],
+                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                ['clean']
+            ]
+        }
+    });
+
+    // 2. 동적 첨부파일 폼 제어
+    const container = document.getElementById('file-input-container');
+    const addBtn = document.getElementById('btn-add-file');
+    const maxFiles = 3;
+
+    function updateFileRows() {
+        const rows = container.querySelectorAll('.file-row');
+
+        if (rows.length >= maxFiles) {
+            addBtn.disabled = true;
+            addBtn.classList.replace('btn-outline-primary', 'btn-outline-secondary');
+        } else {
+            addBtn.disabled = false;
+            addBtn.classList.replace('btn-outline-secondary', 'btn-outline-primary');
+        }
+    }
+
+    // 파일 추가 버튼 클릭 시
+    addBtn.addEventListener('click', function() {
+        const currentRows = container.querySelectorAll('.file-row').length;
+        if (currentRows >= maxFiles) return;
+
+        const newRow = document.createElement('div');
+        newRow.className = 'file-row d-flex align-items-center gap-2 mb-2';
+        newRow.innerHTML = `
+            <input class="form-control form-control-sm" type="file" name="attached_files[]">
+            <button type="button" class="btn btn-sm btn-outline-danger btn-remove-file">
+                <i class="bi bi-dash-circle-fill"></i>
+            </button>
+        `;
+        
+        container.appendChild(newRow);
+        updateFileRows();
+    });
+
+    // 파일 삭제 버튼 클릭 시
+    container.addEventListener('click', function(e) {
+        const targetBtn = e.target.closest('.btn-remove-file');
+        if (!targetBtn) return;
+
+        const rows = container.querySelectorAll('.file-row');
+        const row = targetBtn.closest('.file-row');
+
+        // 파일 선택 박스가 2개 이상일 때는 전체 삭제
+        if (rows.length !== 1 && row) {
+            row.remove();
+        }
+        // 파일 선택 박스가 1개일 때는 첨부된 파일만 삭제
+        else {
+            const fileInput = row.querySelector('input[type="file"]');
+            if (fileInput) {
+                fileInput.value = '';
+            }
+        }
+
+        updateFileRows();
+    });
+
+    // 첨부할 파일 선택 시
+    container.addEventListener('change', function(e) {
+        if (e.target.tagName === 'INPUT' && e.target.type === 'file') {
+            const file = e.target.files[0];
+            const maxSize = 10 * 1024 * 1024;
+
+            if (file && file.size > maxSize) {
+                alert('파일 당 최대 용량은 10MB를 초과할 수 없습니다.');
+                e.target.value = '';
+            }
+        }
+    });
+
+    // 3. 작성하기 버튼 클릭 시
+    const form = document.getElementById('noticeWriteForm');
+    const titleInput = document.getElementById('title');
+    const contentInput = document.getElementById('contentInput');
+    
+    form.addEventListener('submit', function(e) {
+        const title = titleInput.value.trim();
+        const htmlContent = quill.getSemanticHTML();
+        const pureText = document.querySelector('.ql-editor').textContent.trim();
+        const cleanText = pureText.replace(/[\s\u00A0\u200B]+/g, '');
+        const realLength = cleanText.length;
+
+        // 1. 제목 필수 입력 값 검사
+        if (!title) {
+            e.preventDefault();
+            alert('제목을 입력해 주세요.');
+            titleInput.focus();
+            return;
+        }
+
+        // 2. 제목 글자 수 검사 (최대 100자)
+        if (title.length > 100) {
+            e.preventDefault();
+            alert('제목은 최대 100자까지 입력할 수 있습니다. (현재: ' + title.length + '자)');
+            titleInput.focus();
+            return;
+        }
+
+        // 3. 내용 필수 입력 값 검사
+        if (realLength === 0) {
+            e.preventDefault();
+            contentInput.value = '';
+            alert('내용을 입력해 주세요.');
+            quill.focus();
+            return;
+        }
+
+        // 4. 내용 글자 수 검사 (최대 5,000자)
+        if (realLength > 5000) { 
+            e.preventDefault();
+            contentInput.value = '';
+            alert('본문 내용은 5,000자를 초과할 수 없습니다. (현재: ' + realLength + '자)');
+            quill.focus();
+            return;
+        }
+
+        contentInput.value = htmlContent;
+        updateFileRows();
+    });
+});
+</script>
+{% endblock %}

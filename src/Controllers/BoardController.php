@@ -3,6 +3,8 @@ declare(strict_types = 1);
 
 namespace BoardgameCafe\Controllers;
 
+use BoardgameCafe\Validate\Validate;
+
 class BoardController {
     private $cms;
 
@@ -108,6 +110,143 @@ class BoardController {
             'article' => $article,
             'board_name' => $boardName,
             'board_title' => $boardTitles[$boardName] ?? '게시판',
+        ];
+    }
+
+    /**
+     * 기본형 게시글 쓰기
+     */
+    public function writeBasic(string $boardName, array $postData, array $fileData, int $userId): array
+    {
+        $title     = trim($postData['title'] ?? '');
+        $content   = trim($postData['content'] ?? '');
+        $is_pinned = isset($postData['is_pinned']) ? 1 : 0;
+        $errors    = [];
+
+        // 게시글 내용 글자 수 카운트 변수
+        $decodedForLength = html_entity_decode($content, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $pureTextForLength = strip_tags($decodedForLength);
+        $cleanContentForLength = preg_replace('/[\s\x{00a0}\x{200b}]+/u', '', $pureTextForLength);
+        // 순수 글자 수
+        $realTextLength = mb_strlen($cleanContentForLength, 'UTF-8');
+        // HTML 태그를 포함한 용량
+        $htmlByteLength = strlen($content);
+
+        // 1. 제목 필수 입력 값 검사
+        if (empty($title)) {
+            $errors['title'] = '제목을 입력해 주세요.';
+        }
+        // 2. 제목 글자 수 검사 (최대 100자)
+        if (empty($errors['title']) && !Validate::isText($title, 1, 100)) {
+            $errors['title'] = '제목은 최대 100자까지 입력할 수 있습니다.';
+        }
+        
+        if (empty($errors['content'])) {
+            // 3. 내용 필수 입력 값 검사
+            if ($realTextLength === 0 || empty($cleanContentForLength)) {
+                $errors['content'] = '내용을 입력해주세요.';
+            } 
+            // 4. 내용 글자 수 검사
+            elseif ($realTextLength > 5000) {
+                $errors['content'] = '본문 내용은 최대 5,000자까지 입력 가능합니다. (현재 ' . number_format($realTextLength) . '자)';
+            } 
+            // 5. 과도한 HTML 태그 서식 입력 방지
+            elseif ($htmlByteLength > 50000) {
+                $errors['content'] = '과도한 서식(색상, 굵기 등)이 포함되어 저장할 수 없습니다. 서식을 조금 줄여주세요.';
+            }
+        }
+
+        if (!empty($errors)) {
+            return [
+                'success' => false,
+                'errors'  => $errors,
+                'article' => [
+                    'title' => $title,
+                    'content' => $content,
+                    'is_pinned' => $is_pinned,
+                ]
+            ];
+        }
+
+        // 파일 업로드 처리 (최대 3개, 1개의 파일 당 10MB 제한)
+        $uploaded_files = [];
+        $max_file_count = 3;
+        $max_file_size  = 10 * 1024 * 1024; 
+
+        if (!empty($fileData['attached_files']['name'])) {
+            $upload_dir = APP_ROOT . '/public/uploads/attachments/';
+            
+            if (!is_dir($upload_dir)) {
+                mkdir($upload_dir, 0755, true);
+            }
+
+            foreach ($fileData['attached_files']['name'] as $key => $name) {
+                if (count($uploaded_files) >= $max_file_count) {
+                    break;
+                }
+
+                if ($fileData['attached_files']['error'][$key] === UPLOAD_ERR_OK) {
+                    $tmp_name = $fileData['attached_files']['tmp_name'][$key];
+                    $size     = $fileData['attached_files']['size'][$key];
+
+                    if ($size > $max_file_size) {
+                        $errors['files'] = '파일 당 최대 용량(10MB)을 초과했습니다.';
+                        break;
+                    }
+
+                    $ext      = pathinfo($name, PATHINFO_EXTENSION);
+                    $new_name = 'notice_' . uniqid('', true) . '.' . $ext; 
+                    $file_path = $upload_dir . $new_name;
+
+                    if (move_uploaded_file($tmp_name, $file_path)) {
+                        $uploaded_files[] = [
+                            'file_path' => 'public/uploads/attachments/' . $new_name,
+                            'org_name'  => $name
+                        ];
+                    }
+                }
+            }
+        }
+
+        if (!empty($errors)) {
+            return [
+                'success' => false,
+                'errors'  => $errors,
+                'article' => [
+                    'title' => $title,
+                    'content' => $content,
+                    'is_pinned' => $is_pinned,
+                ]
+            ];
+        }
+
+        // DB 서비스 호출
+        $board_service = $this->cms->getBoard();
+        $inserted_id = false;
+
+        if ($boardName === 'notice') {
+            $inserted_id = $board_service->insertNoticeArticle([
+                'user_id'   => $userId,
+                'title'     => $title,
+                'content'   => $content,
+                'is_pinned' => $is_pinned
+            ], $uploaded_files);
+        }
+
+        if ($inserted_id) {
+            return [
+                'success' => true,
+            ];
+        }
+
+        return [
+            'success' => false,
+            'errors'  => ['system' => '게시글 저장 중 오류가 발생했습니다.'],
+            'article' => [
+                'title' => $title,
+                'content' => $content,
+                'is_pinned' => $is_pinned,
+            ]
         ];
     }
 }

@@ -107,4 +107,50 @@ class Board
 
         return $article;
     }
+
+    /**
+     * 공지사항 게시글 쓰기
+     */
+    public function insertNoticeArticle(array $data, array $files = []): int|string|bool
+    {
+        $user_id = $data['user_id'];
+        $role_sql = "SELECT role FROM user WHERE id = :id;";
+        $role_stmt = $this->db->runSql($role_sql, ['id' => $user_id]);
+        $user = $role_stmt ? $role_stmt->fetch() : false;
+
+        // 유저가 없거나 권한이 관리자가 아니라면 false 반환
+        if (!$user || $user['role'] !== 'admin') {
+            return false;
+        }
+
+        $this->db->beginTransaction();
+
+        $sql = "INSERT INTO notice (user_id, title, content, is_pinned, created_at) 
+                VALUES (:user_id, :title, :content, :is_pinned, NOW());";
+
+        $this->db->runSql($sql, [
+            'user_id'   => $data['user_id'],
+            'title'     => $data['title'],
+            'content'   => $data['content'],
+            'is_pinned' => $data['is_pinned'] ?? 0,
+        ]);
+
+        $notice_id = $this->db->lastInsertId();
+
+        if (!empty($files) && $notice_id) {
+            $file_sql = "INSERT INTO notice_file (notice_id, file_path, org_name) 
+                         VALUES (:notice_id, :file_path, :org_name);";
+            
+            foreach ($files as $file) {
+                $this->db->runSql($file_sql, [
+                    'notice_id' => $notice_id,
+                    'file_path' => $file['file_path'],
+                    'org_name'  => $file['org_name'],
+                ]);
+            }
+        }
+
+        $this->db->commit();
+        return $notice_id;
+    }
 }

@@ -3,6 +3,8 @@ declare(strict_types = 1);
 
 use BoardgameCafe\Controllers\BoardController;
 
+$currentUserId = $_SESSION['id'] ?? null;
+
 if ($_SERVER['REQUEST_METHOD'] === 'GET' && !isset($articleId)) {
     // 단순 새로고침 시 검색어가 지워지는 것을 방지하기 위한 변수
     $referer = $_SERVER['HTTP_REFERER'] ?? '';
@@ -43,9 +45,44 @@ if (in_array($boardName, $allowed_boards)) {
     } 
     // 2. 게시글 작성
     elseif ($boardAction === 'write') {
-        $data = method_exists($boardController, 'write') ? $boardController->write() : [];
+        // 공지사항인데 관리자가 아닌 경우 접근 차단 (GET, POST 공통)
+        if ($boardName === 'notice' && ($_SESSION['role'] ?? '') !== 'admin') {
+            // 목록으로 리다이렉트
+            redirect("board/{$boardName}", [
+                'status' => 'access_denied'
+            ]);
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            if (!$currentUserId) {
+                header('Location: ' . DOC_ROOT . 'login/');
+                exit;
+            }
+
+            $result = $boardController->writeBasic($boardName, $_POST, $_FILES, (int)$currentUserId);
+            
+            if ($result['success']) {
+                redirect("board/{$boardName}");
+                exit;
+            } else {
+                $data['errors']  = $result['errors'];
+                $data['article'] = $result['article'];
+            }
+        } 
+        // 최초 글쓰기 페이지 진입 (GET)
+        else {
+            $data['errors']  = [];
+            $data['article'] = [
+                'title' => '',
+                'content' => '',
+                'is_pinned' => 0
+            ];
+        }
+
+        // 템플릿 렌더링
         echo $twig->render($boardName . '-write.html', $data);
-    } 
+        exit;
+    }
     // 3. 게시판 목록
     else {
         $data = $boardController->index($currentPage, $boardName);

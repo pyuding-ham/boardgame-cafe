@@ -1,10 +1,10 @@
 # 1. PHP 기본 기본 설정 (개발 환경용)
 php_value  default_charset     "utf-8"
 php_value  max_execution_time  30
-php_value  memory_limit        64M
+php_value  memory_limit        128M
 php_flag   file_uploads        on
-php_value  post_max_size       10M
-php_value  upload_max_filesize 10M
+php_value  post_max_size       20M
+php_value  upload_max_filesize 20M
 
 # 2. 에러 로깅 설정 (배포 시에는 display_errors를 off로 변경)
 php_value  error_reporting     -1
