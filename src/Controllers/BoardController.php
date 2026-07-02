@@ -51,9 +51,25 @@ class BoardController {
             $list = $board_service->getBoardgameList($per_page, $offset, $filters);
             $total_count = $board_service->getBoardgameTotalCount($filters);
         } else {
-            // 기본값은 공지사항 게시판
+             // 기본값은 공지사항 게시판
             $list = $board_service->getNoticeList($per_page, $offset, $filters);
-            $total_count = $board_service->getNoticeTotalCount($filters);
+            $total_count = $board_service->getNoticeTotalCount($filters); 
+            $start_num = $total_count - $offset;
+
+            // 글 번호 가공
+            foreach ($list as &$article) {
+                if ($article['is_pinned'] == 1) {
+                    // 상단 고정 글(공지)은 번호 자리를 비워둠
+                    $article['board_no'] = null; 
+                    // 번호가 뜨지 않도록 마이너스 처리
+                    $start_num--; 
+                } else {
+                    // 상단 고정 글이 아닌 글
+                    $article['board_no'] = $start_num;
+                    $start_num--; 
+                }
+            }
+            unset($article);
         }
 
         $total_pages = (int)ceil($total_count / $per_page);
