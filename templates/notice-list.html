@@ -55,12 +55,37 @@
     <!-- 페이지네이션 -->
     {% if total_pages > 1 %}
         <nav class="d-flex justify-content-center gap-1 mt-4 mb-4">
+
+            {# 1. 처음 화살표 #}
+            {% if current_page > 1 %}
+                <a class="page-num-link" href="{{ doc_root }}board/{{ board_name }}/page/1" title="처음 페이지">
+                    <i class="bi bi-chevron-double-left"></i>
+                </a>
+                {# 2. 이전 화살표 #}
+                <a class="page-num-link" href="{{ doc_root }}board/{{ board_name }}/page/{{ current_page - 1 }}" title="이전 페이지">
+                    <i class="bi bi-chevron-left"></i>
+                </a>
+            {% endif %}
+
+            {# 3. 1부터 마지막 페이지까지 번호 출력 #}
             {% for p in 1..total_pages %}
                 <a class="page-num-link {% if p == current_page %}active{% endif %}" 
                 href="{{ doc_root }}board/{{ board_name }}/page/{{ p }}">
                     {{ p }}
                 </a>
             {% endfor %}
+
+            {# 4. 다음 화살표  #}
+            {% if current_page < total_pages %}
+                <a class="page-num-link" href="{{ doc_root }}board/{{ board_name }}/page/{{ current_page + 1 }}" title="다음 페이지">
+                    <i class="bi bi-chevron-right"></i>
+                </a>
+                {# 5. 마지막 화살표 #}
+                <a class="page-num-link" href="{{ doc_root }}board/{{ board_name }}/page/{{ total_pages }}" title="마지막 페이지">
+                    <i class="bi bi-chevron-double-right"></i>
+                </a>
+            {% endif %}
+
         </nav>
     {% endif %}
 
