@@ -2,7 +2,7 @@
 
 {% block content %}
 {# 토스트 팝업 #}
-<div id="toast-container" class="toast-container"></div>
+<div id="toast-container" class="toast-container" role="status" aria-live="polite"></div>
 {# 백엔드에서 넘겨준 status 값이 있다면 자바스크립트로 토스트 실행 #}
 {% if status == 'update_success' %}
     <script>window.addEventListener('DOMContentLoaded', () => showToast('회원 정보가 성공적으로 변경되었습니다.'));</script>

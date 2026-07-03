@@ -2,7 +2,7 @@
 
 {% block content %}
 {# 토스트 팝업 #}
-<div id="toast-container" class="toast-container"></div>
+<div id="toast-container" class="toast-container" role="status" aria-live="polite"></div>
 {% if status == 'reset_success' %}
     <script>
         window.addEventListener('DOMContentLoaded', () => {
