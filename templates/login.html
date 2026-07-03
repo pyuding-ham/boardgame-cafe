@@ -1,10 +1,20 @@
 {% extends 'layout.html' %}
 
 {% block content %}
-{# 비밀번호 재설정 성공 상태 #}
+{# 토스트 팝업 #}
+<div id="toast-container" class="toast-container"></div>
 {% if status == 'reset_success' %}
-    비밀번호가 성공적으로 변경되었습니다.<br>
-    새로운 비밀번호로 로그인해 주세요.
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            showToast('비밀번호가 성공적으로 변경되었습니다.');
+        });
+    </script>
+{% elseif status == 'access_denied' %}
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            showToast('접근 권한이 없습니다. 로그인 페이지로 이동합니다.');
+        });
+    </script>
 {% endif %}
 
 {# 로그인 에러 메시지 #}
@@ -33,6 +43,23 @@
 
 {% block scripts %}
 <script>
+// 토스트 팝업
+function showToast(message) {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+
+    const toast = document.createElement('div');
+    toast.className = 'toast-message';
+    toast.innerText = message;
+
+    container.appendChild(toast);
+
+    // 애니메이션이 끝나는 2.8초 뒤에 메모리에서 안전하게 제거
+    setTimeout(() => {
+        toast.remove();
+    }, 2800);
+}
+
 document.getElementById('loginForm').addEventListener('submit', function(e) {
     const usernameInput = document.getElementById('username');
     const username = usernameInput.value.trim();

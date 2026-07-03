@@ -51,10 +51,11 @@ if (in_array($boardName, $allowed_boards)) {
     elseif ($boardAction === 'write') {
         // 공지사항인데 관리자가 아닌 경우 접근 차단 (GET, POST 공통)
         if ($boardName === 'notice' && ($_SESSION['role'] ?? '') !== 'admin') {
-            // 목록으로 리다이렉트
-            redirect("board/{$boardName}", [
+            // 로그인으로 리다이렉트
+            redirect("login/", [
                 'status' => 'access_denied'
             ]);
+            exit;
         }
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
