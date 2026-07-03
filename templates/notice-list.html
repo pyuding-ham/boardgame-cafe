@@ -1,6 +1,11 @@
 {% extends 'layout.html' %}
 
 {% block content %}
+{# 토스트 팝업 #}
+<div id="toast-container" class="toast-container"></div>
+{% if status == 'write_success' %}
+    <script>window.addEventListener('DOMContentLoaded', () => showToast('글 작성이 완료되었습니다.'));</script>
+{% endif %}
 <div class="container board-container my-5">
     <!-- 타이틀 영역 -->
     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -122,4 +127,25 @@
 
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // 토스트 팝업
+    function showToast(message) {
+        const container = document.getElementById('toast-container');
+        if (!container) return;
+    
+        const toast = document.createElement('div');
+        toast.className = 'toast-message';
+        toast.innerText = message;
+    
+        container.appendChild(toast);
+    
+        // 애니메이션이 끝나는 2.8초 뒤에 메모리에서 안전하게 제거
+        setTimeout(() => {
+            toast.remove();
+        }, 2800);
+    }
+</script>
 {% endblock %}

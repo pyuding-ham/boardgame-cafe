@@ -3,7 +3,11 @@ declare(strict_types = 1);
 
 use BoardgameCafe\Controllers\BoardController;
 
-$currentUserId = $_SESSION['id'] ?? null;
+// 글쓰기에서 보낸 상태 저장
+$status = $_SESSION['_flash_status'] ?? null;
+if ($status) {
+    unset($_SESSION['_flash_status']);
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET' && !isset($articleId)) {
     // 단순 새로고침 시 검색어가 지워지는 것을 방지하기 위한 변수
@@ -62,7 +66,9 @@ if (in_array($boardName, $allowed_boards)) {
             $result = $boardController->writeBasic($boardName, $_POST, $_FILES, (int)$currentUserId);
             
             if ($result['success']) {
-                redirect("board/{$boardName}");
+                redirect("board/{$boardName}", [
+                    'status' => 'write_success'
+                ]);
                 exit;
             } else {
                 $data['errors']  = $result['errors'];
@@ -86,6 +92,7 @@ if (in_array($boardName, $allowed_boards)) {
     // 3. 게시판 목록
     else {
         $data = $boardController->index($currentPage, $boardName);
+        $data['status'] = $status;
         
         // 템플릿 렌더링
         echo $twig->render($boardName . '-list.html', $data);
