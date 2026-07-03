@@ -55,8 +55,8 @@ class UserController
         // 3. 필수 입력 값 검사 및 유효성 검사 및 중복 검사
         if (empty($user['nickname'])) {
             $errors['nickname'] = '닉네임을 입력해 주세요.';
-        } elseif (!Validate::isText($user['nickname'], 2, 10)) {
-            $errors['nickname'] = '닉네임은 2~10자 사이여야 합니다.';
+        } elseif (!Validate::isText($user['nickname'], 2, 12)) {
+            $errors['nickname'] = '닉네임은 2~12자 사이여야 합니다.';
         } elseif ($isNicknameChanged && $this->cms->getUser()->isNicknameExists($user['nickname'], $currentUser['id'])) { 
             $errors['nickname'] = '이미 다른 회원이 사용 중인 닉네임입니다.';
         }

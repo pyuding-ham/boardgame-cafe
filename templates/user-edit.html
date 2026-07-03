@@ -62,7 +62,7 @@
                         </div>
                         <div class="form-text is-danger">{{ errors.nickname }}</div>
                     {% else %}
-                        <div class="form-text">닉네임은 2~10자 사이여야 합니다.</div>
+                        <div class="form-text">닉네임은 2~12자 사이여야 합니다.</div>
                     {% endif %}
                 </div>
                 <!-- 이메일 영역 -->
@@ -154,8 +154,8 @@ document.getElementById('btnCheckNickname').addEventListener('click', function(e
     }
 
     // 닉네임 유효성 검사
-    if (nickname.length < 2 || nickname.length > 10) {
-        alert('닉네임은 2~10자 사이여야 합니다.');
+    if (nickname.length < 2 || nickname.length > 12) {
+        alert('닉네임은 2~12자 사이여야 합니다.');
         nicknameInput.focus();
         return;
     }
@@ -253,8 +253,8 @@ document.getElementById('userEditForm').addEventListener('submit', function(e) {
         return;
     }
     
-    if (nickname.length < 2 || nickname.length > 10) {
-        alert('닉네임은 2~10자 사이여야 합니다.');
+    if (nickname.length < 2 || nickname.length > 12) {
+        alert('닉네임은 2~12자 사이여야 합니다.');
         nicknameInput.focus();
         return;
     }
