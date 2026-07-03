@@ -43,7 +43,7 @@
     {% endif %}
 
     <!-- 게시글 본문 영역 -->
-    <div class="board-view__content border p-4 rounded bg-white mb-4 fs-6">{{ article.content }}</div>
+    <div class="board-view__content border p-4 rounded bg-white mb-4 fs-6">{{ article.content|raw }}</div>
 
     <!-- 게시글 하단 버튼 구역 -->
     <div class="board-view__footer d-flex justify-content-between align-items-center pt-3 border-top">
