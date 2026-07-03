@@ -60,7 +60,10 @@ if (in_array($boardName, $allowed_boards)) {
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!$currentUserId) {
-                header('Location: ' . DOC_ROOT . 'login/');
+                // 로그인으로 리다이렉트
+                redirect("login/", [
+                    'status' => 'login_required'
+                ]);
                 exit;
             }
 
