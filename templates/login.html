@@ -15,6 +15,10 @@
             showToast('접근 권한이 없습니다. 로그인 페이지로 이동합니다.');
         });
     </script>
+{% elseif status == 'login_required' %}
+    <div class="alert alert-danger" role="alert">
+        장시간 미사용으로 자동 로그아웃되었습니다.
+    </div>
 {% endif %}
 
 {# 로그인 에러 메시지 #}

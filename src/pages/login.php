@@ -2,8 +2,15 @@
 $errors = [];
 $username = '';
 
-// 비밀번호 재설정에서 보낸 상태 저장
-$status = $_SESSION['_flash_status'] ?? null;
+// 비밀번호 재설정, index(장시간 미사용 로그아웃)에서 보낸 상태 저장
+$status = $_POST['status'] ?? $_SESSION['_flash_status'] ?? null;
+
+// 장시간 미사용 시 로그아웃
+if ($status === 'login_required') {
+    $cms->getSession()->delete();
+    $data['is_logged_in'] = false;
+}
+
 if ($status) {
     unset($_SESSION['_flash_status']);
 }
@@ -11,7 +18,7 @@ if ($status) {
 // 메시지는 새로고침 시 사라짐
 unset($_SESSION['_flash_success'], $_SESSION['_flash_warning']);
 
-if($_SERVER['REQUEST_METHOD'] === 'POST') {
+if($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['status'])) {
     $username = trim($_POST['username'] ?? '');
     $password = $_POST['password'] ?? '';
 
