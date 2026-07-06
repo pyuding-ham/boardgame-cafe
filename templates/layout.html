@@ -40,17 +40,19 @@
             </div>
             <nav>
                 <ul id="menu">
-                    <li><a href="{{ doc_root }}boardgame">게임소개</a></li>
-                    <li><a href="{{ doc_root }}location">지점소개</a></li>
-                    <li><a href="{{ doc_root }}board/notice">공지사항</a></li>
-                    <li><a href="{{ doc_root }}board/review">이용후기</a></li>
-                    <li><a href="{{ doc_root }}contact-us">메일문의</a></li>
-                    {% if is_logged_in %}
-                        <li><a href="{{ doc_root }}reservation">예약하기</a></li>
-                    {% endif %}
-                    {% if table_no is defined and table_no is not empty %}
-                        <a href="{{ doc_root }}order.php?table={{ table_no }}">주문하기</a>
-                    {% endif %}
+                    {% for menu in menus %}
+                        {% if menu.page_code == 'reservation' %}
+                            {% if is_logged_in %}
+                                <li><a href="{{ doc_root }}reservation">예약하기</a></li>
+                            {% endif %}
+                        {% elseif menu.page_code == 'order' %}
+                            {% if table_no is defined and table_no is not empty %}
+                                <a href="{{ doc_root }}order.php?table={{ table_no }}">주문하기</a>
+                            {% endif %}
+                        {% else %}
+                            <li><a href="{{ doc_root }}{{ menu.page_url }}">{{ menu.menu_title }}</a></li>
+                        {% endif %}
+                    {% endfor %}
                 </ul>
             </nav>
         </div>

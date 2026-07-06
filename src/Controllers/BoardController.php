@@ -74,12 +74,6 @@ class BoardController {
 
         $total_pages = (int)ceil($total_count / $per_page);
 
-        // 한글 타이틀 매핑
-        $boardTitles = [
-            'notice' => '공지사항',
-            'boardgame' => '보드게임 소개',
-        ];
-
         return [
             'list' => $list,
             'current_page' => $page,
@@ -88,7 +82,6 @@ class BoardController {
             'keyword' => $keyword,
             'search_type' => $search_type,
             'board_name' => $boardName,
-            'board_title' => $boardTitles[$boardName] ?? '게시판',
             'session' => $_SESSION,
         ];
     }
@@ -116,16 +109,9 @@ class BoardController {
             return false;
         }
 
-        // 한글 타이틀 매핑
-        $boardTitles = [
-            'notice' => '공지사항',
-            'boardgame' => '보드게임 소개',
-        ];
-
         return [
             'article' => $article,
             'board_name' => $boardName,
-            'board_title' => $boardTitles[$boardName] ?? '게시판',
         ];
     }
 

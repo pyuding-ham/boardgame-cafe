@@ -8,6 +8,7 @@ class CMS
     protected $session = null;
     protected $token = null;
     protected $board = null;
+    protected $siteMenu = null;
 
     public function __construct($dsn, $username, $password)
     {
@@ -32,7 +33,6 @@ class CMS
         return $this->session;
     }
 
-    
     public function getToken() {
         if ($this->token === null) {
             $this->token = new Token($this->db);
@@ -45,5 +45,12 @@ class CMS
             $this->board = new Board($this->db);
         }
         return $this->board;
+    }
+
+    public function getSiteMenu() {
+        if ($this->siteMenu === null) {
+            $this->siteMenu = new siteMenu($this->db);
+        }
+        return $this->siteMenu;
     }
 }

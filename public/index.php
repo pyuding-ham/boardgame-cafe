@@ -67,6 +67,9 @@ if (!file_exists($php_page)) {
     $php_page = APP_ROOT . '/src/pages/page-not-found.php';
 }
 
+// 상단 메뉴바 전역 변수 설정
+$twig->addGlobal('menus', (new \BoardgameCafe\Controllers\SiteMenuController($cms))->getMenus());
+
 include $php_page;
 
 // 장시간 미사용 시 자동 로그아웃
