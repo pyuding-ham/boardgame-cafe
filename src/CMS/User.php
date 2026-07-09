@@ -5,11 +5,88 @@ use Exception;
 
 class User
 {
+    const LOG_STATUS_SUCCESS = 'success';
+    const LOG_STATUS_FAIL    = 'fail';
+
     protected $db;
 
     public function __construct(Database $db)
     {
         $this->db = $db;
+    }
+
+    /**
+     * 로그인 로그 기록
+     */
+    public function writeLoginLog(?int $user_id, string $status, ?string $failReason = null): void {
+        $ipAddress = $_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
+        $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? 'unknown';
+
+        $dbUserId = ($user_id > 0) ? $user_id : null;
+
+        $sql = "INSERT INTO user_login_log (user_id, ip_address, user_agent, status, fail_reason) 
+                VALUES (:user_id, :ip_address, :user_agent, :status, :fail_reason)";
+        
+        $this->db->runSql($sql, [
+            'user_id'     => $dbUserId,
+            'ip_address'  => $ipAddress,
+            'user_agent'  => substr($userAgent, 0, 500),
+            'status'      => $status,
+            'fail_reason' => $failReason,
+        ]);
+    }
+
+    /**
+     * 최근 10분간 로그인 실패 횟수 체크
+     */
+    public function checkLoginAttempts(int $user_id): int {
+        $sql = "SELECT COUNT(*) FROM user_login_log 
+                WHERE user_id = :user_id
+                  AND status = 'fail'
+                  AND login_at > NOW() - INTERVAL 10 MINUTE";
+        
+        $stmt = $this->db->runSql($sql, [
+            'user_id' => $user_id,
+        ]);
+        return (int) $stmt->fetchColumn();
+    }
+
+    /**
+     * 회원정보 변경 로그 기록
+     */
+    public function writeProfileChangeLog(int $user_id, ?string $change_type, ?string $old_value, ?string $new_value): void {
+        $ipAddress = $_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
+        $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? 'unknown';
+
+        $sql = "INSERT INTO user_profile_change_log (user_id, change_type, old_value, new_value, ip_address, user_agent) 
+                VALUES (:user_id, :change_type, :old_value, :new_value, :ip_address, :user_agent)";
+        
+        $this->db->runSql($sql, [
+            'user_id'     => $user_id,
+            'change_type' => $change_type,
+            'old_value'   => $old_value,
+            'new_value'   => $new_value,
+            'ip_address'  => $ipAddress,
+            'user_agent'  => substr($userAgent, 0, 500)
+        ]);
+    }
+
+    /**
+     * 비밀번호 변경 로그 기록
+     */
+    public function writePasswordChangeLog(int $user_id, string $changeMethod): void {
+        $ipAddress = $_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
+        $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? 'unknown';
+
+        $sql = "INSERT INTO user_password_change_log (user_id, change_method, ip_address, user_agent) 
+                VALUES (:user_id, :change_method, :ip_address, :user_agent)";
+        
+        $this->db->runSql($sql, [
+            'user_id'    => $user_id,
+            'change_method' => $changeMethod,
+            'ip_address' => $ipAddress,
+            'user_agent' => substr($userAgent, 0, 500),
+        ]);
     }
 
     /**
@@ -44,6 +121,20 @@ class User
 
         return false;
     }
+
+    /**
+     * 회원 아이디(username)로 회원 번호(id) 조회
+     */
+    public function getIdByUsername($username): int {
+        $sql = "SELECT id
+                  FROM user
+                WHERE username = :username";
+        
+        $stmt = $this->db->runSql($sql, ['username' => $username]);
+
+        return (int) $stmt->fetchColumn();
+    }
+
 
     /**
      * 이메일로 회원 번호 조회

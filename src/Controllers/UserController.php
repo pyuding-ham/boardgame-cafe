@@ -123,6 +123,38 @@ class UserController
             // DB 회원정보 업데이트
             $this->cms->getUser()->update($user);
 
+            // 회원정보 변경 로그 기록
+
+            // ① 새로운 프로필 이미지가 업로드된 경우
+            if ($isImageUploaded) {
+                $this->cms->getUser()->writeProfileChangeLog(
+                    (int)$currentUser['id'], 
+                    'profile_image', 
+                    $currentUser['profile_image'], 
+                    $user['profile_image'],
+                );
+            }
+
+            // ② 닉네임이 변경된 경우
+            if ($isNicknameChanged) {
+                $this->cms->getUser()->writeProfileChangeLog(
+                    (int)$currentUser['id'], 
+                    'nickname', 
+                    $currentUser['nickname'], 
+                    $user['nickname'],
+                );
+            }
+
+            // ③ 이메일이 변경된 경우
+            if ($isEmailChanged) {
+                $this->cms->getUser()->writeProfileChangeLog(
+                    (int)$currentUser['id'], 
+                    'email', 
+                    $currentUser['email'], 
+                    $user['email'],
+                );
+            }
+
             // 세션 정보 갱신
             $this->cms->getSession()->update($user); 
 
@@ -165,6 +197,14 @@ class UserController
             $errors['system'] = '데이터베이스 오류가 발생했습니다.';
             return ['success' => false, 'errors' => $errors];
         }
+
+        // 회원정보 변경 로그 기록
+        $this->cms->getUser()->writeProfileChangeLog(
+            (int)$currentUser['id'], 
+            'profile_image', 
+            $currentImage, 
+            null,
+        );
 
         return ['success' => true];
     }
