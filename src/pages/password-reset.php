@@ -79,6 +79,8 @@ if (empty($errors['invalid_token']) && $_SERVER['REQUEST_METHOD'] === 'POST') {
             $changeMethod = $has_token ? 'email' : 'mypage';
             $cms->getUser()->writePasswordChangeLog($id, $changeMethod);
 
+            $user = $cms->getUser()->get($id);
+
             if ($user && !empty($user['email'])) {
                 $subject = '[보드트립] 비밀번호가 성공적으로 변경되었습니다.';
                 $body = '안녕하세요. 보드게임카페 보드트립입니다.<br><br>' .
