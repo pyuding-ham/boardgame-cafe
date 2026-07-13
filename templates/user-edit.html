@@ -28,13 +28,13 @@
                     <div class="position-relative d-inline-block mb-3">
                         {% if user.profile_image %}
                             <!-- 업로드된 이미지가 있을 때 -->
-                            <img src="{{ doc_root }}/public/uploads/profiles/{{ user.profile_image }}" alt="{{ user.nickname}}님의 프로필 이미지" id="profile-img" class="profile rounded-circle">
+                            <img src="/uploads/profiles/{{ user.profile_image }}" alt="{{ user.nickname}}님의 프로필 이미지" id="profile-img" class="profile rounded-circle">
                             <button type="button" id="btn-mock-delete" class="btn-profile-delete" title="프로필 이미지 삭제">
                                 <i class="bi bi-x-circle-fill"></i>
                             </button>
                         {% else %}
                             <!-- 이미지가 없을 때 기본 임시 이미지 -->
-                            <img src="{{ doc_root }}public/uploads/profiles/user-blank.png" alt="기본 프로필 이미지" id="profile-img" class="profile rounded-circle">
+                            <img src="/uploads/profiles/user-blank.png" alt="기본 프로필 이미지" id="profile-img" class="profile rounded-circle">
                         {% endif %}
                         <input type="hidden" id="delete-image-flag" name="delete_image_flag" value="0">
                     </div>
@@ -100,7 +100,7 @@ document.getElementById('profile-file-input').addEventListener('change', functio
 // 이미지 삭제 버튼 클릭 시 
 document.getElementById('btn-mock-delete')?.addEventListener('click', function() {
     // 1. 이미지 태그를 기본 이미지 주소로 강제 변경
-    document.getElementById('profile-img').src = '{{ doc_root }}public/uploads/profiles/user-blank.png';
+    document.getElementById('profile-img').src = '/uploads/profiles/user-blank.png';
     
     // 2. 백엔드에 보낼 삭제 플래그를 1로 변경
     document.getElementById('delete-image-flag').value = '1';

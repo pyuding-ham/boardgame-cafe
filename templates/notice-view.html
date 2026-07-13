@@ -33,7 +33,7 @@
             <div class="d-flex flex-column gap-1">
                 {% for file in article.files %}
                     <div class="small">
-                        <a href="{{ doc_root }}{{ file.file_path }}" class="text-decoration-none text-secondary link-primary" download="{{ file.org_name }}">
+                        <a href="/uploads/attachments/{{ file.file_path|split('/')|last }}" class="text-decoration-none text-secondary link-primary" download="{{ file.org_name }}">
                             <i class="bi bi-file-earmark-arrow-down text-muted me-1"></i> {{ file.org_name }}
                         </a>
                     </div>

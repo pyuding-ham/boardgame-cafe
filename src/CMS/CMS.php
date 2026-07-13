@@ -21,7 +21,7 @@ class CMS
 
     public function getUser() {
         if ($this->user === null) {
-            $this->user = new user($this->db);
+            $this->user = new User($this->db);
         }
         return $this->user;
     }
@@ -49,7 +49,7 @@ class CMS
 
     public function getSiteMenu() {
         if ($this->siteMenu === null) {
-            $this->siteMenu = new siteMenu($this->db);
+            $this->siteMenu = new SiteMenu($this->db);
         }
         return $this->siteMenu;
     }

@@ -14,9 +14,9 @@
             <div class="d-flex align-items-start">
                 <div class="flex-shrink-0 profile-img">
                     {% if user.profile_image %}
-                        <img src="{{ doc_root }}public/uploads/profiles/{{ user.profile_image }}" alt="{{ user.nickname }}님의 프로필 이미지" class="rounded-circle">
+                        <img src="/uploads/profiles/{{ user.profile_image }}" alt="{{ user.nickname }}님의 프로필 이미지" class="rounded-circle">
                     {% else %}
-                        <img src="{{ doc_root }}public/uploads/profiles/user-blank.png" alt="기본 프로필 이미지" class="rounded-circle">
+                        <img src="/uploads/profiles/user-blank.png" alt="기본 프로필 이미지" class="rounded-circle">
                     {% endif %}
                 </div>
                 <div class="flex-grow-1 ms-4 profile-details">
