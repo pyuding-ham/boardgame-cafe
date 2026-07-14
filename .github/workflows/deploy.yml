@@ -17,5 +17,5 @@ jobs:
         username: ${{ secrets.LIGHTSAIL_USERNAME }}
         key: ${{ secrets.LIGHTSAIL_SSH_KEY }}
         script: |
-          cd ~/app
+          cd /var/www/html
           git pull origin main
