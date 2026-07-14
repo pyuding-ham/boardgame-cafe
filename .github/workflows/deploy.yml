@@ -19,3 +19,4 @@ jobs:
         script: |
           cd /var/www/html
           git pull origin main
+          composer install --no-interaction --prefer-dist --optimize-autoloader
