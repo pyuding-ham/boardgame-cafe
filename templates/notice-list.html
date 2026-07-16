@@ -119,7 +119,7 @@
 
         <!-- 2. 글쓰기 버튼 -->
         <!-- 관리자 권한만 글쓰기 버튼 노출 -->
-        {% if session.role == 'admin' %}
+        {% if session.role == 'ADMIN' %}
             <a href="{{ doc_root }}board/{{ board_name }}/write" class="btn btn-primary btn-sm rounded-1 px-3 text-nowrap position-absolute end-0">
                 <i class="bi bi-pencil"></i> 글쓰기
             </a>

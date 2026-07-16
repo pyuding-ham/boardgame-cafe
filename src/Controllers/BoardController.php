@@ -47,13 +47,10 @@ class BoardController {
         $board_service = $this->cms->getBoard();
         
         // 4. 게시판 이름에 따라 다른 서비스 메서드 호출
-        if ($boardName === 'boardgame') {
-            $list = $board_service->getBoardgameList($per_page, $offset, $filters);
-            $total_count = $board_service->getBoardgameTotalCount($filters);
-        } else {
-             // 기본값은 공지사항 게시판
-            $list = $board_service->getNoticeList($per_page, $offset, $filters);
-            $total_count = $board_service->getNoticeTotalCount($filters); 
+        // 공지사항
+        if ($boardName === 'notice') {
+            $list = $board_service->getBoardList('notice', $per_page, $offset, $filters);
+            $total_count = $board_service->getBoardTotalCount('notice', $filters);
             $start_num = $total_count - $offset;
 
             // 글 번호 가공
@@ -68,6 +65,19 @@ class BoardController {
                     $article['board_no'] = $start_num;
                     $start_num--; 
                 }
+            }
+            unset($article);
+        }
+        // 기본 게시판
+        else {
+            $list = $board_service->getBoardList($boardName, $per_page, $offset, $filters);
+            $total_count = $board_service->getBoardTotalCount($boardName, $filters);
+            $start_num = $total_count - $offset;
+
+            // 글 번호 가공
+            foreach ($list as &$article) {
+                $article['board_no'] = $start_num;
+                $start_num--;
             }
             unset($article);
         }
@@ -97,14 +107,16 @@ class BoardController {
         $board_service = $this->cms->getBoard();
 
         // 게시판 이름에 따라 다른 상세 보기 데이터 호출
+        // 게임소개
         if ($boardName === 'boardgame') {
-            $article = $board_service->getBoardgameArticleBySlug((string)$identifier);
-        } else {
-            // 기본값은 공지사항 게시판
-            $article = $board_service->getNoticeArticle((int)$identifier);
+            $article = $board_service->getBoardgameArticleBySlug('boardgame', (string)$identifier);
+        }
+        // 기본 게시판 및 공지사항
+        else {
+            $article = $board_service->getBoardArticle($boardName, (int)$identifier);
         }
 
-        // 게시글이 존재하지 않으면 false 반환
+        // 게시글이 존재하지 않거나 삭제된 경우 false 반환
         if (!$article) {
             return false;
         }
@@ -118,7 +130,7 @@ class BoardController {
     /**
      * 기본형 게시글 쓰기
      */
-    public function writeBasic(string $boardName, array $postData, array $fileData, int $userId): array
+    public function write(string $boardName, array $postData, array $fileData, int $userId): array
     {
         $title     = trim($postData['title'] ?? '');
         $content   = trim($postData['content'] ?? '');
@@ -223,32 +235,64 @@ class BoardController {
         }
 
         // DB 서비스 호출
+        $user_service = $this->cms->getUser();
         $board_service = $this->cms->getBoard();
         $inserted_id = false;
 
+        // 닉네임 조회
+        $writerNickname = $user_service->getNicknameById((int)$userId);
+
+        // 탈퇴한 회원이거나 비정상적인 유저 ID인 경우 차단
+        if (!$writerNickname) {
+            return [
+                'success' => false,
+                'errors'  => ['system' => '존재하지 않는 사용자입니다.'],
+            ];
+        }
+
+        // 공지사항
         if ($boardName === 'notice') {
-            $inserted_id = $board_service->insertNoticeArticle([
-                'user_id'   => $userId,
-                'title'     => $title,
-                'content'   => $content,
-                'is_pinned' => $is_pinned
-            ], $uploaded_files);
+            $inserted_id = $board_service->insertBoardArticle(
+                'notice',
+                [
+                    'user_id'   => $userId,
+                    'writer_nickname' => $writerNickname,
+                    'title'     => $title,
+                    'content'   => $content,
+                    'is_pinned' => $is_pinned
+                ],
+                $uploaded_files
+            );
+        }
+        // 기본 게시판
+        else {
+            $inserted_id = $board_service->insertBoardArticle(
+                $boardName, 
+                [
+                    'user_id'         => $userId,
+                    'writer_nickname' => $writerNickname,
+                    'title'           => $title,
+                    'content'         => $content,
+                    'thumbnail'       => $thumbnail ?? null,
+                ], 
+                $uploaded_files
+            );
         }
 
         if ($inserted_id) {
             return [
                 'success' => true,
             ];
+        } else {
+            return [
+                'success' => false,
+                'errors'  => ['system' => '게시글 저장 중 오류가 발생했습니다.'],
+                'article' => [
+                    'title' => $title,
+                    'content' => $content,
+                    'is_pinned' => $is_pinned,
+                ]
+            ];
         }
-
-        return [
-            'success' => false,
-            'errors'  => ['system' => '게시글 저장 중 오류가 발생했습니다.'],
-            'article' => [
-                'title' => $title,
-                'content' => $content,
-                'is_pinned' => $is_pinned,
-            ]
-        ];
     }
 }

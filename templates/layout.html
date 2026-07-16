@@ -25,7 +25,7 @@
                 {% else %}
                     <!-- 로그인 했을 때 -->
                     <a href="{{ doc_root }}mypage">마이페이지</a>
-                    {% if session.role == 'admin' %}
+                    {% if session.role == 'ADMIN' %}
                         <a href="{{ doc_root }}admin">관리자</a>
                     {% endif %}
                     <a href="{{ doc_root }}logout">로그아웃</a>
@@ -47,7 +47,7 @@
                             {% endif %}
                         {% elseif menu.page_code == 'order' %}
                             {% if table_no is defined and table_no is not empty %}
-                                <a href="{{ doc_root }}order.php?table={{ table_no }}">주문하기</a>
+                                <li></li><a href="{{ doc_root }}order.php?table={{ table_no }}">주문하기</a></li>
                             {% endif %}
                         {% else %}
                             <li><a href="{{ doc_root }}{{ menu.page_url }}">{{ menu.menu_title }}</a></li>

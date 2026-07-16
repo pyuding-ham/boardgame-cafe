@@ -58,7 +58,7 @@ if (in_array($boardName, $allowed_boards)) {
     // 2. 게시글 작성
     elseif ($boardAction === 'write') {
         // 공지사항인데 관리자가 아닌 경우 접근 차단 (GET, POST 공통)
-        if ($boardName === 'notice' && ($_SESSION['role'] ?? '') !== 'admin') {
+        if ($boardName === 'notice' && ($_SESSION['role'] ?? '') !== 'ADMIN') {
             // 로그인으로 리다이렉트
             redirect("login/", [
                 'status' => 'access_denied'
@@ -75,7 +75,7 @@ if (in_array($boardName, $allowed_boards)) {
                 exit;
             }
 
-            $result = $boardController->writeBasic($boardName, $_POST, $_FILES, (int)$currentUserId);
+            $result = $boardController->write($boardName, $_POST, $_FILES, (int)$currentUserId);
             
             if ($result['success']) {
                 redirect("board/{$boardName}", [
