@@ -1,8 +1,6 @@
 <?php
 namespace BoardgameCafe\CMS;
 
-use Exception;
-
 class User
 {
     const LOG_STATUS_SUCCESS = 'success';
@@ -248,11 +246,7 @@ class User
             'email'    => $email,
         ];
 
-        $result = $this->db->runSql($sql, $arguments);
-
-        if ($result === false) {
-            throw new Exception('회원가입 처리 중 데이터베이스 오류가 발생');
-        }
+        $this->db->runSql($sql, $arguments);
 
         return $randomNickname;
     }
@@ -294,40 +288,20 @@ class User
      */
     public function update(array $user): bool
     {
-        // 닉네임 중복 검사
-        if ($this->isNicknameExists($user['nickname'], $user['id'])) {
-            throw new \Exception("이미 사용 중인 닉네임입니다.");
-        }
+        $sql = "UPDATE user
+                SET nickname = :nickname,
+                    email = :email,
+                    profile_image = :profile_image
+                WHERE id = :id;";
 
-        // 이메일 중복 검사
-        if ($this->isEmailExists($user['email'], $user['id'])) {
-            throw new \Exception("이미 사용 중인 이메일입니다.");
-        }
+        $this->db->runSql($sql, [
+            'nickname' => $user['nickname'],
+            'email' => $user['email'],
+            'profile_image' => $user['profile_image'] ?? null,
+            'id' => $user['id'],
+        ]);
 
-        try {
-            $sql = "UPDATE user
-                    SET nickname = :nickname,
-                        email = :email,
-                        profile_image = :profile_image
-                    WHERE id = :id;";
-
-            $this->db->runSql($sql, [
-                'nickname' => $user['nickname'],
-                'email' => $user['email'],
-                'profile_image' => $user['profile_image'] ?? null,
-                'id' => $user['id'],
-            ]);
-
-            return true;
-
-        } catch (\PDOException $e) {
-            error_log("[DB 에러] 회원 ID: " . $user['id'] . ' / 에러 내용: ' . $e->getMessage());
-            throw new \Exception("데이터베이스 처리 중 오류가 발생했습니다.");
-
-        } catch (\Exception $e) {
-            error_log("[시스템 에러] " . $e->getMessage());
-            throw new \Exception("시스템 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
-        }
+        return true;
     }
 
     public function passwordUpdate(int $id, string $password): bool
@@ -338,23 +312,16 @@ class User
                 SET password = :password
                 WHERE id = :id;";
 
-        try {
-            $stmt = $this->db->runSql($sql, [
-                'id' => $id,
-                'password' => $hash,
-            ]);
+        $stmt = $this->db->runSql($sql, [
+            'id' => $id,
+            'password' => $hash,
+        ]);
 
-            if ($stmt && $stmt->rowCount() > 0) {
-                return true;
-            }
-            
-            return false;
-
-        } catch (\Exception $e) {
-            error_log('[비밀번호 변경 실패] 회원 ID: ' . $id . ' / 에러 내용: ' . $e->getMessage());
-            return false;
+        if ($stmt && $stmt->rowCount() > 0) {
+            return true;
         }
-       
+
+        return false;
     }
 
     // 회원 아이디 중복 검사

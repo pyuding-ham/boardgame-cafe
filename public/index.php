@@ -64,7 +64,14 @@ if ($parts[0] != 'admin') {
 $php_page = APP_ROOT . '/src/pages/' . $page . '.php';
 
 if (!file_exists($php_page)) {
-    $php_page = APP_ROOT . '/src/pages/page-not-found.php';
+    http_response_code(404);
+
+    try {
+        echo $twig->render('errors/404.html');
+    } catch (\Throwable $e) {
+        echo "<h1>404 - 페이지를 찾을 수 없습니다.</h1>";
+    }
+    exit;
 }
 
 // 상단 메뉴바 전역 변수 설정

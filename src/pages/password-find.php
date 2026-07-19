@@ -28,12 +28,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                        '<a href="' . $link . '" target="_blank">' . $link . '</a><br><br>' .
                        '본인이 요청하지 않은 경우 이 메일을 무시해 주세요.';
             
-            try {
-                $mail = new \BoardgameCafe\Email\Email($email_config);
-                $mail->sendEmail($email, $subject, $body, $email_config['admin_email']);
+            $mail = new \BoardgameCafe\Email\Email($email_config);
+            
+            if ($mail->sendEmail($email, $subject, $body, $email_config['admin_email'])) {
                 $sent = true;
-            } catch (\Exception $e) {
-                error_log('[메일 발송 실패] 대상: ' . $email . ' / 에러 내용: ' . $e->getMessage());
+            } else {
                 $error = '메일 발송 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.';
             }
         } else {

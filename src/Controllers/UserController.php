@@ -88,43 +88,48 @@ class UserController
         }
 
         if ($isImageUploaded) {
-            try {
-                $manager = new ImageManager(new Driver());
-                $image = $manager->read($fileData['profile_file_input']['tmp_name']);
-                // 300x300 정사각형 크롭
-                $image->cover(300, 300);
+            $manager = new ImageManager(new Driver());
+            $image = $manager->read($fileData['profile_file_input']['tmp_name']);
+            // 300x300 정사각형 크롭
+            $image->cover(300, 300);
 
-                // 업로드 경로
-                $uploadDir = APP_ROOT . '/public/uploads/profiles/';
+            // 업로드 경로
+            $uploadDir = APP_ROOT . '/public/uploads/profiles/';
 
-                // 파일명 생성
-                $newFileName = 'profile_' . $currentUser['id'] . '_' . time() . '.webp';
+            // 파일명 생성
+            $newFileName = 'profile_' . $currentUser['id'] . '_' . time() . '.webp';
 
-                // 최종 저장
-                $image->toWebp(80)->save($uploadDir . $newFileName);
+            // 최종 저장
+            $image->toWebp(80)->save($uploadDir . $newFileName);
 
-                // 기존 이미지가 임시 기본 이미지가 아닐 때만 서버에서 삭제
-                $oldImage = $currentUser['profile_image'] ?? '';
-                if (!empty($oldImage) && $oldImage !== 'user-blank.png' && file_exists($uploadDir . $oldImage)) {
-                    unlink($uploadDir . $oldImage);
-                }
-
-                // 새로운 파일명을 유저 데이터에 반영
-                $user['profile_image'] = $newFileName;
-
-            } catch (Exception $e) {
-                $errors['system'] = '이미지 처리 중 오류 발생: ' . $e->getMessage();
-                return ['success' => false, 'errors' => $errors, 'user' => $user];
+            // 기존 이미지가 임시 기본 이미지가 아닐 때만 서버에서 삭제
+            $oldImage = $currentUser['profile_image'] ?? '';
+            if (!empty($oldImage) && $oldImage !== 'user-blank.png' && file_exists($uploadDir . $oldImage)) {
+                unlink($uploadDir . $oldImage);
             }
+
+            // 새로운 파일명을 유저 데이터에 반영
+            $user['profile_image'] = $newFileName;
         }
 
         // 5. DB 저장 단계
-        try {
+        
+        // 닉네임 중복 검사
+        if ($isNicknameChanged && $this->cms->getUser()->isNicknameExists($user['nickname'], $currentUser['id'])) {
+            $errors['nickname'] = '이미 사용 중인 닉네임입니다.';
+        }
+
+        // 이메일 중복 검사
+        if ($isEmailChanged && $this->cms->getUser()->isEmailExists($user['email'], $currentUser['id'])) {
+            $errors['email'] = '이미 사용 중인 이메일입니다.';
+        }
+
+        if (empty($errors)) {
             // DB 회원정보 업데이트
             $this->cms->getUser()->update($user);
-
+    
             // 회원정보 변경 로그 기록
-
+    
             // ① 새로운 프로필 이미지가 업로드된 경우
             if ($isImageUploaded) {
                 $this->cms->getUser()->writeProfileChangeLog(
@@ -134,7 +139,7 @@ class UserController
                     $user['profile_image'],
                 );
             }
-
+    
             // ② 닉네임이 변경된 경우
             if ($isNicknameChanged) {
                 $this->cms->getUser()->writeProfileChangeLog(
@@ -144,7 +149,7 @@ class UserController
                     $user['nickname'],
                 );
             }
-
+    
             // ③ 이메일이 변경된 경우
             if ($isEmailChanged) {
                 $this->cms->getUser()->writeProfileChangeLog(
@@ -154,23 +159,15 @@ class UserController
                     $user['email'],
                 );
             }
-
+    
             // 세션 정보 갱신
             $this->cms->getSession()->update($user); 
-
+    
             // 성공 응답 리턴
             return ['success' => true, 'user' => $user];
-
-        } catch (Exception $e) {
-            if (str_contains($e->getMessage(), '닉네임')) {
-                $errors['nickname'] = $e->getMessage();
-            } elseif (str_contains($e->getMessage(), '이메일')) {
-                $errors['email'] = $e->getMessage();
-            } else {
-                $errors['system'] = $e->getMessage();
-            }
-            return ['success' => false, 'errors' => $errors, 'user' => $user];
         }
+
+        return ['success' => false, 'errors' => $errors, 'user' => $user];
     }
 
     /**

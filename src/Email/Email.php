@@ -1,7 +1,7 @@
 <?php
 namespace BoardgameCafe\Email;
 
-use PHPMailer\PHPMailer\Exception;
+use PHPMailer\PHPMailer\Exception as PHPMailerException;
 
 class Email {
 
@@ -48,8 +48,11 @@ class Email {
             // 5. 발송 및 결과 반환 (성공 시 true 반환)
             return $this->phpmailer->send();
 
-        } catch (Exception $e) {
-            error_log("Mail send failed. Error: {$this->phpmailer->ErrorInfo}");
+        } catch (PHPMailerException $e) { 
+            error_log("[메일 발송 실패] 수신자: {$to} / 에러 요인: {$this->phpmailer->ErrorInfo}");
+            return false;
+        } catch (\Throwable $e) {
+            error_log("[메일 시스템 오류] 에러 내용: {$e->getMessage()}");
             return false;
         }
     }

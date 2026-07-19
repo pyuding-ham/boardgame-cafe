@@ -72,41 +72,35 @@ if (empty($errors['invalid_token']) && $_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if (empty($errors)) {
-        $isUpdated = $cms->getUser()->passwordUpdate($id, $password['new']);
+        $cms->getUser()->passwordUpdate($id, $password['new']);
 
-        if ($isUpdated) {
-            // 비밀번호 변경 성공 데이터베이스 로그 기록
-            $changeMethod = $has_token ? 'email' : 'mypage';
-            $cms->getUser()->writePasswordChangeLog($id, $changeMethod);
+        // 비밀번호 변경 성공 데이터베이스 로그 기록
+        $changeMethod = $has_token ? 'email' : 'mypage';
+        $cms->getUser()->writePasswordChangeLog($id, $changeMethod);
 
-            $user = $cms->getUser()->get($id);
+        $user = $cms->getUser()->get($id);
 
-            if ($user && !empty($user['email'])) {
-                $subject = '[보드트립] 비밀번호가 성공적으로 변경되었습니다.';
-                $body = '안녕하세요. 보드게임카페 보드트립입니다.<br><br>' .
-                        '회원님의 비밀번호가 ' . date('Y-m-d H:i:s') . '에 정상적으로 변경되었습니다.<br>' .
-                        '만약 본인이 비밀번호를 변경하지 않았다면, 즉시 관리자 메일(' . $email_config['admin_email'] . ')로 문의해 주시기 바랍니다.';
-                
-                try {
-                    $email = new \BoardgameCafe\Email\Email($email_config);
-                    $email->sendEmail($user['email'], $subject, $body, $email_config['admin_email']);
-
-                } catch (\Exception $e) {
-                    error_log('[비밀번호 변경 안내메일 발송 실패] 대상: ' . $user['email'] . ' / 에러: ' . $e->getMessage());
-                }
+        if ($user && !empty($user['email'])) {
+            $subject = '[보드트립] 비밀번호가 성공적으로 변경되었습니다.';
+            $body = '안녕하세요. 보드게임카페 보드트립입니다.<br><br>' .
+                    '회원님의 비밀번호가 ' . date('Y-m-d H:i:s') . '에 정상적으로 변경되었습니다.<br>' .
+                    '만약 본인이 비밀번호를 변경하지 않았다면, 즉시 관리자 메일(' . $email_config['admin_email'] . ')로 문의해 주시기 바랍니다.';
+            
+            try {
+                $email = new \BoardgameCafe\Email\Email($email_config);
+                $email->sendEmail($user['email'], $subject, $body, $email_config['admin_email']);
+            } catch (\Exception $e) {
+                error_log('[비밀번호 변경 안내메일 발송 실패] 대상: ' . $user['email'] . ' / 에러: ' . $e->getMessage());
             }
-
-            if ($has_token) {
-                $cms->getToken()->delete($token);
-            }
-
-            $cms->getSession()->delete();
-            redirect('login/', ['status' => 'reset_success']);
-            exit;
-
-        } else {
-            $errors['message'] = '비밀번호 변경 중 데이터베이스 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.';
         }
+
+        if ($has_token) {
+            $cms->getToken()->delete($token);
+        }
+
+        $cms->getSession()->delete();
+        redirect('login/', ['status' => 'reset_success']);
+        exit;
     }
 }
 

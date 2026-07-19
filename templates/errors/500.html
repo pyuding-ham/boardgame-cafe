@@ -1,0 +1,27 @@
+{% extends 'layout.html' %}
+
+{% block title %}시스템 오류{% endblock %}
+
+{% block content %}
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-12 col-sm-9 col-md-7 text-center py-5">
+            <div class="text-danger display-1 mb-4">
+                <i class="bi bi-exclamation-circle-fill"></i>
+            </div>
+            
+            <h1 class="fw-bold mb-3">서비스 이용에 불편을 드려 죄송합니다.</h1>
+            
+            <p class="text-muted mb-5">
+                일시적인 시스템 오류가 발생했습니다.<br>
+                잠시 후 다시 시도해 주시기 바랍니다. 지속적으로 발생할 경우 관리자에게 문의해 주세요.
+            </p>
+            
+            <div class="d-flex justify-content-center gap-2">
+                <a href="{{ doc_root }}" class="btn btn-primary px-4">홈으로 이동</a>
+                <button type="button" class="btn btn-outline-secondary px-4" onclick="history.back();">이전 페이지</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

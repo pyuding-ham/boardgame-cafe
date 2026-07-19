@@ -46,33 +46,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // 3. 에러가 없다면 DB 저장
     if (!$invalid) {
-        try {
-            $result = $cms->getUser()->register(
+        // 아이디 중복 검사
+        if ($cms->getUser()->isUsernameExists($user['username'])) {
+            $errors['username'] = '이미 사용 중인 아이디입니다.';
+        }
+        // 이메일 중복 검사
+        if ($cms->getUser()->isEmailExists($user['email'])) {
+            $errors['email'] = '이미 사용 중인 이메일입니다.';
+        }
+
+        if (empty($errors)) {
+            $nickname = $cms->getUser()->register(
                 $user['username'],
                 $user['password'],
-                $user['email'],
+                $user['email']
             );
-
-            if (is_array($result)) {
-                if ($result['username'] === true) {
-                    $errors['username'] = '이미 사용 중인 아이디입니다.';
-                }
-                if ($result['email'] === true) {
-                    $errors['email'] = '이미 사용 중인 이메일입니다.';
-                }
-            } else {
-                // 회원가입 성공 시 페이지 이동
-                redirect('register-success/', [
-                    'status' => 'register_success',
-                    'nickname' => $result,
-                ]);
-                exit;
-            }
-
-        } catch (Exception $e) {
-            $errors['system'] = $e->getMessage();
+            
+            redirect('register-success/', [
+                'status' => 'register_success',
+                'nickname' => $nickname,
+            ]);
+            exit;
         }
-        
     }
 }
 

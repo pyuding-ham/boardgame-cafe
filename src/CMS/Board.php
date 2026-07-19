@@ -186,55 +186,58 @@ class Board
         // 4. 데이터베이스 트랜잭션 시작
         $this->db->beginTransaction();
 
-        $post_sql = "INSERT INTO post (
-                        site_menu_id, user_id, writer_nickname, title, content, 
-                        thumbnail, is_deleted, created_at, updated_at
-                    ) VALUES (
-                        :site_menu_id, :user_id, :writer_nickname, :title, :content, 
-                        :thumbnail, 0, NOW(), NOW()
-                    );";
+        try {
+            $post_sql = "INSERT INTO post (
+                            site_menu_id, user_id, writer_nickname, title, content, 
+                            thumbnail, is_deleted, created_at, updated_at
+                        ) VALUES (
+                            :site_menu_id, :user_id, :writer_nickname, :title, :content, 
+                            :thumbnail, 0, NOW(), NOW()
+                        );";
 
-        $this->db->runSql($post_sql, [
-            'site_menu_id'    => $site_menu_id,
-            'user_id'         => $data['user_id'],
-            'writer_nickname' => $data['writer_nickname'],
-            'title'           => $data['title'],
-            'content'         => $data['content'],
-            'thumbnail'       => $data['thumbnail'] ?? null,
-        ]);
-
-        $post_id = $this->db->lastInsertId();
-
-        if (!$post_id) {
-            throw new \Exception("게시글 등록에 실패했습니다.");
-        }
-
-        // 게시판별 등록 분기
-        if ($page_code === 'notice') {
-            $notice_sql = "INSERT INTO notice_detail (post_id, is_pinned) 
-                        VALUES (:post_id, :is_pinned);";
-            
-            $this->db->runSql($notice_sql, [
-                'post_id'   => $post_id,
-                'is_pinned' => $data['is_pinned'] ?? 0,
+            $this->db->runSql($post_sql, [
+                'site_menu_id'    => $site_menu_id,
+                'user_id'         => $data['user_id'],
+                'writer_nickname' => $data['writer_nickname'],
+                'title'           => $data['title'],
+                'content'         => $data['content'],
+                'thumbnail'       => $data['thumbnail'] ?? null,
             ]);
-        }
 
-        // 첨부파일 등록
-        if (!empty($files)) {
-            $file_sql = "INSERT INTO post_file (post_id, file_path, org_name, created_at) 
-                        VALUES (:post_id, :file_path, :org_name, NOW());";
-            
-            foreach ($files as $file) {
-                $this->db->runSql($file_sql, [
+            $post_id = $this->db->lastInsertId();
+
+            // 게시판별 등록 분기
+            if ($page_code === 'notice') {
+                $notice_sql = "INSERT INTO notice_detail (post_id, is_pinned) 
+                            VALUES (:post_id, :is_pinned);";
+                
+                $this->db->runSql($notice_sql, [
                     'post_id'   => $post_id,
-                    'file_path' => $file['file_path'],
-                    'org_name'  => $file['org_name'],
+                    'is_pinned' => $data['is_pinned'] ?? 0,
                 ]);
             }
-        }
 
-        $this->db->commit();
-        return $post_id;
+            // 첨부파일 등록
+            if (!empty($files)) {
+                $file_sql = "INSERT INTO post_file (post_id, file_path, org_name, created_at) 
+                            VALUES (:post_id, :file_path, :org_name, NOW());";
+                
+                foreach ($files as $file) {
+                    $this->db->runSql($file_sql, [
+                        'post_id'   => $post_id,
+                        'file_path' => $file['file_path'],
+                        'org_name'  => $file['org_name'],
+                    ]);
+                }
+            }
+
+            $this->db->commit();
+            return $post_id;
+            
+        } catch (\Throwable $e) {
+            $this->db->rollBack();
+            throw $e; 
+        }
+        
     }
 }
