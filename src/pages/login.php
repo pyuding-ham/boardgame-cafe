@@ -35,18 +35,18 @@ if($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['status'])) {
     if (empty($errors)) {
         $user_id = $cms->getUser()->getIdByUsername($username); 
 
-        // 비밀번호를 10분 내 5회 이상 틀렸는지 검사
-        $fail_count = $cms->getUser()->checkLoginAttempts($user_id);
-
         if ($user_id) {
-            if ($fail_count >= 5) {
+             // 비밀번호를 10분 내 6회 이상 틀렸는지 검사
+            $fail_count = $cms->getUser()->checkLoginAttempts($user_id);
+            if ($fail_count >= 6) {
                 $errors['login'] = '6회 연속 로그인 실패로 인해 10분간 접속이 차단되었습니다.';
             }
         }
 
         if (empty($errors)) {
             $user = $cms->getUser()->login($username, $password);
-
+    
+            // 로그인 성공 시
             if ($user) {
                 $cms->getSession()->create($user);
 
@@ -58,18 +58,23 @@ if($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['status'])) {
     
                 header('Location: ' . DOC_ROOT);
                 exit;
-
-            } else {
-                if ($fail_count >= 2) {
-                    $errors['login'] = '6회 연속 로그인 실패 시 10분간 접속이 차단됩니다. (현재 ' . $fail_count + 1 . '회)';
-                } else {
-                    $errors['login'] = '아이디 또는 비밀번호가 일치하지 않습니다.';
-                }
-
+            }
+            // 로그인 실패 시
+            else {
                 // 로그인 실패 로그 기록
                 $target_id = ($user_id > 0) ? $user_id : null;
                 $fail_reason = ($user_id > 0) ? 'invalid password' : 'user not found';
                 $cms->getUser()->writeLoginLog($target_id, 'fail', $fail_reason);
+
+                $current_fail_count = $user_id ? $cms->getUser()->checkLoginAttempts($user_id) : 0;
+
+                if ($fail_count >= 5) {
+                    $errors['login'] = '6회 연속 로그인 실패로 인해 10분간 접속이 차단되었습니다.';
+                } elseif ($fail_count >= 2) {
+                    $errors['login'] = '6회 연속 로그인 실패 시 10분간 접속이 차단됩니다. (현재 ' . ($fail_count + 1) . '회)';
+                } else {
+                    $errors['login'] = '아이디 또는 비밀번호가 일치하지 않습니다.';
+                }
             }
         }
     }
