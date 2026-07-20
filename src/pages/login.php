@@ -35,11 +35,12 @@ if($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['status'])) {
     if (empty($errors)) {
         $user_id = $cms->getUser()->getIdByUsername($username); 
 
+        // 비밀번호를 10분 내 5회 이상 틀렸는지 검사
+        $fail_count = $cms->getUser()->checkLoginAttempts($user_id);
+
         if ($user_id) {
-            // 비밀번호를 10분 내 5회 이상 틀렸는지 검사
-            $fail_count = $cms->getUser()->checkLoginAttempts($user_id);
             if ($fail_count >= 5) {
-                $errors['login'] = '5회 연속 로그인 실패로 인해 10분간 접속이 차단되었습니다.';
+                $errors['login'] = '6회 연속 로그인 실패로 인해 10분간 접속이 차단되었습니다.';
             }
         }
 
@@ -49,13 +50,21 @@ if($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['status'])) {
             if ($user) {
                 $cms->getSession()->create($user);
 
+                // 이전 로그인 실패 기록 상태를 변경
+                $cms->getUser()->clearLoginAttempts($user['id']);
+
                 // 로그인 성공 로그 기록
                 $cms->getUser()->writeLoginLog($user['id'], 'success');
     
                 header('Location: ' . DOC_ROOT);
                 exit;
+
             } else {
-                $errors['login'] = '아이디 또는 비밀번호가 일치하지 않습니다.';
+                if ($fail_count >= 2) {
+                    $errors['login'] = '6회 연속 로그인 실패 시 10분간 접속이 차단됩니다. (현재 ' . $fail_count + 1 . '회)';
+                } else {
+                    $errors['login'] = '아이디 또는 비밀번호가 일치하지 않습니다.';
+                }
 
                 // 로그인 실패 로그 기록
                 $target_id = ($user_id > 0) ? $user_id : null;

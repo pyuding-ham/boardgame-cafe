@@ -50,6 +50,23 @@ class User
     }
 
     /**
+     * 최근 10분간 로그인 실패 기록 상태 변경
+     */
+    public function clearLoginAttempts(int $user_id): bool
+    {
+        $sql = "UPDATE user_login_log
+                SET status = 'clear'
+                WHERE user_id = :user_id
+                AND status = 'fail'
+                AND login_at > NOW() - INTERVAL 10 MINUTE;";
+
+        $stmt = $this->db->runSql($sql, [
+            'user_id' => $user_id,
+        ]);
+        return (bool)$stmt;
+    }
+
+    /**
      * 회원정보 변경 로그 기록
      */
     public function writeProfileChangeLog(int $user_id, ?string $change_type, ?string $old_value, ?string $new_value): void {
