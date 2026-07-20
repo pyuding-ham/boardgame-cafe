@@ -148,6 +148,9 @@ class UserController
                     $currentUser['nickname'], 
                     $user['nickname'],
                 );
+
+                // 현재 회원이 작성한 게시글 닉네임 변경
+                $this->cms->getUser()->updatePostNickname((int)$currentUser['id'], $user['nickname']);
             }
     
             // ③ 이메일이 변경된 경우
