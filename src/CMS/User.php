@@ -392,8 +392,12 @@ class User
                 SET profile_image = null
                 WHERE id = :id;";
         
-        $result = $this->db->runSql($sql, ['id' => $id]);
+        $stmt = $this->db->runSql($sql, ['id' => $id]);
         
-        return $result !== false;
+        if ($stmt && $stmt->rowCount() > 0) {
+            return true;
+        }
+
+        return false;
     }
 }

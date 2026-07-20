@@ -49,7 +49,7 @@ class UserController
                 ];
             }
             
-            $currentUser['profile_image'] = null;
+            $user['profile_image'] = null;
         }
 
         // 3. 필수 입력 값 검사 및 유효성 검사 및 중복 검사
