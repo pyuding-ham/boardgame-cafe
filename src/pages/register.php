@@ -6,6 +6,12 @@ use BoardgameCafe\Validate\Validate;
 $user = [];
 $errors = [];
 
+// 로그인 사용자 차단
+if ($currentUserId) {
+    header("Location: " . DOC_ROOT);
+    exit;
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // 1. 입력값 받기
     $user['username'] = trim($_POST['username'] ?? '');

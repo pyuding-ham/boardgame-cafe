@@ -2,6 +2,12 @@
 $errors = [];
 $username = '';
 
+// 로그인 사용자 차단
+if ($currentUserId) {
+    header("Location: " . DOC_ROOT);
+    exit;
+}
+
 // 비밀번호 재설정, index(장시간 미사용 로그아웃)에서 보낸 상태 저장
 $status = $_POST['status'] ?? $_SESSION['_flash_status'] ?? null;
 
