@@ -164,7 +164,7 @@ class Board
         // 2. 공지사항 게시판일 때 관리자 여부 체크
         if ($page_code === 'notice') {
             $user_id = $data['user_id'];
-            $role_sql = "SELECT role FROM user WHERE id = :id;";
+            $role_sql = "SELECT role FROM user WHERE id = :id AND is_deleted = 0;";
             $role_stmt = $this->db->runSql($role_sql, ['id' => $user_id]);
             $user = $role_stmt ? $role_stmt->fetch() : false;
 

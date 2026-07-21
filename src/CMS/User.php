@@ -111,7 +111,8 @@ class User
     {
         $sql = "SELECT id, username, nickname, email, profile_image, role, created_at
                   FROM user
-                WHERE id = :id;";
+                WHERE id = :id
+                  AND is_deleted = 0;";
 
         $stmt = $this->db->runSql($sql, ['id' => $id]);
 
@@ -124,8 +125,9 @@ class User
     public function getPassword(int $id): bool|string
     {
         $sql = "SELECT password 
-                FROM user 
-                WHERE id = :id;";
+                  FROM user 
+                WHERE id = :id
+                  AND is_deleted = 0;";
 
         $stmt = $this->db->runSql($sql, ['id' => $id]);
 
@@ -143,8 +145,9 @@ class User
     public function getNicknameById(int $id): bool|string
     {
         $sql = "SELECT nickname 
-                FROM user 
-                WHERE id = :id;";
+                  FROM user 
+                WHERE id = :id
+                  AND is_deleted = 0;";
 
         $stmt = $this->db->runSql($sql, ['id' => $id]);
 
@@ -162,7 +165,8 @@ class User
     public function getIdByUsername($username): int {
         $sql = "SELECT id
                   FROM user
-                WHERE username = :username";
+                WHERE username = :username
+                  AND is_deleted = 0;";
         
         $stmt = $this->db->runSql($sql, ['username' => $username]);
 
@@ -176,7 +180,8 @@ class User
     {
         $sql = "SELECT id
                   FROM user
-                WHERE email = :email;";
+                WHERE email = :email
+                  AND is_deleted = 0;";
 
         return $this->db->runSql($sql, ['email' => $email])->fetchColumn();
     }
@@ -186,7 +191,10 @@ class User
      */
     public function getUsernameByEmail(string $email)
     {
-        $sql = "SELECT username FROM user WHERE email = :email;";
+        $sql = "SELECT username
+                  FROM user
+                WHERE email = :email
+                  AND is_deleted = 0;";
         
         $stmt = $this->db->runSql($sql, ['email' => $email]);
 
@@ -202,7 +210,8 @@ class User
     {
         $sql = "SELECT id, username, password, nickname, email, profile_image, role, created_at
                   FROM user
-                WHERE username = :username;";
+                WHERE username = :username
+                  AND is_deleted = 0;";
 
         $stmt = $this->db->runSql($sql, ['username' => $username]);
 
@@ -278,7 +287,10 @@ class User
             'email' => false,
         ];
 
-        $sqlCheck = "SELECT username, email FROM user WHERE username = :username OR email = :email;";
+        $sqlCheck = "SELECT username, email
+                      FROM user
+                    WHERE (username = :username OR email = :email)
+                      AND is_deleted = 0;";
         $stmtCheck = $this->db->runSql($sqlCheck, [
             'username' => $username,
             'email' => $email,
@@ -309,7 +321,8 @@ class User
                 SET nickname = :nickname,
                     email = :email,
                     profile_image = :profile_image
-                WHERE id = :id;";
+                WHERE id = :id
+                  AND is_deleted = 0;";
 
         $this->db->runSql($sql, [
             'nickname' => $user['nickname'],
@@ -341,7 +354,8 @@ class User
         
         $sql = "UPDATE user
                 SET password = :password
-                WHERE id = :id;";
+                WHERE id = :id
+                  AND is_deleted = 0;";
 
         $stmt = $this->db->runSql($sql, [
             'id' => $id,
@@ -360,14 +374,23 @@ class User
     {
         // 회원가입일 때
         if (empty($id)) {
-            $sql = "SELECT id FROM user WHERE username = :username LIMIT 1;";
+            $sql = "SELECT id
+                      FROM user
+                    WHERE username = :username
+                      AND is_deleted = 0
+                    LIMIT 1;";
             $params = [
                 'username' => $username,
             ];
 
         // 회원정보 변경일 때
         } else {
-            $sql = "SELECT id FROM user WHERE username = :username AND id != :id LIMIT 1;";
+            $sql = "SELECT id
+                      FROM user
+                    WHERE username = :username
+                      AND id != :id
+                      AND is_deleted = 0
+                    LIMIT 1;";
             $params = [
                 'username' => $username,
                 'id' => $id,
@@ -384,14 +407,23 @@ class User
     {
         // 회원가입일 때
         if (empty($id)) {
-            $sql = "SELECT id FROM user WHERE email = :email LIMIT 1;";
+            $sql = "SELECT id
+                      FROM user
+                    WHERE email = :email
+                      AND is_deleted = 0
+                    LIMIT 1;";
             $params = [
                 'email' => $email,
             ];
 
         // 회원정보 변경일 때
         } else {
-            $sql = "SELECT id FROM user WHERE email = :email AND id != :id LIMIT 1;";
+            $sql = "SELECT id
+                      FROM user
+                    WHERE email = :email
+                      AND id != :id
+                      AND is_deleted = 0
+                    LIMIT 1;";
             $params = [
                 'email' => $email,
                 'id' => $id,
@@ -406,7 +438,12 @@ class User
     // 회원 닉네임 중복 검사
     public function isNicknameExists(string $nickname, int $id): bool
     {
-        $sql = "SELECT id FROM user WHERE nickname = :nickname AND id != :id LIMIT 1;";
+        $sql = "SELECT id
+                  FROM user
+                WHERE nickname = :nickname
+                  AND id != :id
+                  AND is_deleted = 0
+                LIMIT 1;";
         
         $result = $this->db->runSql($sql, [
             'nickname' => $nickname,
@@ -421,7 +458,8 @@ class User
     {
         $sql = "UPDATE user
                 SET profile_image = null
-                WHERE id = :id;";
+                WHERE id = :id
+                  AND is_deleted = 0;";
         
         $stmt = $this->db->runSql($sql, ['id' => $id]);
         
