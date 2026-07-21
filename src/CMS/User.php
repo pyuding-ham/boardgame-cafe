@@ -370,36 +370,20 @@ class User
     }
 
     // 회원 아이디 중복 검사
-    public function isUsernameExists(string $username, ?int $id = null): bool
+    public function isUsernameExists(string $username): bool
     {
-        // 회원가입일 때
-        if (empty($id)) {
-            $sql = "SELECT id
-                      FROM user
-                    WHERE username = :username
-                      AND is_deleted = 0
-                    LIMIT 1;";
-            $params = [
-                'username' => $username,
-            ];
-
-        // 회원정보 변경일 때
-        } else {
-            $sql = "SELECT id
-                      FROM user
-                    WHERE username = :username
-                      AND id != :id
-                      AND is_deleted = 0
-                    LIMIT 1;";
-            $params = [
-                'username' => $username,
-                'id' => $id,
-            ];
-        }
+        $sql = "SELECT 1
+                  FROM user
+                WHERE username = :username
+                  AND is_deleted = 0
+                LIMIT 1;";
+        $params = [
+            'username' => $username,
+        ];
                 
-        $result = $this->db->runSql($sql, $params)->fetch();
+        $exists = $this->db->runSql($sql, $params)->fetchColumn();
 
-        return !empty($result);
+        return !empty($exists);
     }
 
     // 회원 이메일 중복 검사
