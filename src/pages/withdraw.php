@@ -18,7 +18,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $result = $userController->withdraw($currentUserId);
     
     if ($result['success']) {
-        header('Location: ' . DOC_ROOT . 'withdraw-complete');
+        redirect('withdraw-complete/', [
+            'status' => 'update_success'
+        ]);
         exit;
     } else {
         $errors = $result['errors'];
