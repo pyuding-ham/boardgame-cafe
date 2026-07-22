@@ -453,4 +453,18 @@ class User
 
         return false;
     }
+    
+    // 회원 탈퇴
+    public function withdraw(int $id): bool
+    {
+        $sql = "UPDATE user
+                SET is_deleted = 1,
+                    deleted_at = NOW()
+                WHERE id = :id
+                  AND is_deleted = 0;";
+        
+        $stmt = $this->db->runSql($sql, ['id' => $id]);
+
+        return $stmt && $stmt->rowCount() > 0;
+    }
 }

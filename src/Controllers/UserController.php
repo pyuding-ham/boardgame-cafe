@@ -3,7 +3,6 @@ declare(strict_types = 1);
 
 namespace BoardgameCafe\Controllers;
 
-use Exception;
 use BoardgameCafe\Validate\Validate;
 use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver;
@@ -205,6 +204,22 @@ class UserController
             $currentImage, 
             null,
         );
+
+        return ['success' => true];
+    }
+
+    /**
+     * 회원 탈퇴
+     */
+    public function withdraw(int $currentUserId): array
+    {
+        if (!$this->cms->getUser()->withdraw($currentUserId)) {
+            $errors['system'] = '데이터베이스 오류가 발생했습니다.';
+            return ['success' => false, 'errors' => $errors];
+        }
+
+        // 로그아웃
+        $this->cms->getSession()->delete();
 
         return ['success' => true];
     }
