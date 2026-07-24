@@ -4,6 +4,9 @@ declare(strict_types = 1);
 namespace BoardgameCafe\Controllers;
 
 use BoardgameCafe\Validate\Validate;
+use BoardgameCafe\Exceptions\PostNotFoundException;
+use BoardgameCafe\Exceptions\AuthorizationException;
+use BoardgameCafe\Exceptions\AuthenticationException;
 
 class BoardController {
     private $cms;
@@ -109,20 +112,20 @@ class BoardController {
         // 게시판 이름에 따라 다른 상세 보기 데이터 호출
         // 게임소개
         if ($boardName === 'boardgame') {
-            $article = $board_service->getBoardgameArticleBySlug('boardgame', (string)$identifier);
+            $post = $board_service->getBoardgameArticleBySlug('boardgame', (string)$identifier);
         }
         // 기본 게시판 및 공지사항
         else {
-            $article = $board_service->getBoardArticle($boardName, (int)$identifier);
+            $post = $board_service->getBoardArticle($boardName, (int)$identifier);
         }
 
         // 게시글이 존재하지 않거나 삭제된 경우 false 반환
-        if (!$article) {
-            return false;
+        if (!$post) {
+            throw new PostNotFoundException("수정할 게시글이 없습니다.");
         }
 
         return [
-            'article' => $article,
+            'post' => $post,
             'board_name' => $boardName,
         ];
     }
@@ -291,6 +294,221 @@ class BoardController {
                     'title' => $title,
                     'content' => $content,
                     'is_pinned' => $is_pinned,
+                ]
+            ];
+        }
+    }
+
+    /**
+     * 게시글 수정 페이지 조회
+     */
+    public function edit(int $identifier, string $boardName, int $userId): array|false
+    {
+        // DB 서비스 호출
+        $boardService = $this->cms->getBoard();
+
+        $postOwner = $boardService->findPostOwnerById($identifier);
+
+        if (!$postOwner) {
+            throw new PostNotFoundException("수정할 게시글이 없습니다.");
+        }
+
+        if (!$boardService->canModifyPost($userId, $postOwner, $boardName)) {
+            throw new AuthorizationException("수정 권한이 없습니다.");
+        }
+
+        return $this->view($identifier, $boardName);
+    }
+
+    /**
+     * 게시글 수정 페이지 저장
+     */
+    public function update(
+        string $boardName,
+        int $postId,
+        array $postData,
+        array $fileData,
+        int $userId
+    ): array
+    {
+        // 공지사항 게시판일 때 관리자 여부 체크
+        $userService = $this->cms->getUser();
+        
+        if ($boardName === 'notice' && !$userService->isAdmin($userId)) {
+            throw new AuthorizationException("수정 권한이 없습니다.");
+        }
+
+        $title     = trim($postData['title'] ?? '');
+        $content   = trim($postData['content'] ?? '');
+        $isPinned  = isset($postData['is_pinned']) ? 1 : 0;
+
+        
+        // 삭제할 첨부파일 목록 생성 및 정제
+        $deleteFileIds = $postData['delete_file_ids'] ?? [];
+
+        // 숫자 이외의 값 제거
+        $deleteFileIds = array_filter(
+            $deleteFileIds,
+            fn($id) => is_numeric($id)
+        );
+
+        // 문자열 숫자를 정수로 변환
+        $deleteFileIds = array_map(
+            'intval',
+            $deleteFileIds
+        );
+
+        $errors = [];
+
+        // 게시글 내용 글자 수 카운트 변수
+        $decodedForLength = html_entity_decode($content, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $pureTextForLength = strip_tags($decodedForLength);
+        $cleanContentForLength = preg_replace('/[\s\x{00a0}\x{200b}]+/u', '', $pureTextForLength);
+        // 순수 글자 수
+        $realTextLength = mb_strlen($cleanContentForLength, 'UTF-8');
+        // HTML 태그를 포함한 용량
+        $htmlByteLength = strlen($content);
+
+        // 1. 제목 필수 입력 값 검사
+        if (empty($title)) {
+            $errors['title'] = '제목을 입력해 주세요.';
+        }
+        // 2. 제목 글자 수 검사 (최대 100자)
+        if (empty($errors['title']) && !Validate::isText($title, 1, 100)) {
+            $errors['title'] = '제목은 최대 100자까지 입력할 수 있습니다.';
+        }
+        
+        if (empty($errors['content'])) {
+            // 3. 내용 필수 입력 값 검사
+            if ($realTextLength === 0 || empty($cleanContentForLength)) {
+                $errors['content'] = '내용을 입력해주세요.';
+            } 
+            // 4. 내용 글자 수 검사
+            elseif ($realTextLength > 5000) {
+                $errors['content'] = '본문 내용은 최대 5,000자까지 입력 가능합니다. (현재 ' . number_format($realTextLength) . '자)';
+            } 
+            // 5. 과도한 HTML 태그 서식 입력 방지
+            elseif ($htmlByteLength > 50000) {
+                $errors['content'] = '과도한 서식(색상, 굵기 등)이 포함되어 저장할 수 없습니다. 서식을 조금 줄여주세요.';
+            }
+        }
+
+        if (!empty($errors)) {
+            return [
+                'success' => false,
+                'errors'  => $errors,
+                'post' => [
+                    'title' => $title,
+                    'content' => $content,
+                    'is_pinned' => $isPinned,
+                ]
+            ];
+        }
+
+        // 파일 업로드 처리 (최대 3개, 1개의 파일 당 10MB 제한)
+        $uploadedFiles = [];
+
+        if (!empty($deleteFileIds) || !empty($fileData['attached_files']['name'])) {
+            $maxFileCount = 3;
+            $maxFileSize  = 10 * 1024 * 1024; 
+    
+            $uploadDir = APP_ROOT . '/public/uploads/attachments/';
+            
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0755, true);
+            }
+
+            foreach ($fileData['attached_files']['name'] as $key => $name) {
+                if (count($uploadedFiles) >= $maxFileCount) {
+                    break;
+                }
+
+                if ($fileData['attached_files']['error'][$key] === UPLOAD_ERR_OK) {
+                    $tmpName = $fileData['attached_files']['tmp_name'][$key];
+                    $size     = $fileData['attached_files']['size'][$key];
+
+                    if ($size > $maxFileSize) {
+                        $errors['files'] = '파일 당 최대 용량(10MB)을 초과했습니다.';
+                        break;
+                    }
+
+                    $ext      = pathinfo($name, PATHINFO_EXTENSION);
+                    $newName = 'notice_' . uniqid('', true) . '.' . $ext; 
+                    $filePath = $uploadDir . $newName;
+
+                    if (move_uploaded_file($tmpName, $filePath)) {
+                        $uploadedFiles[] = [
+                            'file_path' => 'public/uploads/attachments/' . $newName,
+                            'org_name'  => $name,
+                        ];
+                    }
+                }
+            }
+        }
+
+        if (!empty($errors)) {
+            return [
+                'success' => false,
+                'errors'  => $errors,
+                'post' => [
+                    'title' => $title,
+                    'content' => $content,
+                    'is_pinned' => $isPinned,
+                ]
+            ];
+        }
+
+        // DB 서비스 호출
+        $boardService = $this->cms->getBoard();
+
+        try {
+            // 공지사항
+            if ($boardName === 'notice') {
+                $boardService->updateBoardPost(
+                    'notice',
+                    $postId,
+                    $userId,
+                    [
+                        'title'     => $title,
+                        'content'   => $content,
+                        'is_pinned' => $isPinned,
+                    ],
+                    $uploadedFiles,
+                    $deleteFileIds
+                );
+            }
+            // 기본 게시판
+            else {
+                $boardService->updateBoardPost(
+                    $boardName,
+                    $postId,
+                    $userId,
+                    [
+                        'title'           => $title,
+                        'content'         => $content,
+                        'thumbnail'       => $thumbnail ?? null,
+                    ], 
+                    $uploadedFiles,
+                    $deleteFileIds
+                );
+            }
+
+            return [
+                'success' => true,
+            ];
+
+        } catch (AuthenticationException | AuthorizationException | PostNotFoundException $e) {
+            throw $e;
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'errors' => [
+                    'system' => $e->getMessage()
+                ],
+                'post' => [
+                    'title' => $title,
+                    'content' => $content,
+                    'is_pinned' => $isPinned,
                 ]
             ];
         }

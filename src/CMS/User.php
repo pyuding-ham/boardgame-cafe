@@ -158,6 +158,36 @@ class User
 
         return false;
     }
+    
+    /**
+     * ID로 회원 권한 조회
+     */
+    public function getRoleById(int $id): bool|string
+    {
+        $sql = "SELECT role
+                 FROM user
+                WHERE id = :id
+                 AND is_deleted = 0;";
+
+        $stmt = $this->db->runSql($sql, ['id' => $id]);
+
+        if ($stmt) {
+            $role = $stmt->fetchColumn();
+            return $role ? $role : false; 
+        }
+
+        return false;
+    }
+
+    /**
+     * ID로 관리자 권한인지 확인
+     */
+    public function isAdmin(int $id): bool
+    {
+        $role = $this->getRoleById($id);
+
+        return $role && $role === 'ADMIN';
+    }
 
     /**
      * 회원 아이디(username)로 회원 번호(id) 조회

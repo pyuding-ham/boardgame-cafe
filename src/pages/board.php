@@ -3,6 +3,7 @@ declare(strict_types = 1);
 
 use BoardgameCafe\Controllers\BoardController;
 use BoardgameCafe\Controllers\SiteMenuController;
+use BoardgameCafe\Exceptions\AuthenticationException;
 
 // 글쓰기에서 보낸 상태 저장
 $status = $_SESSION['_flash_status'] ?? null;
@@ -10,7 +11,7 @@ if ($status) {
     unset($_SESSION['_flash_status']);
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'GET' && !isset($articleId)) {
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && !isset($postId)) {
     // 단순 새로고침 시 검색어가 지워지는 것을 방지하기 위한 변수
     $referer = $_SERVER['HTTP_REFERER'] ?? '';
     // 다른 페이지에서 해당 게시판으로 새로 들어온 경우에만 검색어 초기화
@@ -36,7 +37,7 @@ if (in_array($boardName, $allowed_boards)) {
     // 1. 게시글 상세
     if ($boardAction === 'view') {
         // 보드게임 소개 게시판은 슬러그, 그 외는 ID로 조회
-        $identifier = ($boardName === 'boardgame') ? $articleSlug : $articleId;
+        $identifier = ($boardName === 'boardgame') ? $postSlug : $postId;
 
         if (!$identifier) {
             header('Location: ' . DOC_ROOT . 'page-not-found');
@@ -84,13 +85,13 @@ if (in_array($boardName, $allowed_boards)) {
                 exit;
             } else {
                 $data['errors']  = $result['errors'];
-                $data['article'] = $result['article'];
+                $data['post'] = $result['post'];
             }
         } 
         // 최초 글쓰기 페이지 진입 (GET)
         else {
             $data['errors']  = [];
-            $data['article'] = [
+            $data['post'] = [
                 'title' => '',
                 'content' => '',
                 'is_pinned' => 0
@@ -103,7 +104,47 @@ if (in_array($boardName, $allowed_boards)) {
         echo $twig->render($boardName . '-write.html', $data);
         exit;
     }
-    // 3. 게시판 목록
+    // 3. 게시글 수정
+    elseif ($boardAction === 'edit') {
+        // 로그인 여부 확인
+        if (!$currentUserId) {
+            throw new AuthenticationException();
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $result = $boardController->update($boardName, $postId, $_POST, $_FILES, (int)$currentUserId);
+            
+            if ($result['success']) {
+                redirect("board/{$boardName}", [
+                    'status' => 'update_success'
+                ]);
+                exit;
+            } else {
+                $data['errors']  = $result['errors'];
+
+                $editData = $boardController->edit((int)$identifier, $boardName, (int)$currentUserId);
+
+                $data['post'] = array_merge(
+                    $result['post'],
+                    ['files' => $editData['post']['files'] ?? []]
+                );
+            }
+        } 
+        // 최초 수정 페이지 진입 (GET)
+        else {
+            $result = $boardController->edit((int)$identifier, $boardName, (int)$currentUserId);
+            
+            $data['post'] = $result['post'];
+            $data['errors'] = [];
+        }
+
+        $data = array_merge($board_title, $data);
+
+        // 템플릿 렌더링
+        echo $twig->render($boardName . '-edit.html', $data);
+        exit;
+    }
+    // 4. 게시판 목록
     else {
         $data = $boardController->index($currentPage, $boardName);
         $data['status'] = $status;

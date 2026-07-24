@@ -42,7 +42,10 @@ class CMS
 
     public function getBoard() {
         if ($this->board === null) {
-            $this->board = new Board($this->db);
+            $this->board = new Board(
+                $this->db,
+                $this->getUser()
+            );
         }
         return $this->board;
     }

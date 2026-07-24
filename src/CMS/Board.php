@@ -3,13 +3,22 @@ declare(strict_types = 1);
 
 namespace BoardgameCafe\CMS;
 
+use Exception;
+use BoardgameCafe\Exceptions\PostNotFoundException;
+use BoardgameCafe\Exceptions\AuthorizationException;
+use BoardgameCafe\Exceptions\AuthenticationException;
+
 class Board
 {
     protected $db;
-
-    public function __construct(Database $db)
-    {
+    private User $user;
+    
+    public function __construct(
+        Database $db,
+        User $user
+    ) {
         $this->db = $db;
+        $this->user = $user;
     }
 
     /**
@@ -239,5 +248,179 @@ class Board
             throw $e; 
         }
         
+    }
+
+    /**
+     * 게시글 수정
+     */
+    public function updateBoardPost(
+        string $board_name,
+        int $post_id,
+        int $user_id,
+        array $data,
+        array $files = [],
+        array $delete_file_ids = []
+    ): void
+    {
+        // 1. 회원 존재 여부 확인
+        $user = $this->user->get($user_id);
+        
+        if (!$user) {
+            throw new AuthenticationException();
+        }
+
+        // 2. 게시글 존재 여부 확인
+        $post_owner = $this->findPostOwnerById($post_id);
+
+        if (!$post_owner) {
+            throw new PostNotFoundException("수정할 게시글이 없습니다.");
+        }
+
+        // 3. 수정 권한 체크
+        if (!$this->canModifyPost($user_id, $post_owner, $board_name)) {
+            throw new AuthorizationException("수정 권한이 없습니다.");
+        }
+
+        // 4. 첨부파일 개수 확인
+        $file_check_sql = "SELECT COUNT(*) 
+                            FROM post_file
+                           WHERE post_id = :post_id;";
+
+        $current_file_count = $this->db->runSql($file_check_sql, [
+            'post_id' => $post_id,
+        ])->fetchColumn();
+
+        $total_file_count = 
+            $current_file_count
+            - count($delete_file_ids)
+            + count($files);
+
+        if ($total_file_count > 3) {
+            throw new Exception("첨부파일은 최대 3개까지 등록 가능합니다.");
+        }
+
+        // 5. 데이터베이스 트랜잭션 시작
+        $this->db->beginTransaction();
+
+        try {
+            $post_sql = "UPDATE post
+                         SET title = :title, content = :content, updated_at = NOW()
+                         WHERE id = :id
+                          AND is_deleted = 0;";
+                        
+            $this->db->runSql($post_sql, [
+                'id'      => $post_id,
+                'title'   => $data['title'],
+                'content' => $data['content'],
+            ]);
+    
+            // 게시판별 수정 분기
+            if ($board_name === 'notice') {
+                $notice_sql = "UPDATE notice_detail 
+                               SET is_pinned = :is_pinned 
+                                WHERE post_id = :post_id;";
+                            
+                $this->db->runSql($notice_sql, [
+                    'post_id'   => $post_id,
+                    'is_pinned' => $data['is_pinned'] ?? 0,
+                ]);
+            }
+    
+            // 첨부파일 삭제 처리
+            if (!empty($delete_file_ids)) {
+                // 삭제 대상 파일 조회
+                $placeholders = [];
+                $params = [
+                    'post_id' => $post_id,
+                ];
+
+                foreach ($delete_file_ids as $index => $file_id) {
+                    $key = 'file_id_' . $index;
+                    // 예) :file_id_0, :file_id_1, ...
+                    $placeholders[] = ':' . $key;
+                    // 예) $params = [
+                    //     'post_id' => 1,
+                    //     'file_id_0' => 21,
+                    //     'file_id_1' => 22
+                    // ];
+                    $params[$key] = $file_id;
+                }
+
+                $select_file_sql = "SELECT id, file_path
+                                    FROM post_file
+                                    WHERE post_id = :post_id
+                                     AND id IN (" . implode(',', $placeholders) . ");";
+
+                $file_stmt = $this->db->runSql($select_file_sql, $params);
+                $delete_files = $file_stmt ? $file_stmt->fetchAll() : [];
+
+                // 실제 파일 삭제
+                foreach ($delete_files as $file) {
+                    $full_path = APP_ROOT . '/' . $file['file_path'];
+
+                    if (is_file($full_path)) {
+                        unlink($full_path);
+                    }
+                }
+
+                // DB 파일 정보 삭제
+                $delete_sql = "DELETE FROM post_file
+                               WHERE post_id = :post_id
+                                AND id IN (" . implode(',', $placeholders) . ");";
+
+                $this->db->runSql($delete_sql, $params);
+            }
+
+            // 새 첨부파일 추가
+            if (!empty($files)) {
+                $insert_file_sql = "INSERT INTO post_file (post_id, file_path, org_name, created_at)
+                                    VALUES (:post_id, :file_path, :org_name, NOW());";
+
+                foreach ($files as $file) {
+                    $this->db->runSql($insert_file_sql, [
+                        'post_id'   => $post_id,
+                        'file_path' => $file['file_path'],
+                        'org_name'  => $file['org_name'],
+                    ]);
+                }
+            }
+    
+            $this->db->commit();
+
+        } catch (\Throwable $e) {
+            $this->db->rollBack();
+            throw $e; 
+        }
+    }
+
+    /**
+     * 게시글 수정 가능 여부 확인
+     */
+    public function canModifyPost(int $user_id, array $post_owner, string $board_name): bool
+    {
+        // 공지사항은 관리자만 수정 가능
+        if ($board_name === 'notice') {
+            return $this->user->isAdmin($user_id);
+        }
+
+        // 이외의 게시판은 작성자 본인만 수정 가능
+        return (int)$post_owner['user_id'] === $user_id;
+    }
+
+    /**
+     * 게시글의 소유자 정보 조회
+     */
+    public function findPostOwnerById(int $id): array|false
+    {
+        $sql = "SELECT id, user_id
+                 FROM post
+                WHERE id = :id
+                 AND is_deleted = 0;";
+
+        $stmt = $this->db->runSql($sql, [
+            'id' => $id,
+        ]);
+
+        return $stmt ? $stmt->fetch() : false;
     }
 }

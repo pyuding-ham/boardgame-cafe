@@ -27,9 +27,9 @@ if (str_contains($raw_uri, 'password-reset')) {
             // 기본값은 1페이지
             $currentPage = 1;
             // 일반 게시판용 숫자 ID
-            $articleId = null;
+            $postId = null;
             // 보드게임용 영문 ID (슬러그)
-            $articleSlug = null;
+            $postSlug = null;
             // 기본값은 목록 보기
             $boardAction = 'list';
     
@@ -50,13 +50,24 @@ if (str_contains($raw_uri, 'password-reset')) {
                 
                 // 숫자가 들어오면 ID, 문자가 들어오면 영문 슬러그로 저장
                 if (is_numeric($identifier)) {
-                    $articleId = (int)$identifier;
+                    $postId = (int)$identifier;
                 } else {
-                    $articleSlug = $identifier; 
+                    $postSlug = $identifier; 
                 }
             // 4. 게시글 작성
             } elseif ($actionKeyword === 'write') {
                 $boardAction = 'write';
+            // 5. 게시글 수정
+            } elseif ($actionKeyword === 'edit') {
+                $boardAction = 'edit';
+
+                $identifier = $parts[3] ?? null;
+
+                if (is_numeric($identifier)) {
+                    $postId = (int)$identifier;
+                } else {
+                    $postSlug = $identifier;
+                }
             }
         }
     } else {

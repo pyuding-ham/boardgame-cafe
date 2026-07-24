@@ -1,4 +1,8 @@
 <?php
+use BoardgameCafe\Exceptions\PostNotFoundException;
+use BoardgameCafe\Exceptions\AuthorizationException;
+use BoardgameCafe\Exceptions\AuthenticationException;
+
 // 1. 세션이 시작되지 않았다면 세션 시작
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -18,32 +22,33 @@ require APP_ROOT . '/vendor/autoload.php';
 date_default_timezone_set('Asia/Seoul');
 mb_internal_encoding('UTF-8');
 
-// 5. 데이터베이스 객체 생성
-$cms = new \BoardgameCafe\CMS\CMS($dsn, $username, $password);
-unset($dsn, $username, $password);
-
-// 6. Twig 템플릿 엔진 설정
-$twig_options['cache'] = (DEV === true) ? false : APP_ROOT . '/var/cache';
-$twig_options['debug'] = DEV;
-
-$loader = new Twig\Loader\FilesystemLoader(APP_ROOT . '/templates');
-$twig = new Twig\Environment($loader, $twig_options);
-
-// Twig 전역 변수 등록
-$twig->addGlobal('doc_root', DOC_ROOT);
-$twig->addGlobal('session', $cms->getSession());
-$twig->addGlobal('is_logged_in', isset($_SESSION['id']));
-$twig->addGlobal('user_role', $_SESSION['role'] ?? 'public');
-
-if (DEV === true) {
-    $twig->addExtension(new \Twig\Extension\DebugExtension());
-}
-
-// 4. 에러 설정
+// 5. 에러 설정
 if (!function_exists('handle_exception')) {
     function handle_exception($exception)
     {
         global $twig;
+
+        // 게시글 없음
+        if ($exception instanceof PostNotFoundException) {
+            http_response_code(404);
+            echo $exception->getMessage();
+            exit;
+        }
+
+        // 권한 없음
+        if ($exception instanceof AuthorizationException) {
+            http_response_code(403);
+            echo $exception->getMessage();
+            exit;
+        }
+
+        // 로그인 필요
+        if ($exception instanceof AuthenticationException) {
+            redirect("login/", [
+                'status' => 'login_required'
+            ]);
+            exit;
+        }
 
         error_log(
             $exception->getMessage() .
@@ -124,7 +129,28 @@ set_exception_handler('handle_exception');
 set_error_handler('handle_error');
 register_shutdown_function('handle_shutdown');
 
-// 7. HTMLPurifier 보안 객체 생성
+// 6. 데이터베이스 객체 생성
+$cms = new \BoardgameCafe\CMS\CMS($dsn, $username, $password);
+unset($dsn, $username, $password);
+
+// 7. Twig 템플릿 엔진 설정
+$twig_options['cache'] = (DEV === true) ? false : APP_ROOT . '/var/cache';
+$twig_options['debug'] = DEV;
+
+$loader = new Twig\Loader\FilesystemLoader(APP_ROOT . '/templates');
+$twig = new Twig\Environment($loader, $twig_options);
+
+// Twig 전역 변수 등록
+$twig->addGlobal('doc_root', DOC_ROOT);
+$twig->addGlobal('session', $cms->getSession());
+$twig->addGlobal('is_logged_in', isset($_SESSION['id']));
+$twig->addGlobal('user_role', $_SESSION['role'] ?? 'public');
+
+if (DEV === true) {
+    $twig->addExtension(new \Twig\Extension\DebugExtension());
+}
+
+// 8. HTMLPurifier 보안 객체 생성
 $purifierConfig = \HTMLPurifier_Config::createDefault();
 $purifierConfig->set('Core.Encoding', 'UTF-8');
 $purifierConfig->set('HTML.Allowed', 'p,b,i,strong,em,span,img[src|alt|width|height],br,ul,ol,li');
