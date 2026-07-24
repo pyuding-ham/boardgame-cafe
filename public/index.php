@@ -132,7 +132,7 @@ if (isset($_SESSION['id']) && file_exists($php_page) && $php_page !== APP_ROOT .
                 const hiddenInput = document.createElement('input');
                 hiddenInput.type = 'hidden';
                 hiddenInput.name = 'status';
-                hiddenInput.value = 'login_required';
+                hiddenInput.value = 'session_expired';
 
                 // 3. 폼에 인풋을 넣고, <body>에 붙여서 전송
                 form.appendChild(hiddenInput);

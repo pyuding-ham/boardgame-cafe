@@ -2,18 +2,13 @@
 $errors = [];
 $username = '';
 
-// 로그인 사용자 차단
-if ($currentUserId) {
-    header("Location: " . DOC_ROOT);
-    exit;
-}
-
 // 비밀번호 재설정, index(장시간 미사용 로그아웃)에서 보낸 상태 저장
 $status = $_POST['status'] ?? $_SESSION['_flash_status'] ?? null;
 
 // 장시간 미사용 시 로그아웃
-if ($status === 'login_required') {
+if ($status === 'session_expired') {
     $cms->getSession()->delete();
+    $currentUserId = null;
     $data['is_logged_in'] = false;
 }
 
@@ -23,6 +18,12 @@ if ($status) {
 
 // 메시지는 새로고침 시 사라짐
 unset($_SESSION['_flash_success'], $_SESSION['_flash_warning']);
+
+// 로그인 사용자 차단
+if ($currentUserId) {
+    header("Location: " . DOC_ROOT);
+    exit;
+}
 
 if($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['status'])) {
     $username = trim($_POST['username'] ?? '');
