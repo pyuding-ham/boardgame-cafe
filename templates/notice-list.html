@@ -5,6 +5,8 @@
 <div id="toast-container" class="toast-container"></div>
 {% if status == 'write_success' %}
     <script>window.addEventListener('DOMContentLoaded', () => showToast('글 작성이 완료되었습니다.'));</script>
+{% elseif status == 'update_success' %}
+    <script>window.addEventListener('DOMContentLoaded', () => showToast('글 수정이 완료되었습니다.'));</script>
 {% endif %}
 <div class="container board-container my-5">
     <!-- 타이틀 영역 -->
