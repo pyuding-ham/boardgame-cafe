@@ -1,7 +1,7 @@
 <?php
-use BoardgameCafe\Exceptions\PostNotFoundException;
 use BoardgameCafe\Exceptions\AuthorizationException;
 use BoardgameCafe\Exceptions\AuthenticationException;
+use BoardgameCafe\Exceptions\NotFoundException;
 
 // 1. 세션이 시작되지 않았다면 세션 시작
 if (session_status() === PHP_SESSION_NONE) {
@@ -28,8 +28,8 @@ if (!function_exists('handle_exception')) {
     {
         global $twig;
 
-        // 게시글 없음
-        if ($exception instanceof PostNotFoundException) {
+        // 페이지 또는 게시글 없음
+        if ($exception instanceof NotFoundException) {
             http_response_code(404);
 
             echo $twig->render('errors/404.html', [

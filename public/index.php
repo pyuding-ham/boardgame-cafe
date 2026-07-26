@@ -1,6 +1,9 @@
 <?php
 declare(strict_types = 1);
 
+use BoardgameCafe\Exceptions\NotFoundException;
+use BoardgameCafe\Exceptions\ErrorCode;
+
 if (basename($_SERVER['SCRIPT_NAME']) === 'keep_alive.php') {
     return; 
 }
@@ -78,19 +81,12 @@ if (str_contains($raw_uri, 'password-reset')) {
 
 $php_page = APP_ROOT . '/src/pages/' . $page . '.php';
 
-if (!file_exists($php_page)) {
-    http_response_code(404);
-
-    try {
-        echo $twig->render('errors/404.html');
-    } catch (\Throwable $e) {
-        echo "<h1>404 - 페이지를 찾을 수 없습니다.</h1>";
-    }
-    exit;
-}
-
 // 상단 메뉴바 전역 변수 설정
 $twig->addGlobal('menus', (new \BoardgameCafe\Controllers\SiteMenuController($cms))->getMenus());
+
+if (!file_exists($php_page)) {
+    throw new NotFoundException(ErrorCode::PAGE_NOT_FOUND->value);
+}
 
 include $php_page;
 

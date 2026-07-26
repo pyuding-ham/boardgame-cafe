@@ -3,6 +3,8 @@ declare(strict_types = 1);
 
 namespace BoardgameCafe\Exceptions;
 
-class PostNotFoundException extends NotFoundException
+use Exception;
+
+class NotFoundException extends Exception
 {
 }

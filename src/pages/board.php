@@ -3,7 +3,10 @@ declare(strict_types = 1);
 
 use BoardgameCafe\Controllers\BoardController;
 use BoardgameCafe\Controllers\SiteMenuController;
+use BoardgameCafe\Exceptions\NotFoundException;
+use BoardgameCafe\Exceptions\PostNotFoundException;
 use BoardgameCafe\Exceptions\AuthenticationException;
+use BoardgameCafe\Exceptions\ErrorCode;
 
 // 글쓰기에서 보낸 상태 저장
 $status = $_SESSION['_flash_status'] ?? null;
@@ -40,15 +43,13 @@ if (in_array($boardName, $allowed_boards)) {
         $identifier = ($boardName === 'boardgame') ? $postSlug : $postId;
 
         if (!$identifier) {
-            header('Location: ' . DOC_ROOT . 'page-not-found');
-            exit;
+            throw new PostNotFoundException(ErrorCode::POST_NOT_FOUND_READ->value);
         }
 
         $data = $boardController->view($identifier, $boardName);
         
         if (!$data) {
-            header('Location: ' . DOC_ROOT . 'page-not-found');
-            exit;
+            throw new PostNotFoundException(ErrorCode::POST_NOT_FOUND_READ->value);
         }
 
         $data = array_merge($board_title, $data);
@@ -154,6 +155,5 @@ if (in_array($boardName, $allowed_boards)) {
         echo $twig->render($boardName . '-list.html', $data);
     }
 } else {
-    header('Location: ' . DOC_ROOT . 'page-not-found');
-    exit;
+    throw new NotFoundException(ErrorCode::PAGE_NOT_FOUND->value);
 }
