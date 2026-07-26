@@ -42,7 +42,11 @@ if (!function_exists('handle_exception')) {
         // 권한 없음
         if ($exception instanceof AuthorizationException) {
             http_response_code(403);
-            echo $exception->getMessage();
+            
+            echo $twig->render('errors/403.html', [
+                'code' => $exception->getMessage()
+            ]);
+
             exit;
         }
 

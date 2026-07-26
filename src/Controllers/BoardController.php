@@ -316,7 +316,7 @@ class BoardController {
         }
 
         if (!$boardService->canModifyPost($userId, $postOwner, $boardName)) {
-            throw new AuthorizationException("수정 권한이 없습니다.");
+           throw new AuthorizationException(ErrorCode::ACCESS_DENIED->value);
         }
 
         return $this->view($identifier, $boardName);
@@ -337,7 +337,7 @@ class BoardController {
         $userService = $this->cms->getUser();
         
         if ($boardName === 'notice' && !$userService->isAdmin($userId)) {
-            throw new AuthorizationException("수정 권한이 없습니다.");
+            throw new AuthorizationException(ErrorCode::ACCESS_DENIED->value);
         }
 
         $title     = trim($postData['title'] ?? '');

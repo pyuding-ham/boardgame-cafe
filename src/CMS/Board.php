@@ -279,7 +279,7 @@ class Board
 
         // 3. 수정 권한 체크
         if (!$this->canModifyPost($user_id, $post_owner, $board_name)) {
-            throw new AuthorizationException("수정 권한이 없습니다.");
+            throw new AuthorizationException(ErrorCode::ACCESS_DENIED->value);
         }
 
         // 4. 첨부파일 개수 확인
