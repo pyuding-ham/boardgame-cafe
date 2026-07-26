@@ -7,6 +7,7 @@ use BoardgameCafe\Validate\Validate;
 use BoardgameCafe\Exceptions\PostNotFoundException;
 use BoardgameCafe\Exceptions\AuthorizationException;
 use BoardgameCafe\Exceptions\AuthenticationException;
+use BoardgameCafe\Exceptions\ErrorCode;
 
 class BoardController {
     private $cms;
@@ -119,9 +120,9 @@ class BoardController {
             $post = $board_service->getBoardArticle($boardName, (int)$identifier);
         }
 
-        // 게시글이 존재하지 않거나 삭제된 경우 false 반환
+        // 게시글이 존재하지 않거나 삭제된 경우 예외 처리
         if (!$post) {
-            throw new PostNotFoundException("수정할 게시글이 없습니다.");
+            throw new PostNotFoundException(ErrorCode::POST_NOT_FOUND_READ->value);
         }
 
         return [
@@ -309,8 +310,9 @@ class BoardController {
 
         $postOwner = $boardService->findPostOwnerById($identifier);
 
+        // 게시글이 존재하지 않거나 삭제된 경우 예외 처리
         if (!$postOwner) {
-            throw new PostNotFoundException("수정할 게시글이 없습니다.");
+            throw new PostNotFoundException(ErrorCode::POST_NOT_FOUND_UPDATE->value);
         }
 
         if (!$boardService->canModifyPost($userId, $postOwner, $boardName)) {

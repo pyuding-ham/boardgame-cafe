@@ -7,6 +7,7 @@ use Exception;
 use BoardgameCafe\Exceptions\PostNotFoundException;
 use BoardgameCafe\Exceptions\AuthorizationException;
 use BoardgameCafe\Exceptions\AuthenticationException;
+use BoardgameCafe\Exceptions\ErrorCode;
 
 class Board
 {
@@ -143,9 +144,9 @@ class Board
         $stmt = $this->db->runSql($sql, ['id' => $id]);
         $article = $stmt ? $stmt->fetch() : false;
 
-        // 게시글이 존재하지 않거나 삭제된 경우 false 반환
+        // 게시글이 존재하지 않거나 삭제된 경우 예외 처리
         if (!$article) {
-            return false;
+            throw new PostNotFoundException(ErrorCode::POST_NOT_FOUND_READ->value);
         }
 
         // 2. 첨부파일 목록 조회
@@ -273,7 +274,7 @@ class Board
         $post_owner = $this->findPostOwnerById($post_id);
 
         if (!$post_owner) {
-            throw new PostNotFoundException("수정할 게시글이 없습니다.");
+            throw new PostNotFoundException(ErrorCode::POST_NOT_FOUND_UPDATE->value);
         }
 
         // 3. 수정 권한 체크

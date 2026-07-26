@@ -31,7 +31,11 @@ if (!function_exists('handle_exception')) {
         // 게시글 없음
         if ($exception instanceof PostNotFoundException) {
             http_response_code(404);
-            echo $exception->getMessage();
+
+            echo $twig->render('errors/404.html', [
+                'code' => $exception->getMessage()
+            ]);
+            
             exit;
         }
 
@@ -44,7 +48,7 @@ if (!function_exists('handle_exception')) {
 
         // 로그인 필요
         if ($exception instanceof AuthenticationException) {
-            redirect("login/", [
+            redirect("login", [
                 'status' => 'login_required'
             ]);
             exit;
