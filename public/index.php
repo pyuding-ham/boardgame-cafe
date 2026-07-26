@@ -91,7 +91,7 @@ if (!file_exists($php_page)) {
 include $php_page;
 
 // 장시간 미사용 시 자동 로그아웃
-if (isset($_SESSION['id']) && file_exists($php_page) && $php_page !== APP_ROOT . '/src/pages/page-not-found.php') {
+if (isset($_SESSION['id']) && file_exists($php_page)) {
     // /board/notice와 같은 경로의 경우 결과 값 1
     // /board/notice/view/1과 같은 경로의 경우 결과 값 3
     $depth = count(array_filter($parts)) - 1;
