@@ -71,6 +71,17 @@ if (str_contains($raw_uri, 'password-reset')) {
                 } else {
                     $postSlug = $identifier;
                 }
+            // 6. 게시글 삭제
+            } elseif ($actionKeyword === 'delete') {
+                $boardAction = 'delete';
+
+                $identifier = $parts[3] ?? null;
+
+                if (is_numeric($identifier)) {
+                    $postId = (int)$identifier;
+                } else {
+                    $postSlug = $identifier;
+                }
             }
         }
     } else {

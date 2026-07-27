@@ -402,6 +402,47 @@ class Board
     }
 
     /**
+     * 게시글 삭제
+     */
+    public function deleteBoardPost(int $post_id, int $user_id): void
+    {
+        // 1. 회원 존재 여부 확인
+        $user = $this->user->get($user_id);
+        
+        if (!$user) {
+            throw new AuthenticationException();
+        }
+
+        // 2. 게시글 존재 여부 확인
+        $post = $this->getPostBoardInfo($post_id);
+
+        if (!$post) {
+            throw new PostNotFoundException(ErrorCode::POST_NOT_FOUND_DELETE->value);
+        }
+
+        // 3. 삭제 권한 체크
+        // 공지사항은 관리자만 삭제 가능
+        if ($post['page_code'] === 'notice') {
+            if (!$this->user->isAdmin($user_id)) {
+                throw new AuthorizationException(ErrorCode::ACCESS_DENIED->value);
+            }
+        }
+        // 이외의 게시판은 작성자 본인만 삭제 가능
+        elseif ($post['user_id'] !== $user_id) {
+            throw new AuthorizationException(ErrorCode::ACCESS_DENIED->value);
+        }
+
+        // 4. 게시글 상태 값 변경
+        $sql = "UPDATE post
+                SET is_deleted = 1,
+                    deleted_at = NOW()
+                WHERE id = :id
+                 AND is_deleted = 0;";
+        
+        $this->db->runSql($sql, ['id' => $post_id]);
+    }
+
+    /**
      * 게시글 작성 가능 여부 확인
      */
     public function canWritePost(int $user_id, string $board_name): bool
@@ -415,7 +456,7 @@ class Board
     }
 
     /**
-     * 게시글 수정 가능 여부 확인
+     * 게시글 수정/삭제 가능 여부 확인
      */
     public function canModifyPost(int $user_id, array $post_owner, string $board_name): bool
     {
@@ -440,6 +481,27 @@ class Board
 
         $stmt = $this->db->runSql($sql, [
             'id' => $id,
+        ]);
+
+        return $stmt ? $stmt->fetch() : false;
+    }
+
+    /**
+     * 게시글의 사용자/메뉴 정보 조회
+     */
+    public function getPostBoardInfo(int $post_id): array|false
+    {
+        $sql = "SELECT p.user_id,
+                       sm.menu_title,
+                       sm.page_code
+                 FROM post p
+                JOIN site_menu sm
+                 ON p.site_menu_id = sm.id
+                WHERE p.id = :id
+                 AND p.is_deleted = 0;";
+
+        $stmt = $this->db->runSql($sql, [
+            'id' => $post_id,
         ]);
 
         return $stmt ? $stmt->fetch() : false;

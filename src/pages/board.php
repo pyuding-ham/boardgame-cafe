@@ -138,7 +138,21 @@ if (in_array($boardName, $allowed_boards)) {
         echo $twig->render($boardName . '-edit.html', $data);
         exit;
     }
-    // 4. 게시판 목록
+    // 4. 게시글 삭제
+    elseif ($boardAction === 'delete') {
+        // 로그인 여부 확인
+        if (!$currentUserId) {
+            throw new AuthenticationException();
+        }
+
+        $boardController->delete((int)$identifier, $boardName, (int)$currentUserId);
+
+        redirect("board/{$boardName}", [
+            'status' => 'delete_success',
+        ]);
+        exit;
+    }
+    // 5. 게시판 목록
     else {
         $data = $boardController->index($currentPage, $boardName);
         $data['status'] = $status;

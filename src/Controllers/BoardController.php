@@ -462,57 +462,57 @@ class BoardController {
         // DB 서비스 호출
         $boardService = $this->cms->getBoard();
 
-        try {
-            // 공지사항
-            if ($boardName === 'notice') {
-                $boardService->updateBoardPost(
-                    'notice',
-                    $postId,
-                    $userId,
-                    [
-                        'title'     => $title,
-                        'content'   => $content,
-                        'is_pinned' => $isPinned,
-                    ],
-                    $uploadedFiles,
-                    $deleteFileIds
-                );
-            }
-            // 기본 게시판
-            else {
-                $boardService->updateBoardPost(
-                    $boardName,
-                    $postId,
-                    $userId,
-                    [
-                        'title'           => $title,
-                        'content'         => $content,
-                        'thumbnail'       => $thumbnail ?? null,
-                    ], 
-                    $uploadedFiles,
-                    $deleteFileIds
-                );
-            }
-
-            return [
-                'success' => true,
-            ];
-
-        } catch (AuthenticationException | AuthorizationException | NotFoundException | PostNotFoundException $e) {
-            throw $e;
-        } catch (\Exception $e) {
-            return [
-                'success' => false,
-                'errors' => [
-                    'system' => $e->getMessage()
-                ],
-                'post' => [
-                    'title' => $title,
-                    'content' => $content,
+        // 공지사항
+        if ($boardName === 'notice') {
+            $boardService->updateBoardPost(
+                'notice',
+                $postId,
+                $userId,
+                [
+                    'title'     => $title,
+                    'content'   => $content,
                     'is_pinned' => $isPinned,
-                ]
-            ];
+                ],
+                $uploadedFiles,
+                $deleteFileIds
+            );
         }
+        // 기본 게시판
+        else {
+            $boardService->updateBoardPost(
+                $boardName,
+                $postId,
+                $userId,
+                [
+                    'title'           => $title,
+                    'content'         => $content,
+                    'thumbnail'       => $thumbnail ?? null,
+                ], 
+                $uploadedFiles,
+                $deleteFileIds
+            );
+        }
+
+        return [
+            'success' => true,
+        ];
+    }
+
+    /**
+     * 게시글 삭제
+     */
+    public function delete(int $identifier, string $boardName, int $userId): void
+    {
+        // 공지사항 게시판일 때 관리자 여부 체크
+        $userService = $this->cms->getUser();
+        
+        if ($boardName === 'notice' && !$userService->isAdmin($userId)) {
+            throw new AuthorizationException(ErrorCode::ACCESS_DENIED->value);
+        }
+
+        // DB 서비스 호출
+        $boardService = $this->cms->getBoard();
+        $boardService->deleteBoardPost($identifier, $userId);
     }
 
     /**
