@@ -28,7 +28,7 @@ if (!function_exists('handle_exception')) {
     {
         global $twig;
 
-        // 페이지 또는 게시글 없음
+        // 페이지 또는 게시판 또는 게시글 없음
         if ($exception instanceof NotFoundException) {
             http_response_code(404);
 

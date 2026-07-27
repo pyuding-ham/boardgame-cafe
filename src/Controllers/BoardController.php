@@ -4,6 +4,7 @@ declare(strict_types = 1);
 namespace BoardgameCafe\Controllers;
 
 use BoardgameCafe\Validate\Validate;
+use BoardgameCafe\Exceptions\NotFoundException;
 use BoardgameCafe\Exceptions\PostNotFoundException;
 use BoardgameCafe\Exceptions\AuthorizationException;
 use BoardgameCafe\Exceptions\AuthenticationException;
@@ -132,23 +133,31 @@ class BoardController {
     }
 
     /**
-     * 기본형 게시글 쓰기
+     * 게시글 작성
      */
-    public function write(string $boardName, array $postData, array $fileData, int $userId): array
+    public function insert(string $boardName, array $postData, array $fileData, int $userId): array
     {
+        // 공지사항 게시판일 때 관리자 여부 체크
+        // DB 서비스 호출
+        $user_service = $this->cms->getUser();
+        
+        if ($boardName === 'notice' && !$user_service->isAdmin($userId)) {
+            throw new AuthorizationException(ErrorCode::ACCESS_DENIED->value);
+        }
+
         $title     = trim($postData['title'] ?? '');
         $content   = trim($postData['content'] ?? '');
         $is_pinned = isset($postData['is_pinned']) ? 1 : 0;
         $errors    = [];
 
         // 게시글 내용 글자 수 카운트 변수
-        $decodedForLength = html_entity_decode($content, ENT_QUOTES | ENT_HTML5, 'UTF-8');
-        $pureTextForLength = strip_tags($decodedForLength);
-        $cleanContentForLength = preg_replace('/[\s\x{00a0}\x{200b}]+/u', '', $pureTextForLength);
+        $decoded_for_length = html_entity_decode($content, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $pure_text_for_length = strip_tags($decoded_for_length);
+        $clean_content_for_length = preg_replace('/[\s\x{00a0}\x{200b}]+/u', '', $pure_text_for_length);
         // 순수 글자 수
-        $realTextLength = mb_strlen($cleanContentForLength, 'UTF-8');
+        $real_text_length = mb_strlen($clean_content_for_length, 'UTF-8');
         // HTML 태그를 포함한 용량
-        $htmlByteLength = strlen($content);
+        $html_byte_length = strlen($content);
 
         // 1. 제목 필수 입력 값 검사
         if (empty($title)) {
@@ -161,15 +170,15 @@ class BoardController {
         
         if (empty($errors['content'])) {
             // 3. 내용 필수 입력 값 검사
-            if ($realTextLength === 0 || empty($cleanContentForLength)) {
+            if ($real_text_length === 0 || empty($clean_content_for_length)) {
                 $errors['content'] = '내용을 입력해주세요.';
             } 
             // 4. 내용 글자 수 검사
-            elseif ($realTextLength > 5000) {
-                $errors['content'] = '본문 내용은 최대 5,000자까지 입력 가능합니다. (현재 ' . number_format($realTextLength) . '자)';
+            elseif ($real_text_length > 5000) {
+                $errors['content'] = '본문 내용은 최대 5,000자까지 입력 가능합니다. (현재 ' . number_format($real_text_length) . '자)';
             } 
             // 5. 과도한 HTML 태그 서식 입력 방지
-            elseif ($htmlByteLength > 50000) {
+            elseif ($html_byte_length > 50000) {
                 $errors['content'] = '과도한 서식(색상, 굵기 등)이 포함되어 저장할 수 없습니다. 서식을 조금 줄여주세요.';
             }
         }
@@ -239,59 +248,49 @@ class BoardController {
         }
 
         // DB 서비스 호출
-        $user_service = $this->cms->getUser();
         $board_service = $this->cms->getBoard();
-        $inserted_id = false;
 
-        // 닉네임 조회
-        $writerNickname = $user_service->getNicknameById((int)$userId);
+        try {
+            // 공지사항
+            if ($boardName === 'notice') {
+                $board_service->insertBoardPost(
+                    'notice',
+                    $userId,
+                    [
+                        'title'     => $title,
+                        'content'   => $content,
+                        'is_pinned' => $is_pinned,
+                    ],
+                    $uploaded_files
+                );
+            }
+            // 기본 게시판
+            else {
+                $board_service->insertBoardPost(
+                    $boardName,
+                    $userId,
+                    [
+                        'title'           => $title,
+                        'content'         => $content,
+                        'thumbnail'       => $thumbnail ?? null,
+                    ], 
+                    $uploaded_files
+                );
+            }
 
-        // 탈퇴한 회원이거나 비정상적인 유저 ID인 경우 차단
-        if (!$writerNickname) {
-            return [
-                'success' => false,
-                'errors'  => ['system' => '존재하지 않는 사용자입니다.'],
-            ];
-        }
-
-        // 공지사항
-        if ($boardName === 'notice') {
-            $inserted_id = $board_service->insertBoardArticle(
-                'notice',
-                [
-                    'user_id'   => $userId,
-                    'writer_nickname' => $writerNickname,
-                    'title'     => $title,
-                    'content'   => $content,
-                    'is_pinned' => $is_pinned
-                ],
-                $uploaded_files
-            );
-        }
-        // 기본 게시판
-        else {
-            $inserted_id = $board_service->insertBoardArticle(
-                $boardName, 
-                [
-                    'user_id'         => $userId,
-                    'writer_nickname' => $writerNickname,
-                    'title'           => $title,
-                    'content'         => $content,
-                    'thumbnail'       => $thumbnail ?? null,
-                ], 
-                $uploaded_files
-            );
-        }
-
-        if ($inserted_id) {
             return [
                 'success' => true,
             ];
-        } else {
+
+        } catch (AuthenticationException | AuthorizationException | NotFoundException | PostNotFoundException $e) {
+            throw $e;
+        } catch (\Exception $e) {
             return [
                 'success' => false,
-                'errors'  => ['system' => '게시글 저장 중 오류가 발생했습니다.'],
-                'article' => [
+                'errors' => [
+                    'system' => $e->getMessage()
+                ],
+                'post' => [
                     'title' => $title,
                     'content' => $content,
                     'is_pinned' => $is_pinned,
@@ -514,5 +513,21 @@ class BoardController {
                 ]
             ];
         }
+    }
+
+    /**
+     * 게시글 작성 가능 여부 확인
+     */
+    public function canWritePost(int $user_id, string $board_name): bool
+    {
+        // DB 서비스 호출
+        $user_service = $this->cms->getUser();
+
+        // 공지사항은 관리자만 작성 가능
+        if ($board_name === 'notice') {
+            return $user_service->isAdmin($user_id);
+        }
+
+        return true;
     }
 }

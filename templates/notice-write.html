@@ -28,7 +28,7 @@
                 <div class="mb-4 bg-light p-3 rounded d-flex align-items-center justify-content-between">
                     <span class="fw-bold text-secondary small"><i class="bi bi-gear-fill me-1"></i> 게시글 설정</span>
                     <div class="form-check form-switch m-0">
-                        <input class="form-check-input" type="checkbox" role="switch" id="is_pinned" name="is_pinned" value="1" {{ (article.is_pinned is defined and article.is_pinned == 1) ? 'checked' : '' }}>
+                        <input class="form-check-input" type="checkbox" role="switch" id="is_pinned" name="is_pinned" value="1" {{ (post.is_pinned is defined and post.is_pinned == 1) ? 'checked' : '' }}>
                         <label class="form-check-label fw-bold text-dark small" for="is_pinned">이 게시글을 상단에 고정합니다.</label>
                     </div>
                 </div>
@@ -36,7 +36,7 @@
                 <!-- 제목 영역 -->
                 <div class="mb-4">
                     <label for="title" class="form-label fw-bold">제목</label>
-                    <input type="text" class="form-control {{ (errors.title is defined and errors.title) ? 'is-invalid' : '' }}" id="title" name="title" value="{{ article.title is defined ? article.title : '' }}" maxlength="100" required>
+                    <input type="text" class="form-control {{ (errors.title is defined and errors.title) ? 'is-invalid' : '' }}" id="title" name="title" value="{{ post.title is defined ? post.title : '' }}" maxlength="100" required>
                     {% if errors.title is defined and errors.title %}
                         <div class="invalid-feedback fw-bold">
                             <i class="bi bi-exclamation-circle me-1"></i> {{ errors.title }}
@@ -49,7 +49,7 @@
                     <label class="form-label fw-bold">내용</label>
                     <div class="editor-wrapper {{ (errors.content is defined and errors.content) ? 'border border-danger rounded' : '' }}">
                         <div id="editor">
-                            {{ (article.content is defined) ? article.content|raw : '' }}
+                            {{ (post.content is defined) ? post.content|raw : '' }}
                         </div>
                     </div>
                     <input type="hidden" name="content" id="contentInput">

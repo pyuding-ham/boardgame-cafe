@@ -4,6 +4,7 @@ declare(strict_types = 1);
 namespace BoardgameCafe\CMS;
 
 use Exception;
+use BoardgameCafe\Exceptions\NotFoundException;
 use BoardgameCafe\Exceptions\PostNotFoundException;
 use BoardgameCafe\Exceptions\AuthorizationException;
 use BoardgameCafe\Exceptions\AuthenticationException;
@@ -162,36 +163,34 @@ class Board
     }
 
     /**
-     * 게시글 쓰기
+     * 게시글 작성
      */
-    public function insertBoardArticle(string $page_code, array $data, array $files = []): int|string|bool
+    public function insertBoardPost(string $board_name, int $user_id, array $data, array $files = []): void
     {
-        // 1. 로그인 여부 체크
-        if (empty($data['user_id'])) {
-            return false;
+        // 1. 회원 존재 여부 확인
+        $user = $this->user->get($user_id);
+        
+        if (!$user) {
+            throw new AuthenticationException();
         }
 
-        // 2. 공지사항 게시판일 때 관리자 여부 체크
-        if ($page_code === 'notice') {
-            $user_id = $data['user_id'];
-            $role_sql = "SELECT role FROM user WHERE id = :id AND is_deleted = 0;";
-            $role_stmt = $this->db->runSql($role_sql, ['id' => $user_id]);
-            $user = $role_stmt ? $role_stmt->fetch() : false;
+        // 닉네임 저장
+        $writer_nickname = $user['nickname'];
 
-            if (!$user || $user['role'] !== 'ADMIN') {
-                return false;
-            }
-        }
-
-        // 3. page_code 기반으로 site_menu_id 조회
+        // 2. page_code 기반으로 site_menu_id 조회
         $menu_sql = "SELECT id FROM site_menu WHERE page_code = :page_code;";
-        $menu_stmt = $this->db->runSql($menu_sql, ['page_code' => $page_code]);
+        $menu_stmt = $this->db->runSql($menu_sql, ['page_code' => $board_name]);
         $menu = $menu_stmt ? $menu_stmt->fetch() : false;
         
         if (!$menu) {
-            return false; 
+            throw new NotFoundException(ErrorCode::BOARD_NOT_FOUND->value);
         }
         $site_menu_id = $menu['id'];
+        
+        // 3. 작성 권한 확인
+        if (!$this->canWritePost($user_id, $board_name)) {
+            throw new AuthorizationException(ErrorCode::ACCESS_DENIED->value);
+        }
 
         // 4. 데이터베이스 트랜잭션 시작
         $this->db->beginTransaction();
@@ -207,8 +206,8 @@ class Board
 
             $this->db->runSql($post_sql, [
                 'site_menu_id'    => $site_menu_id,
-                'user_id'         => $data['user_id'],
-                'writer_nickname' => $data['writer_nickname'],
+                'user_id'         => $user_id,
+                'writer_nickname' => $writer_nickname,
                 'title'           => $data['title'],
                 'content'         => $data['content'],
                 'thumbnail'       => $data['thumbnail'] ?? null,
@@ -217,7 +216,7 @@ class Board
             $post_id = $this->db->lastInsertId();
 
             // 게시판별 등록 분기
-            if ($page_code === 'notice') {
+            if ($board_name === 'notice') {
                 $notice_sql = "INSERT INTO notice_detail (post_id, is_pinned) 
                             VALUES (:post_id, :is_pinned);";
                 
@@ -242,7 +241,6 @@ class Board
             }
 
             $this->db->commit();
-            return $post_id;
             
         } catch (\Throwable $e) {
             $this->db->rollBack();
@@ -392,6 +390,19 @@ class Board
             $this->db->rollBack();
             throw $e; 
         }
+    }
+
+    /**
+     * 게시글 작성 가능 여부 확인
+     */
+    public function canWritePost(int $user_id, string $board_name): bool
+    {
+        // 공지사항은 관리자만 작성 가능
+        if ($board_name === 'notice') {
+            return $this->user->isAdmin($user_id);
+        }
+
+        return true;
     }
 
     /**

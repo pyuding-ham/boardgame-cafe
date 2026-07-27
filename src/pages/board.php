@@ -5,6 +5,7 @@ use BoardgameCafe\Controllers\BoardController;
 use BoardgameCafe\Controllers\SiteMenuController;
 use BoardgameCafe\Exceptions\NotFoundException;
 use BoardgameCafe\Exceptions\PostNotFoundException;
+use BoardgameCafe\Exceptions\AuthorizationException;
 use BoardgameCafe\Exceptions\AuthenticationException;
 use BoardgameCafe\Exceptions\ErrorCode;
 
@@ -59,25 +60,13 @@ if (in_array($boardName, $allowed_boards)) {
     }
     // 2. 게시글 작성
     elseif ($boardAction === 'write') {
-        // 공지사항인데 관리자가 아닌 경우 접근 차단 (GET, POST 공통)
-        if ($boardName === 'notice' && ($_SESSION['role'] ?? '') !== 'ADMIN') {
-            // 로그인으로 리다이렉트
-            redirect("login/", [
-                'status' => 'access_denied'
-            ]);
-            exit;
+        // 로그인 여부 확인
+        if (!$currentUserId) {
+            throw new AuthenticationException();
         }
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            if (!$currentUserId) {
-                // 로그인으로 리다이렉트
-                redirect("login/", [
-                    'status' => 'login_required'
-                ]);
-                exit;
-            }
-
-            $result = $boardController->write($boardName, $_POST, $_FILES, (int)$currentUserId);
+            $result = $boardController->insert($boardName, $_POST, $_FILES, (int)$currentUserId);
             
             if ($result['success']) {
                 redirect("board/{$boardName}", [
@@ -91,12 +80,16 @@ if (in_array($boardName, $allowed_boards)) {
         } 
         // 최초 글쓰기 페이지 진입 (GET)
         else {
-            $data['errors']  = [];
+            // 공지사항 게시판일 때 관리자 여부 체크
+            if ($boardName === 'notice' && !$boardController->canWritePost((int)$currentUserId, $boardName)) {
+                throw new AuthorizationException(ErrorCode::ACCESS_DENIED->value);
+            }
+
             $data['post'] = [
                 'title' => '',
                 'content' => '',
-                'is_pinned' => 0
             ];
+            $data['errors']  = [];
         }
 
         $data = array_merge($board_title, $data);
@@ -155,5 +148,5 @@ if (in_array($boardName, $allowed_boards)) {
         echo $twig->render($boardName . '-list.html', $data);
     }
 } else {
-    throw new NotFoundException(ErrorCode::PAGE_NOT_FOUND->value);
+    throw new NotFoundException(ErrorCode::BOARD_NOT_FOUND->value);
 }
