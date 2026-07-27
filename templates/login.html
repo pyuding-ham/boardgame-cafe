@@ -3,7 +3,13 @@
 {% block content %}
 {# 토스트 팝업 #}
 <div id="toast-container" class="toast-container" role="status" aria-live="polite"></div>
-{% if status == 'reset_success' %}
+{% if status == 'login_required' %}
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            showToast('로그인이 필요한 서비스입니다.');
+        });
+    </script>
+{% elseif status == 'reset_success' %}
     <script>
         window.addEventListener('DOMContentLoaded', () => {
             showToast('비밀번호가 성공적으로 변경되었습니다.');
