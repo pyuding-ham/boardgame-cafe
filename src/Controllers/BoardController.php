@@ -118,7 +118,7 @@ class BoardController {
         }
         // 기본 게시판 및 공지사항
         else {
-            $post = $board_service->getBoardArticle($boardName, (int)$identifier);
+            $post = $board_service->getBoardPost($boardName, (int)$identifier);
         }
 
         // 게시글이 존재하지 않거나 삭제된 경우 예외 처리
@@ -498,7 +498,7 @@ class BoardController {
                 'success' => true,
             ];
 
-        } catch (AuthenticationException | AuthorizationException | PostNotFoundException $e) {
+        } catch (AuthenticationException | AuthorizationException | NotFoundException | PostNotFoundException $e) {
             throw $e;
         } catch (\Exception $e) {
             return [

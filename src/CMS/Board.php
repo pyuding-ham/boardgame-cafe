@@ -26,12 +26,21 @@ class Board
     /**
      * 게시판 목록 조회
      */
-    public function getBoardList(string $page_code, int $limit, int $offset, array $filters = []): array
+    public function getBoardList(string $board_name, int $limit, int $offset, array $filters = []): array
     {
-        $params = ['page_code' => $page_code];
+        // 1. page_code 기반으로 site_menu_id 조회
+        $menu_sql = "SELECT id FROM site_menu WHERE page_code = :page_code;";
+        $menu_stmt = $this->db->runSql($menu_sql, ['page_code' => $board_name]);
+        $menu = $menu_stmt ? $menu_stmt->fetch() : false;
         
-        // 1. 게시판별 분기 처리
-        switch ($page_code) {
+        if (!$menu) {
+            throw new NotFoundException(ErrorCode::BOARD_NOT_FOUND->value);
+        }
+        
+        $params = ['page_code' => $board_name];
+        
+        // 2. 게시판별 분기 처리
+        switch ($board_name) {
             // 공지사항
             case 'notice':
                 $sql = "SELECT p.id, p.title, '관리자' AS nickname, p.created_at,
@@ -50,10 +59,10 @@ class Board
                 break;
         }
 
-        // 2. 공통 조건 (삭제되지 않은 요청한 page_code에 해당하는 게시글만)
+        // 3. 공통 조건 (삭제되지 않은 요청한 page_code에 해당하는 게시글만)
         $sql .= " WHERE m.page_code = :page_code AND p.is_deleted = 0";
 
-        // 3. 공통 검색 필터 처리
+        // 4. 공통 검색 필터 처리
         if (isset($filters['keyword']) && trim($filters['keyword']) !== '') {
             $keyword_value = '%' . trim($filters['keyword']) . '%';
 
@@ -73,7 +82,7 @@ class Board
             }
         }
 
-        // 4. 공통 정렬 및 페이징
+        // 5. 공통 정렬 및 페이징
         $sql .= " ORDER BY is_pinned DESC, p.id DESC";
         $sql .= " LIMIT " . (int)$limit . " OFFSET " . (int)$offset . ";";
 
@@ -120,7 +129,7 @@ class Board
     /**
      * 단일 게시글 상세 조회
      */
-    public function getBoardArticle(string $page_code, int $id): array|bool
+    public function getBoardPost(string $page_code, int $id): array|bool
     {
         // 1. 게시판별 게시글 조회 분기 처리
         switch ($page_code) {
@@ -143,10 +152,10 @@ class Board
         }
 
         $stmt = $this->db->runSql($sql, ['id' => $id]);
-        $article = $stmt ? $stmt->fetch() : false;
+        $post = $stmt ? $stmt->fetch() : false;
 
         // 게시글이 존재하지 않거나 삭제된 경우 예외 처리
-        if (!$article) {
+        if (!$post) {
             throw new PostNotFoundException(ErrorCode::POST_NOT_FOUND_READ->value);
         }
 
@@ -157,9 +166,9 @@ class Board
 
         $file_stmt = $this->db->runSql($file_sql, ['post_id' => $id]);
         
-        $article['files'] = $file_stmt ? $file_stmt->fetchAll() : [];
+        $post['files'] = $file_stmt ? $file_stmt->fetchAll() : [];
 
-        return $article;
+        return $post;
     }
 
     /**
