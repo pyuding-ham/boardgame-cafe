@@ -133,21 +133,35 @@ class Board
     {
         // 1. 게시판별 게시글 조회 분기 처리
         switch ($page_code) {
+            // 지점소개
+            case 'branch':
+                $sql = "SELECT p.id, '관리자' AS nickname, p.title, p.content, p.thumbnail,
+                               p.created_at, bd.address, bd.latitude, bd.longitude
+                        FROM post p
+                        LEFT JOIN branch_detail bd
+                         ON p.id = bd.post_id
+                        WHERE p.id = :id
+                         AND p.is_deleted = 0;";
+                break;
+
             // 공지사항
             case 'notice':
                 $sql = "SELECT p.id, '관리자' AS nickname, p.title, p.content, p.created_at,
-                            COALESCE(nd.is_pinned, 0) AS is_pinned
+                               COALESCE(nd.is_pinned, 0) AS is_pinned
                         FROM post p
-                        LEFT JOIN notice_detail nd ON p.id = nd.post_id
-                        WHERE p.id = :id AND p.is_deleted = 0;";
+                        LEFT JOIN notice_detail nd
+                         ON p.id = nd.post_id
+                        WHERE p.id = :id
+                         AND p.is_deleted = 0;";
                 break;
 
             // 기본 게시판
             default:
-                $sql = "SELECT p.id, p.writer_nickname AS nickname, p.title, p.content, p.created_at,
-                            0 AS is_pinned
+                $sql = "SELECT p.id, p.writer_nickname AS nickname, p.title, p.content, p.thumbnail,
+                               p.created_at
                         FROM post p
-                        WHERE p.id = :id AND p.is_deleted = 0;";
+                        WHERE p.id = :id
+                         AND p.is_deleted = 0;";
                 break;
         }
 
@@ -161,12 +175,22 @@ class Board
 
         // 2. 첨부파일 목록 조회
         $file_sql = "SELECT id, file_path, org_name
-                    FROM post_file
-                    WHERE post_id = :post_id;";
+                     FROM post_file
+                     WHERE post_id = :post_id;";
 
         $file_stmt = $this->db->runSql($file_sql, ['post_id' => $id]);
         
         $post['files'] = $file_stmt ? $file_stmt->fetchAll() : [];
+
+        
+        // 3. 이미지 목록 조회
+        $image_sql = "SELECT id, image_path, org_name, sort_order
+                      FROM post_image
+                      WHERE post_id = :post_id;";
+
+        $image_stmt = $this->db->runSql($image_sql, ['post_id' => $id]);
+        
+        $post['images'] = $image_stmt ? $image_stmt->fetchAll() : [];
 
         return $post;
     }

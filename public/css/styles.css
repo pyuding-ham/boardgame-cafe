@@ -1,3 +1,8 @@
+/* 공통 스타일 */
+body {
+    letter-spacing: -0.04rem;
+}
+
 /* 비밀번호 보이기 버튼 */
 .input-group .toggle-password {
     border: none;
@@ -115,15 +120,62 @@
     cursor: default;
 }
 
-/* 게시글 상세 */
-.board-view-container .board-view__content {
-    min-height: 350px;
-    line-height: 1.8;
-    white-space: pre-wrap;
-}
-
 /* 게시글 쓰기 에디터 */
 .editor-wrapper #editor {
     height: 400px;
     font-size: 16px;
+}
+
+
+/* 게시글 상세 */
+.board-view__board .title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #6c757d;
+}
+.board-view__header .title {
+    font-size: 2rem;
+}
+.board-view__header .bottom {
+    color: #6c757d;
+}
+
+/* 카카오맵 */
+.board-view__map #map {
+    width: 100%;
+    aspect-ratio: 3 / 1;
+}
+
+.board-view__address p {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #4a5568;
+}
+.board-view-container .board-view__content {
+    min-height: 300px;
+    line-height: 1.8;
+    white-space: pre-wrap;
+}
+
+/* 이미지 슬라이드 */
+.board-view__image .carousel-item img {
+    width: 100%;
+    aspect-ratio: 16 / 9; 
+    object-fit: cover; 
+    object-position: center;
+}
+.board-view__image .custom-indicators button {
+    width: 10px !important;
+    height: 10px !important;
+    border-radius: 50% !important;
+    background-color: rgba(255, 255, 255, 0.7) !important;
+    border: none !important;
+    margin: 0 5px !important;
+    transition: all 0.3s ease;
+}
+.board-view__image .custom-indicators button:hover {
+    background-color: rgba(255, 255, 255, 1) !important;
+}
+.board-view__image .custom-indicators .active {
+    background-color: rgba(255, 255, 255, 1) !important;
 }
