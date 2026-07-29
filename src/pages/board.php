@@ -27,6 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && !isset($postId)) {
 
 // 게시판 목록
 $allowed_boards = [
+    'branch',
     'notice',
 ];
 

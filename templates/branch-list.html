@@ -1,0 +1,146 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+{# 토스트 팝업 #}
+<div id="toast-container" class="toast-container"></div>
+{% if status == 'write_success' %}
+    <script>window.addEventListener('DOMContentLoaded', () => showToast('글 작성이 완료되었습니다.'));</script>
+{% elseif status == 'update_success' %}
+    <script>window.addEventListener('DOMContentLoaded', () => showToast('글 수정이 완료되었습니다.'));</script>
+{% elseif status == 'delete_success' %}
+    <script>window.addEventListener('DOMContentLoaded', () => showToast('글 삭제가 완료되었습니다.'));</script>
+{% endif %}
+
+<div class="container board-container my-5">
+    <!-- 타이틀 영역 -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="fw-bold mb-0">{{ board_title }}</h2>
+    </div>
+    
+    <p class="text-muted small mb-3">총 <strong class="text-primary">{{ total_count }}</strong>개의 글</p>
+
+    <!-- 게시글 영역 -->
+    <div class="container my-4">
+        {% if list is empty %}
+        <!-- 게시글이 없거나 검색 결과가 없는 경우 -->
+        <div class="text-center text-muted py-5">
+            <i class="bi bi-exclamation-circle d-block fs-4 mb-2"></i>
+            검색 결과가 없거나 등록된 게시글이 없습니다.
+        </div>
+        {% else %}
+        <!-- 등록된 게시글이 있는 경우 -->
+        <div class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-4">
+            {% for item in list %}
+                <div class="col">
+                    <div class="card h-100 border-0 rounded-0">
+                        <a href="#" class="text-decoration-none text-dark">
+                            <div class="ratio ratio-4x3">
+                                {% if item.thumbnail %}
+                                    <img src="/uploads/branches/{{ item.thumbnail|split('/')|last }}" class="card-img-top object-fit-cover rounded-0" alt="{{ item.title }}">
+                                {% else %}
+                                    <img src="/img/defaults/post_4x3.svg" class="card-img-top object-fit-cover rounded-0" alt="게시글 기본 이미지">
+                                {% endif %}
+                            </div>
+                            <div class="card-body px-0 pb-0">
+                                <h5 class="card-title text-truncate mb-0">{{ item.title }}</h5>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- 페이지네이션 -->
+    {% if total_pages > 1 %}
+        <nav class="d-flex justify-content-center gap-1 mt-4 mb-4">
+
+            {# 1. 처음 화살표 #}
+            {% if current_page > 1 %}
+                <a class="page-num-link" href="{{ doc_root }}board/{{ board_name }}/page/1" title="처음 페이지">
+                    <i class="bi bi-chevron-double-left"></i>
+                </a>
+                {# 2. 이전 화살표 #}
+                <a class="page-num-link" href="{{ doc_root }}board/{{ board_name }}/page/{{ current_page - 1 }}" title="이전 페이지">
+                    <i class="bi bi-chevron-left"></i>
+                </a>
+            {% endif %}
+
+            {# 3. 1부터 마지막 페이지까지 번호 출력 #}
+            {% for p in 1..total_pages %}
+                <a class="page-num-link {% if p == current_page %}active{% endif %}" 
+                href="{{ doc_root }}board/{{ board_name }}/page/{{ p }}">
+                    {{ p }}
+                </a>
+            {% endfor %}
+
+            {# 4. 다음 화살표  #}
+            {% if current_page < total_pages %}
+                <a class="page-num-link" href="{{ doc_root }}board/{{ board_name }}/page/{{ current_page + 1 }}" title="다음 페이지">
+                    <i class="bi bi-chevron-right"></i>
+                </a>
+                {# 5. 마지막 화살표 #}
+                <a class="page-num-link" href="{{ doc_root }}board/{{ board_name }}/page/{{ total_pages }}" title="마지막 페이지">
+                    <i class="bi bi-chevron-double-right"></i>
+                </a>
+            {% endif %}
+
+        </nav>
+    {% endif %}
+
+    <!-- 검색 및 글쓰기 버튼 영역 -->
+    <div class="board-search d-flex justify-content-center align-items-center position-relative mt-4">
+
+        <!-- 1. 검색 폼 -->
+        <form action="{{ doc_root }}board/{{ board_name }}" method="post" class="row g-1 justify-content-center">
+            <!-- 검색 조건 선택 -->
+            <div class="col-auto">
+                <select name="search_type" class="form-select form-select-sm border-secondary-subtle">
+                    <option value="all" {% if search_type == 'all' %}selected{% endif %}>전체</option>
+                    <option value="title" {% if search_type == 'title' %}selected{% endif %}>제목</option>
+                    <option value="content" {% if search_type == 'content' %}selected{% endif %}>내용</option>
+                </select>
+            </div>
+            <!-- 검색 키워드 인풋 -->
+            <div class="col">
+                <input type="text" name="keyword" value="{{ keyword }}" class="form-control form-control-sm border-secondary-subtle" placeholder="검색어를 입력해 주세요.">
+            </div>
+            <!-- 검색 버튼 -->
+            <div class="col-auto">
+                <button type="submit" class="btn btn-dark btn-sm px-3">검색</button>
+            </div>
+        </form>
+
+        <!-- 2. 글쓰기 버튼 -->
+        <!-- 관리자 권한만 글쓰기 버튼 노출 -->
+        {% if session.role == 'ADMIN' %}
+            <a href="{{ doc_root }}board/{{ board_name }}/write" class="btn btn-primary btn-sm rounded-1 px-3 text-nowrap position-absolute end-0">
+                <i class="bi bi-pencil"></i> 글쓰기
+            </a>
+        {% endif %}
+
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // 토스트 팝업
+    function showToast(message) {
+        const container = document.getElementById('toast-container');
+        if (!container) return;
+    
+        const toast = document.createElement('div');
+        toast.className = 'toast-message';
+        toast.innerText = message;
+    
+        container.appendChild(toast);
+    
+        // 애니메이션이 끝나는 2.8초 뒤에 메모리에서 안전하게 제거
+        setTimeout(() => {
+            toast.remove();
+        }, 2800);
+    }
+</script>
+{% endblock %}

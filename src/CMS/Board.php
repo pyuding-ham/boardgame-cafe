@@ -52,7 +52,7 @@ class Board
 
             // 기본 게시판
             default:
-                $sql = "SELECT p.id, p.title, p.writer_nickname AS nickname, p.created_at,
+                $sql = "SELECT p.id, p.thumbnail, p.title, p.writer_nickname AS nickname, p.created_at,
                             0 AS is_pinned
                         FROM post p
                         INNER JOIN site_menu m ON p.site_menu_id = m.id";
