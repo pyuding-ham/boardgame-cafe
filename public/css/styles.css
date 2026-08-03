@@ -1,12 +1,19 @@
 /* 공통 스타일 */
+
 body {
     letter-spacing: -0.04rem;
 }
+/* 로고 */
+.logo img {
+    width: 200px;
+}
+
 .container {
     width: 100%;
     max-width: 1140px;
     margin: 0 auto;
 }
+
 
 /* 비밀번호 보이기 버튼 */
 .input-group .toggle-password {
