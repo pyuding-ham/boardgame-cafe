@@ -44,7 +44,7 @@
                 <div class="carousel-inner">
                     {% for item in post.images|sort((a, b) => a.sort_order <=> b.sort_order) %}
                         <div class="carousel-item {{ loop.first ? 'active' : '' }}">
-                            <img src="/uploads/branches/{{ item.image_path|split('/')|last }}" alt="{{ post.title }}">
+                            <img src="/uploads/boards/{{ board_name }}/{{ item.image_path|split('/')|last }}" alt="{{ post.title }}">
                         </div>
                     {% endfor %}
                 </div>
@@ -80,7 +80,7 @@
     <div class="board-view__content border p-4 bg-white mb-5">{{ post.content|raw }}</div>
 
     <!-- 게시글 하단 버튼 영역 -->
-    <div class="board-view__footer d-flex justify-content-between align-items-center">
+    <div class="board-view__footer d-flex justify-content-between gap-2">
         <a href="{{ doc_root }}board/{{ board_name }}" class="btn btn-secondary px-4 rounded-0">목록으로</a>
         
         {% if session.role == 'ADMIN' %}

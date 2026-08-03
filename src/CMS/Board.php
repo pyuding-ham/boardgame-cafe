@@ -186,7 +186,8 @@ class Board
         // 3. 이미지 목록 조회
         $image_sql = "SELECT id, image_path, org_name, sort_order
                       FROM post_image
-                      WHERE post_id = :post_id;";
+                      WHERE post_id = :post_id
+                       AND file_type = 'DETAIL';";
 
         $image_stmt = $this->db->runSql($image_sql, ['post_id' => $id]);
         
@@ -198,7 +199,7 @@ class Board
     /**
      * 게시글 작성
      */
-    public function insertBoardPost(string $board_name, int $user_id, array $data, array $files = []): void
+    public function insertBoardPost(string $board_name, int $user_id, array $data): int
     {
         // 1. 회원 존재 여부 확인
         $user = $this->user->get($user_id);
@@ -225,61 +226,133 @@ class Board
             throw new AuthorizationException(ErrorCode::ACCESS_DENIED->value);
         }
 
-        // 4. 데이터베이스 트랜잭션 시작
-        $this->db->beginTransaction();
+        // 4. 게시글 삽입
+        $post_sql = "INSERT INTO post (
+                        site_menu_id, user_id, writer_nickname, title, content, 
+                        thumbnail, is_deleted, created_at, updated_at
+                    ) VALUES (
+                        :site_menu_id, :user_id, :writer_nickname, :title, :content, 
+                        :thumbnail, 0, NOW(), NOW()
+                    );";
 
-        try {
-            $post_sql = "INSERT INTO post (
-                            site_menu_id, user_id, writer_nickname, title, content, 
-                            thumbnail, is_deleted, created_at, updated_at
-                        ) VALUES (
-                            :site_menu_id, :user_id, :writer_nickname, :title, :content, 
-                            :thumbnail, 0, NOW(), NOW()
-                        );";
+        $this->db->runSql($post_sql, [
+            'site_menu_id'    => $site_menu_id,
+            'user_id'         => $user_id,
+            'writer_nickname' => $writer_nickname,
+            'title'           => $data['title'],
+            'content'         => $data['content'],
+            'thumbnail'       => $data['thumbnail'],
+        ]);
 
-            $this->db->runSql($post_sql, [
-                'site_menu_id'    => $site_menu_id,
-                'user_id'         => $user_id,
-                'writer_nickname' => $writer_nickname,
-                'title'           => $data['title'],
-                'content'         => $data['content'],
-                'thumbnail'       => $data['thumbnail'] ?? null,
+        $post_id = $this->db->lastInsertId();
+
+        // 게시판별 등록 분기
+        // 지점소개
+        if ($board_name === 'branch') {
+            $address = $data['address'] ?? '';
+
+            $result = $this->getCoordinate($address);
+
+            if (!empty($result['documents'])) {
+                $data['latitude'] = $result['documents'][0]['y'];
+                $data['longitude'] = $result['documents'][0]['x'];
+            } else {
+                $data['latitude'] = null;
+                $data['longitude'] = null;
+            }
+
+            $branch_sql = "INSERT INTO branch_detail (post_id, address, latitude, longitude) 
+                           VALUES (:post_id, :address, :latitude, :longitude);";
+            
+            $this->db->runSql($branch_sql, [
+                'post_id'   => $post_id,
+                'address' => $address,
+                'latitude' => $data['latitude'] ?? 0,
+                'longitude' => $data['longitude'] ?? 0,
             ]);
+        }
+        // 공지사항
+        elseif ($board_name === 'notice') {
+            $notice_sql = "INSERT INTO notice_detail (post_id, is_pinned) 
+                           VALUES (:post_id, :is_pinned);";
+            
+            $this->db->runSql($notice_sql, [
+                'post_id'   => $post_id,
+                'is_pinned' => $data['is_pinned'] ?? 0,
+            ]);
+        }
 
-            $post_id = $this->db->lastInsertId();
+        return (int)$post_id;
+    }
 
-            // 게시판별 등록 분기
-            if ($board_name === 'notice') {
-                $notice_sql = "INSERT INTO notice_detail (post_id, is_pinned) 
-                            VALUES (:post_id, :is_pinned);";
-                
-                $this->db->runSql($notice_sql, [
+    /**
+     * 이미지 등록
+     */
+    public function insertBoardImage(int $post_id, ?array $thumbnail = null, array $images_files = []): void {
+        $image_sql = "INSERT INTO post_image (
+                        post_id,
+                        image_path,
+                        org_name,
+                        sort_order,
+                        file_type,
+                        created_at
+                      ) 
+                      VALUES (
+                        :post_id,
+                        :image_path,
+                        :org_name,
+                        :sort_order,
+                        :file_type,
+                        NOW()
+                      );";
+
+         $images = [];
+
+        // 대표 이미지
+        if (!empty($thumbnail)) {
+            $images[] = [
+                'file'       => $thumbnail,
+                'sort_order' => 0,
+                'file_type'  => 'THUMB',
+            ];
+        }
+
+        // 상세 이미지
+        foreach ($images_files as $index => $file) {
+            $images[] = [
+                'file'       => $file,
+                'sort_order' => $index + 1,
+                'file_type'  => 'DETAIL',
+            ];
+        }
+
+        foreach ($images as $image) {
+            $this->db->runSql($image_sql, [
+                'post_id'    => $post_id,
+                'image_path' => $image['file']['file_path'],
+                'org_name'   => $image['file']['org_name'],
+                'sort_order' => $image['sort_order'],
+                'file_type'  => $image['file_type'],
+            ]);
+        }
+    }
+
+    /**
+     * 첨부파일 등록
+     */
+    public function insertBoardFile(int $post_id, array $files): void {
+        if (!empty($files)) {
+            $file_sql = "INSERT INTO post_file (post_id, file_path, org_name, created_at) 
+                         VALUES (:post_id, :file_path, :org_name, NOW());";
+            
+            foreach ($files as $file) {
+                $this->db->runSql($file_sql, [
                     'post_id'   => $post_id,
-                    'is_pinned' => $data['is_pinned'] ?? 0,
+                    'file_path' => $file['file_path'],
+                    'org_name'  => $file['org_name'],
                 ]);
             }
-
-            // 첨부파일 등록
-            if (!empty($files)) {
-                $file_sql = "INSERT INTO post_file (post_id, file_path, org_name, created_at) 
-                            VALUES (:post_id, :file_path, :org_name, NOW());";
-                
-                foreach ($files as $file) {
-                    $this->db->runSql($file_sql, [
-                        'post_id'   => $post_id,
-                        'file_path' => $file['file_path'],
-                        'org_name'  => $file['org_name'],
-                    ]);
-                }
-            }
-
-            $this->db->commit();
-            
-        } catch (\Throwable $e) {
-            $this->db->rollBack();
-            throw $e; 
         }
-        
     }
 
     /**
@@ -472,7 +545,7 @@ class Board
     public function canWritePost(int $user_id, string $board_name): bool
     {
         // 공지사항은 관리자만 작성 가능
-        if ($board_name === 'notice') {
+        if ($board_name === 'branch' || $board_name == 'notice') {
             return $this->user->isAdmin($user_id);
         }
 
@@ -529,5 +602,27 @@ class Board
         ]);
 
         return $stmt ? $stmt->fetch() : false;
+    }
+
+    /**
+     * 위도/경도 값 계산
+     */
+    function getCoordinate($address)
+    {
+        $url = "https://dapi.kakao.com/v2/local/search/address.json?query=" . urlencode($address);
+
+        $headers = [
+            "Authorization: KakaoAK 203ea5d20e475c58254caf2e7c5270be"
+        ];
+
+        $ch = curl_init();
+
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+        $result = curl_exec($ch);
+
+        return json_decode($result, true);
     }
 }

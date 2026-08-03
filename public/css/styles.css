@@ -2,6 +2,11 @@
 body {
     letter-spacing: -0.04rem;
 }
+.container {
+    width: 100%;
+    max-width: 1140px;
+    margin: 0 auto;
+}
 
 /* 비밀번호 보이기 버튼 */
 .input-group .toggle-password {
@@ -128,12 +133,14 @@ body {
 
 
 /* 게시글 상세 */
-.board-view__board .title {
+.board-view__board .title,
+.board-write__board .title {
     font-size: 1.2rem;
     font-weight: 600;
     color: #6c757d;
 }
-.board-view__header .title {
+.board-view__header .title,
+.board-write__header .title {
     font-size: 2rem;
 }
 .board-view__header .bottom {
@@ -178,4 +185,113 @@ body {
 }
 .board-view__image .custom-indicators .active {
     background-color: rgba(255, 255, 255, 1) !important;
+}
+
+
+/* 대표 이미지 */
+.upload-box {
+    width: calc((100% - (20px * 2)) / 5);
+    aspect-ratio: 1 / 1;
+    border: 2px dashed #ccc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    overflow: hidden;
+    position: relative;
+}
+.upload-box:hover {
+    border-color:#999;
+}
+.upload-box #thumbnailText {
+    font-size: 2em;
+    color: #ccc;
+}
+.upload-box:hover #thumbnailText {
+    color:#999;
+}
+#thumbnailPreview {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+#thumbnailPreview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+#thumbnailPreview .delete-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 10;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: none;
+    background: #FF007F;
+    color: white;
+    cursor: pointer;
+    font-size: 0.8em;
+}
+#thumbnailPreview .delete-btn:hover {
+    background: #D10068;
+}
+
+
+/* 상세 이미지 */
+.image-count {
+    margin-top:10px;
+    margin-left: 10px;
+    font-size:14px;
+    color:#666;
+}
+.detail-add-box {
+    width: calc((100% - (20px * 2)) / 5);
+    aspect-ratio: 1 / 1;
+    border:2px dashed #ccc;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-size: 2em;
+    color: #ccc;
+    cursor:pointer;
+}
+.detail-add-box:hover {
+    color:#999;
+    border-color:#999;
+}
+#detailPreview {
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-bottom: 10px;
+}
+#detailPreview .detail-item {
+    flex: 0 0 calc((100% - (20px * 2)) / 5);
+    aspect-ratio: 1 / 1;
+    position:relative;
+}
+#detailPreview .detail-item img {
+    width:100%;
+    height:100%;
+    object-fit:cover;
+}
+#detailPreview .detail-item .detail-remove {
+    position:absolute;
+    top:5px;
+    right:5px;
+    width:24px;
+    height:24px;
+    border:none;
+    border-radius:50%;
+    background:#FF007F;
+    font-size: 0.6em;
+    color:#fff;
+    cursor:pointer;
+}
+#detailPreview .detail-item .detail-remove:hover {
+    background: #D10068;
 }

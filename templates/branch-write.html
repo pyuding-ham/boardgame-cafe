@@ -1,0 +1,367 @@
+{% extends 'layout.html' %}
+
+{% block styles %}
+<link href="/css/vendor/quill/quill.snow.css" rel="stylesheet" />
+{% endblock %}
+
+{% block content %}
+<div class="container write-container mt-5 mb-5">
+    <!-- 게시판 타이틀 영역 -->
+    <div class="board-write__board mb-4">
+        <h3 class="title mb-0">{{ board_title }}</h3>
+    </div>
+
+    <!-- 글작성 상단 영역 -->
+    <div class="board-write__header mb-5">
+        <div class="top">
+            <h2 class="title mb-0">글쓰기</h2>
+        </div>
+    </div>
+
+    <!-- 글작성 영역 -->
+    <form method="POST" id="writeForm" enctype="multipart/form-data">
+        {% if errors.system is defined and errors.system %}
+            <div class="mb-4">
+                <div class="text-danger small fw-bold d-flex align-items-center justify-content-center p-2 mb-3 bg-danger bg-opacity-10 rounded">
+                    <i class="bi bi-exclamation-circle-fill me-2"></i>
+                    <span>{{ errors.system }}</span>
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- 제목 영역 -->
+        <div class="mb-4">
+            <label for="title" class="form-label fw-bold">제목</label>
+            <input type="text" class="form-control {{ (errors.title is defined and errors.title) ? 'is-invalid' : '' }}" id="title" name="title" value="{{ post.title is defined ? post.title : '' }}" maxlength="100" required>
+            {% if errors.title is defined and errors.title %}
+                <div class="invalid-feedback fw-bold">
+                    <i class="bi bi-exclamation-circle me-1"></i> {{ errors.title }}
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- 대표 이미지 영역 -->
+        <div class="mb-4">
+            <label for="title" class="form-label fw-bold">대표 이미지 <span class="text-muted small fw-normal">(파일 당 5MB 제한)</span></label><br>
+            <div class="upload-box {{ (errors.thumbnail is defined and errors.thumbnail) ? 'is-invalid' : '' }}" onclick="document.getElementById('thumbnail').click()">
+                <span id="thumbnailText"><i class="bi bi-plus-lg"></i></span>
+                <input type="file" id="thumbnail" name="thumbnail" accept="image/*" hidden>
+                <div id="thumbnailPreview"></div>
+            </div>
+            {% if errors.thumbnail is defined and errors.thumbnail %}
+                <div class="invalid-feedback fw-bold">
+                    <i class="bi bi-exclamation-circle me-1"></i> {{ errors.thumbnail }}
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- 주소 영역 -->
+        <div class="mb-4">
+            <label for="title" class="form-label fw-bold">주소</label>
+            <input type="text" class="form-control {{ (errors.address is defined and errors.address) ? 'is-invalid' : '' }}" id="address" name="address" value="{{ post.address is defined ? post.address : '' }}" maxlength="255" required>
+            {% if errors.address is defined and errors.address %}
+                <div class="invalid-feedback fw-bold">
+                    <i class="bi bi-exclamation-circle me-1"></i> {{ errors.address }}
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- 본문 에디터 영역 -->
+        <div class="mb-4">
+            <label class="form-label fw-bold">내용</label>
+            <div class="editor-wrapper {{ (errors.content is defined and errors.content) ? 'border border-danger rounded' : '' }}">
+                <div id="editor">
+                    {{ (post.content is defined) ? post.content|raw : '' }}
+                </div>
+            </div>
+            <input type="hidden" name="content" id="contentInput">
+            
+            {% if errors.content is defined and errors.content %}
+                <div class="text-danger small fw-bold mt-2">
+                    <i class="bi bi-exclamation-circle me-1"></i> {{ errors.content }}
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- 상세 이미지 영역 -->
+        <div class="mb-4">
+            <label for="title" class="form-label fw-bold">상세 이미지 <span class="text-muted small fw-normal">(최대 10개, 파일 당 5MB 제한)</span></label>
+            <span class="image-count">
+                <span id="imageCount">0</span> / 10
+            </span>
+            <input
+                type="file"
+                id="detailImages"
+                name="detailImages[]"
+                accept="image/*"
+                multiple
+                hidden
+            >
+
+            <div class="detail-container {{ (errors.detail_images is defined and errors.detail_images) ? 'is-invalid' : '' }}">
+                <div id="detailPreview"></div>
+
+                <label for="detailImages" class="detail-add-box" id="detailAddBox">
+                    <i class="bi bi-plus-lg"></i>
+                </label>
+            </div>
+            {% if errors.detail_images is defined and errors.detail_images %}
+                <div class="invalid-feedback fw-bold">
+                    <i class="bi bi-exclamation-circle me-1"></i> {{ errors.detail_images }}
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- 하단 버튼 -->
+        <div class="board-write__footer d-flex justify-content-center gap-2">
+            <a href="{{ doc_root }}board/{{ board_name }}" class="btn btn-outline-secondary px-4">취소하기</a>
+            <button class="btn btn-primary px-4" type="submit" id="btnSubmit">작성하기</button>
+        </div>
+    </form>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/js/vendor/quill/quill.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (typeof Quill === 'undefined') return;
+
+    // 1. Quill 에디터 초기화
+    const quill = new Quill('#editor', {
+        theme: 'snow',
+        placeholder: '',
+        modules: {
+            toolbar: [
+                [{ 'header': [1, 2, 3, false] }],
+                ['bold', 'italic', 'underline', 'strike'],
+                ['blockquote', 'code-block'],
+                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                ['clean']
+            ]
+        }
+    });
+
+    // 2. 대표 이미지 관련 변수
+    const thumbnail = document.getElementById('thumbnail');
+    const thumbnailBox = document.getElementById('thumbnailPreview');
+    const thumbnailText = document.getElementById('thumbnailText');
+
+    // 대표 이미지 업로드 시 실행
+    thumbnail.addEventListener('change', function(){
+        const file = this.files[0];
+        if(!file) return;
+
+        // 이미지 파일 유효성 검사
+        if (!validateImageUpload(file)) {
+            this.value = "";
+            return;
+        }
+
+        thumbnailText.style.display = 'none';
+        thumbnailBox.innerHTML = '';
+
+        const img = document.createElement('img');
+        img.src = URL.createObjectURL(file);
+
+        const del = document.createElement('button');
+        del.innerHTML = '<i class="bi bi-x-lg"></i>';
+        del.className = 'delete-btn';
+
+        del.onclick = function(e) {
+            e.stopPropagation();
+
+            thumbnail.value='';
+            thumbnailText.style.display = 'block';
+            thumbnailBox.innerHTML = '';
+        };
+
+        thumbnailBox.appendChild(img);
+        thumbnailBox.appendChild(del);
+    });
+
+    // 3. 상세 이미지 업로드 관련 변수
+    const input = document.getElementById("detailImages");
+    const preview = document.getElementById("detailPreview");
+    const addBox = document.getElementById("detailAddBox");
+    const imageCount = document.getElementById("imageCount");
+    let files = [];
+
+    // 상세 이미지 업로드 시 실행
+    input.addEventListener("change", function () {
+        let limitExceeded = false;
+
+        [...this.files].forEach(file => {
+            // 이미지 파일 유효성 검사
+            if (!validateImageUpload(file)) {
+                this.value = "";
+                return;
+            }
+
+            if (files.length >= 10) {
+                limitExceeded = true;
+                return;
+            }
+
+            files.push(file);
+        });
+
+        if (limitExceeded) {
+            alert("이미지는 최대 10장까지 업로드할 수 있습니다.");
+        }
+
+        this.value = "";
+
+        render();
+    });
+
+    function render() {
+        preview.innerHTML = "";
+
+        files.forEach((file,index) => {
+            const div = document.createElement("div");
+            div.className = "detail-item";
+
+            div.innerHTML = `
+                <img src="${URL.createObjectURL(file)}">
+                <button type="button" class="detail-remove"><i class="bi bi-x-lg"></i></button>
+            `;
+
+            div.querySelector(".detail-remove").onclick = function() {
+                files.splice(index,1);
+                render();
+            };
+
+            preview.appendChild(div);
+        });
+
+        updateFiles();
+
+        addBox.style.display = files.length >= 10 ? "none" : "flex";
+        imageCount.textContent = files.length;
+    }
+
+    function updateFiles() {
+        const dt = new DataTransfer();
+
+        files.forEach(file => {
+            dt.items.add(file);
+        });
+
+        input.files = dt.files;
+    }
+
+    new Sortable(preview, {
+        animation: 150,
+        onEnd: function (evt) {
+            const moved = files.splice(evt.oldIndex, 1)[0];
+            files.splice(evt.newIndex, 0, moved);
+            updateFiles();
+        }
+    });
+
+    // 이미지 파일 유효성 검사
+    function validateImageUpload(file) {
+        // 파일 용량 검사
+        const maxSize = 5 * 1024 * 1024;
+        if (file.size > maxSize) {
+            alert('이미지 당 최대 5MB까지 업로드 가능합니다.');
+            return false;
+        }
+
+        // 확장자 검사
+        const allowed = [
+            "jpg",
+            "jpeg",
+            "png",
+            "gif",
+            "webp"
+        ];
+
+        const ext = file.name.split(".").pop().toLowerCase();
+        if (!allowed.includes(ext)) {
+            alert("지원하지 않는 이미지 확장자입니다.");
+            return false;
+        }
+
+        // MIME 타입 검사
+        if (!file.type.startsWith("image/")) {
+            alert("지원하지 않는 이미지 형식입니다.");
+            return false;
+        }
+
+        return true;
+    }
+
+    // 4. 작성하기 버튼 클릭 시
+    const form = document.getElementById('writeForm');
+    const titleInput = document.getElementById('title');
+    const addressInput = document.getElementById('address');
+    const contentInput = document.getElementById('contentInput');
+    
+    form.addEventListener('submit', function(e) {
+        const title = titleInput.value.trim();
+        const address = addressInput.value.trim();
+        const htmlContent = quill.getSemanticHTML();
+        const pureText = document.querySelector('.ql-editor').textContent.trim();
+        const cleanText = pureText.replace(/[\s\u00A0\u200B]+/g, '');
+        const realLength = cleanText.length;
+
+        // 1. 제목 필수 입력 값 검사
+        if (!title) {
+            e.preventDefault();
+            alert('제목을 입력해 주세요.');
+            titleInput.focus();
+            return;
+        }
+
+        // 2. 제목 글자 수 검사 (최대 100자)
+        if (title.length > 100) {
+            e.preventDefault();
+            alert('제목은 최대 100자까지 입력할 수 있습니다. (현재: ' + title.length + '자)');
+            titleInput.focus();
+            return;
+        }
+
+        // 3. 주소 필수 입력 값 검사
+        if (!address) {
+            e.preventDefault();
+            alert('주소를 입력해 주세요.');
+            addressInput.focus();
+            return;
+        }
+
+        // 4. 주소 글자 수 검사 (최대 255자)
+        if (address.length > 255) {
+            e.preventDefault();
+            alert('주소는 최대 255자까지 입력할 수 있습니다. (현재: ' + address.length + '자)');
+            addressInput.focus();
+            return;
+        }
+
+        // 5. 내용 필수 입력 값 검사
+        if (realLength === 0) {
+            e.preventDefault();
+            contentInput.value = '';
+            alert('내용을 입력해 주세요.');
+            quill.focus();
+            return;
+        }
+
+        // 6. 내용 글자 수 검사 (최대 5,000자)
+        if (realLength > 5000) { 
+            e.preventDefault();
+            contentInput.value = '';
+            alert('본문 내용은 5,000자를 초과할 수 없습니다. (현재: ' + realLength + '자)');
+            quill.focus();
+            return;
+        }
+
+        contentInput.value = htmlContent;
+        updateFileRows();
+    });
+});
+</script>
+{% endblock %}

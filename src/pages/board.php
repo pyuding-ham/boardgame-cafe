@@ -75,14 +75,14 @@ if (in_array($boardName, $allowed_boards)) {
                 ]);
                 exit;
             } else {
-                $data['errors']  = $result['errors'];
-                $data['post'] = $result['post'];
+                $data['errors'] = $result['errors'];
+                $data['post']   = $result['post'];
             }
         } 
         // 최초 글쓰기 페이지 진입 (GET)
         else {
-            // 공지사항 게시판일 때 관리자 여부 체크
-            if ($boardName === 'notice' && !$boardController->canWritePost((int)$currentUserId, $boardName)) {
+            // 지점소개, 공지사항 게시판일 때 관리자 여부 체크
+            if (($boardName === 'branch' || $boardName == 'notice') && !$boardController->canWritePost((int)$currentUserId, $boardName)) {
                 throw new AuthorizationException(ErrorCode::ACCESS_DENIED->value);
             }
 
