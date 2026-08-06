@@ -225,7 +225,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function render() {
         preview.innerHTML = "";
 
-        files.forEach((file,index) => {
+        files.forEach((file) => {
             const div = document.createElement("div");
             div.className = "detail-item";
 
@@ -235,8 +235,12 @@ document.addEventListener('DOMContentLoaded', function() {
             `;
 
             div.querySelector(".detail-remove").onclick = function() {
-                files.splice(index,1);
-                render();
+                const idx = files.indexOf(file);
+
+                if (idx !== -1) {
+                    files.splice(idx, 1);
+                    render();
+                }
             };
 
             preview.appendChild(div);
@@ -263,7 +267,8 @@ document.addEventListener('DOMContentLoaded', function() {
         onEnd: function (evt) {
             const moved = files.splice(evt.oldIndex, 1)[0];
             files.splice(evt.newIndex, 0, moved);
-            updateFiles();
+            
+            render();
         }
     });
 
