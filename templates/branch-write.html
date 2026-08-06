@@ -42,12 +42,16 @@
 
         <!-- 대표 이미지 영역 -->
         <div class="mb-4">
-            <label for="title" class="form-label fw-bold">대표 이미지 <span class="text-muted small fw-normal">(파일 당 5MB 제한)</span></label><br>
+            <label for="title" class="form-label fw-bold">대표 이미지 <span class="text-muted small fw-normal">(파일 당 5MB 제한)</span></label>
+
             <div class="upload-box {{ (errors.thumbnail is defined and errors.thumbnail) ? 'is-invalid' : '' }}" onclick="document.getElementById('thumbnail').click()">
-                <span id="thumbnailText"><i class="bi bi-plus-lg"></i></span>
                 <input type="file" id="thumbnail" name="thumbnail" accept="image/*" hidden>
+                <label for="thumbnail" id="thumbnailText" class="upload-text">
+                    <i class="bi bi-plus-lg"></i>
+                </label>
                 <div id="thumbnailPreview"></div>
             </div>
+
             {% if errors.thumbnail is defined and errors.thumbnail %}
                 <div class="invalid-feedback fw-bold">
                     <i class="bi bi-exclamation-circle me-1"></i> {{ errors.thumbnail }}
@@ -89,6 +93,7 @@
             <span class="image-count">
                 <span id="imageCount">0</span> / 10
             </span>
+
             <input
                 type="file"
                 id="detailImages"
@@ -100,11 +105,11 @@
 
             <div class="detail-container {{ (errors.detail_images is defined and errors.detail_images) ? 'is-invalid' : '' }}">
                 <div id="detailPreview"></div>
-
-                <label for="detailImages" class="detail-add-box" id="detailAddBox">
+                <label for="detailImages" id="detailAddBox" class="upload-text">
                     <i class="bi bi-plus-lg"></i>
                 </label>
             </div>
+
             {% if errors.detail_images is defined and errors.detail_images %}
                 <div class="invalid-feedback fw-bold">
                     <i class="bi bi-exclamation-circle me-1"></i> {{ errors.detail_images }}
