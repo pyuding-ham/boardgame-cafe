@@ -715,7 +715,7 @@ class Board
     /**
      * 게시글 삭제
      */
-    public function deleteBoardPost(int $post_id, int $user_id): void
+    public function deleteBoardPost(string $board_name, int $post_id, int $user_id): void
     {
         // 1. 회원 존재 여부 확인
         $user = $this->user->get($user_id);
@@ -725,21 +725,14 @@ class Board
         }
 
         // 2. 게시글 존재 여부 확인
-        $post = $this->getPostBoardInfo($post_id);
+        $post_owner = $this->findPostOwnerById($post_id);
 
-        if (!$post) {
+        if (!$post_owner) {
             throw new PostNotFoundException(ErrorCode::POST_NOT_FOUND_DELETE->value);
         }
 
         // 3. 삭제 권한 체크
-        // 공지사항은 관리자만 삭제 가능
-        if ($post['page_code'] === 'notice') {
-            if (!$this->user->isAdmin($user_id)) {
-                throw new AuthorizationException(ErrorCode::ACCESS_DENIED->value);
-            }
-        }
-        // 이외의 게시판은 작성자 본인만 삭제 가능
-        elseif ($post['user_id'] !== $user_id) {
+        if (!$this->canModifyPost($user_id, $post_owner, $board_name)) {
             throw new AuthorizationException(ErrorCode::ACCESS_DENIED->value);
         }
 
@@ -748,7 +741,7 @@ class Board
                 SET is_deleted = 1,
                     deleted_at = NOW()
                 WHERE id = :id
-                 AND is_deleted = 0;";
+                  AND is_deleted = 0;";
         
         $this->db->runSql($sql, ['id' => $post_id]);
     }
@@ -771,12 +764,12 @@ class Board
      */
     public function canModifyPost(int $user_id, array $post_owner, string $board_name): bool
     {
-        // 공지사항은 관리자만 수정 가능
-        if ($board_name === 'notice') {
+        // 지점소개 공지사항은 관리자만 수정/삭제 가능
+        if ($board_name === 'branch' || $board_name === 'notice') {
             return $this->user->isAdmin($user_id);
         }
 
-        // 이외의 게시판은 작성자 본인만 수정 가능
+        // 이외의 게시판은 작성자 본인만 수정/삭제 가능
         return (int)$post_owner['user_id'] === $user_id;
     }
 
@@ -792,27 +785,6 @@ class Board
 
         $stmt = $this->db->runSql($sql, [
             'id' => $id,
-        ]);
-
-        return $stmt ? $stmt->fetch() : false;
-    }
-
-    /**
-     * 게시글의 사용자/메뉴 정보 조회
-     */
-    public function getPostBoardInfo(int $post_id): array|false
-    {
-        $sql = "SELECT p.user_id,
-                       sm.menu_title,
-                       sm.page_code
-                 FROM post p
-                JOIN site_menu sm
-                 ON p.site_menu_id = sm.id
-                WHERE p.id = :id
-                 AND p.is_deleted = 0;";
-
-        $stmt = $this->db->runSql($sql, [
-            'id' => $post_id,
         ]);
 
         return $stmt ? $stmt->fetch() : false;

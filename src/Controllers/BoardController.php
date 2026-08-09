@@ -452,17 +452,18 @@ class BoardController {
      */
     public function edit(int $identifier, string $boardName, int $userId): array|false
     {
-        // DB 서비스 호출
-        $boardService = $this->cms->getBoard();
+        // 1. DB 서비스 호출
+        $board_service = $this->cms->getBoard();
 
-        $postOwner = $boardService->findPostOwnerById($identifier);
+        // 2. 게시글 존재 여부 확인
+        $post_owner = $board_service->findPostOwnerById($identifier);
 
-        // 게시글이 존재하지 않거나 삭제된 경우 예외 처리
-        if (!$postOwner) {
+        if (!$post_owner) {
             throw new PostNotFoundException(ErrorCode::POST_NOT_FOUND_UPDATE->value);
         }
 
-        if (!$boardService->canModifyPost($userId, $postOwner, $boardName)) {
+        // 3. 수정 권한 체크
+        if (!$board_service->canModifyPost($userId, $post_owner, $boardName)) {
            throw new AuthorizationException(ErrorCode::ACCESS_DENIED->value);
         }
 
@@ -826,16 +827,22 @@ class BoardController {
      */
     public function delete(int $identifier, string $boardName, int $userId): void
     {
-        // 공지사항 게시판일 때 관리자 여부 체크
-        $userService = $this->cms->getUser();
-        
-        if ($boardName === 'notice' && !$userService->isAdmin($userId)) {
-            throw new AuthorizationException(ErrorCode::ACCESS_DENIED->value);
+        // 1. DB 서비스 호출
+        $board_service = $this->cms->getBoard();
+
+        // 2. 게시글 존재 여부 확인
+        $post_owner = $board_service->findPostOwnerById($identifier);
+
+        if (!$post_owner) {
+            throw new PostNotFoundException(ErrorCode::POST_NOT_FOUND_DELETE->value);
         }
 
-        // DB 서비스 호출
-        $boardService = $this->cms->getBoard();
-        $boardService->deleteBoardPost($identifier, $userId);
+        // 3. 삭제 권한 체크
+        if (!$board_service->canModifyPost($userId, $post_owner, $boardName)) {
+           throw new AuthorizationException(ErrorCode::ACCESS_DENIED->value);
+        }
+        
+        $board_service->deleteBoardPost($boardName, $identifier, $userId);
     }
 
     /**
