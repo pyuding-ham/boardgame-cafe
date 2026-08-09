@@ -187,7 +187,8 @@ class Board
         $image_sql = "SELECT id, image_path, org_name, sort_order
                       FROM post_image
                       WHERE post_id = :post_id
-                       AND file_type = 'DETAIL';";
+                        AND file_type = 'DETAIL'
+                      ORDER BY sort_order;";
 
         $image_stmt = $this->db->runSql($image_sql, ['post_id' => $id]);
         
@@ -241,7 +242,7 @@ class Board
             'writer_nickname' => $writer_nickname,
             'title'           => $data['title'],
             'content'         => $data['content'],
-            'thumbnail'       => $data['thumbnail'],
+            'thumbnail'       => $data['thumbnail'] ?? '',
         ]);
 
         $post_id = $this->db->lastInsertId();
@@ -362,9 +363,7 @@ class Board
         string $board_name,
         int $post_id,
         int $user_id,
-        array $data,
-        array $files = [],
-        array $delete_file_ids = []
+        array $data
     ): void
     {
         // 1. 회원 존재 여부 확인
@@ -386,9 +385,247 @@ class Board
             throw new AuthorizationException(ErrorCode::ACCESS_DENIED->value);
         }
 
-        // 4. 첨부파일 개수 확인
+        // 4. 게시글 수정
+        $post_sql = "UPDATE post
+                     SET title = :title, content = :content, updated_at = NOW()
+                     WHERE id = :id
+                       AND is_deleted = 0;";
+                    
+        $this->db->runSql($post_sql, [
+            'id'      => $post_id,
+            'title'   => $data['title'],
+            'content' => $data['content'],
+        ]);
+
+        // 게시판별 수정 분기
+        if ($board_name === 'notice') {
+            $notice_sql = "UPDATE notice_detail 
+                           SET is_pinned = :is_pinned 
+                           WHERE post_id = :post_id;";
+                        
+            $this->db->runSql($notice_sql, [
+                'post_id'   => $post_id,
+                'is_pinned' => $data['is_pinned'] ?? 0,
+            ]);
+        }
+    }
+
+    /**
+     * 이미지 수정
+     */
+    public function updateBoardImage(
+        int $post_id,
+        ?array $thumbnail = null,
+        array $images_files = [],
+        array $delete_image_ids = [],
+        array $image_orders = [],
+        string $delete_thumbnail = 'N'
+    ): void
+    {
+        // 1. 삭제 이미지 제거
+        $this->deleteBoardImage(
+            $post_id,
+            $delete_image_ids,
+            $delete_thumbnail
+        );
+
+        // 2. 썸네일 수정
+        if (!empty($thumbnail)) {
+            // 기존 썸네일 있는 경우
+            if ($this->hasThumbnail($post_id)) {
+                $thumbnail_update_sql = "UPDATE post_image
+                                         SET image_path = :image_path,
+                                             org_name = :org_name
+                                         WHERE post_id = :post_id
+                                           AND file_type = 'THUMB';";
+
+                $this->db->runSql($thumbnail_update_sql, [
+                    'image_path' => $thumbnail['file_path'],
+                    'org_name'   => $thumbnail['org_name'],
+                    'post_id'    => $post_id,
+                ]);
+            }
+            // 기존 썸네일 없는 경우
+            else {
+                $thumbnail_insert_sql = "INSERT INTO post_image (
+                                           post_id,
+                                           image_path,
+                                           org_name,
+                                           sort_order,
+                                           file_type,
+                                           created_at
+                                        ) 
+                                        VALUES (
+                                          :post_id,
+                                          :image_path,
+                                          :org_name,
+                                          0,
+                                          'THUMB',
+                                          NOW()
+                                        );";
+
+                $this->db->runSql($thumbnail_insert_sql, [
+                    'post_id'    => $post_id,
+                    'image_path' => $thumbnail['file_path'],
+                    'org_name'   => $thumbnail['org_name'],
+                ]);
+            }
+
+            $thumbnail_sql = "UPDATE post
+                              SET thumbnail = :thumbnail
+                              WHERE id = :post_id;";
+
+            $this->db->runSql($thumbnail_sql, [
+                'thumbnail' => $thumbnail['file_path'],
+                'post_id'   => $post_id,
+            ]);
+        }
+
+        // 3. 상세 이미지 
+        $update_sql = "UPDATE post_image
+                       SET sort_order = :sort_order
+                       WHERE id = :id
+                         AND post_id = :post_id;";
+
+        $insert_sql = "INSERT INTO post_image (
+                         post_id,
+                         image_path,
+                         org_name,
+                         sort_order,
+                         file_type,
+                         created_at
+                       )
+                       VALUES (
+                         :post_id,
+                         :image_path,
+                         :org_name,
+                         :sort_order,
+                         'DETAIL',
+                         NOW()
+                       );";
+
+        foreach ($image_orders as $image) {
+            // 기존 이미지 순서 변경
+            // $image에 저장된 값 : type, image_id, sort_order
+            if ($image['type'] === 'OLD') {
+                $this->db->runSql($update_sql, [
+                    'sort_order' => $image['sort_order'],
+                    'id'         => $image['image_id'],
+                    'post_id'    => $post_id,
+                ]);
+            }
+            // 신규 이미지 추가
+            elseif ($image['type'] === 'NEW') {
+                $file = $images_files[$image['file_index']];
+
+                $this->db->runSql($insert_sql, [
+                    'post_id'    => $post_id,
+                    'image_path' => $file['file_path'],
+                    'org_name'   => $file['org_name'],
+                    'sort_order' => $image['sort_order'],
+                ]);
+            }
+        }
+    }
+
+    /**
+     * 썸네일 존재 여부 확인
+     */
+    private function hasThumbnail(int $post_id): bool
+    {
+        $sql = "SELECT thumbnail
+                FROM post
+                WHERE id = :post_id;";
+
+        $result = $this->db->runSql($sql, [
+            'post_id' => $post_id,
+        ]);
+
+        return !empty($result->fetchColumn());
+    }
+
+    /**
+     * 이미지 삭제
+     */
+    public function deleteBoardImage(
+        int $post_id,
+        array $delete_image_ids = [],
+        string $delete_thumbnail = 'N'
+    ): void
+    {
+        // 썸네일이 삭제된 경우
+        if ($delete_thumbnail === 'Y') {
+            $image_id_sql = "SELECT id
+                             FROM post_image
+                             WHERE post_id = :post_id
+                               AND image_path = (
+                                 SELECT thumbnail
+                                 FROM post
+                                 WHERE id = :id
+                               );";
+            
+            $stmt = $this->db->runSql($image_id_sql, [
+                'post_id' => $post_id,
+                'id' => $post_id,
+            ]);
+
+            $thumbnail = $stmt->fetch();
+
+            if (!empty($thumbnail)) {
+                $delete_image_ids[] = $thumbnail['id'];
+            }
+
+            $delete_thumbnail_sql = "UPDATE post
+                                     SET thumbnail = ''
+                                     WHERE id = :post_id;";
+
+            $this->db->runSql($delete_thumbnail_sql, [
+                'post_id' => $post_id,
+            ]);
+        }
+
+        // 삭제한 이미지가 있는 경우
+        if (!empty($delete_image_ids)) {
+                $placeholders = implode(
+                ',',
+                array_fill(0, count($delete_image_ids), '?')
+            );
+
+            // 파일 경로 조회
+            $select_sql = "SELECT image_path
+                           FROM post_image
+                           WHERE post_id = ?
+                             AND id IN ($placeholders);";
+
+            $params = array_merge([$post_id], $delete_image_ids);
+            $images = $this->db->runSql($select_sql, $params);
+
+            // 실제 파일 삭제
+            foreach ($images as $image) {
+                $filePath = APP_ROOT . '/' . $image['image_path'];
+
+                if (file_exists($filePath)) {
+                    unlink($filePath);
+                }
+            }
+
+            // DB 삭제
+            $delete_sql = "DELETE FROM post_image
+                           WHERE post_id = ?
+                             AND id IN ($placeholders);";
+
+            $this->db->runSql($delete_sql, $params);
+        }
+    }
+
+    /**
+     * 첨부파일 수정
+     */
+    public function updateBoardFile(int $post_id, array $files = [], array $delete_file_ids = []): void
+    {
+        // 첨부파일 개수 확인
         $file_check_sql = "SELECT COUNT(*) 
-                            FROM post_file
+                           FROM post_file
                            WHERE post_id = :post_id;";
 
         $current_file_count = $this->db->runSql($file_check_sql, [
@@ -404,97 +641,74 @@ class Board
             throw new Exception("첨부파일은 최대 3개까지 등록 가능합니다.");
         }
 
-        // 5. 데이터베이스 트랜잭션 시작
-        $this->db->beginTransaction();
+        // 첨부파일 삭제 처리
+        if (!empty($delete_file_ids)) {
+            // 삭제 대상 파일 조회
+            $placeholders = [];
+            $params = [
+                'post_id' => $post_id,
+            ];
 
-        try {
-            $post_sql = "UPDATE post
-                         SET title = :title, content = :content, updated_at = NOW()
-                         WHERE id = :id
-                          AND is_deleted = 0;";
-                        
-            $this->db->runSql($post_sql, [
-                'id'      => $post_id,
-                'title'   => $data['title'],
-                'content' => $data['content'],
-            ]);
-    
-            // 게시판별 수정 분기
-            if ($board_name === 'notice') {
-                $notice_sql = "UPDATE notice_detail 
-                               SET is_pinned = :is_pinned 
-                                WHERE post_id = :post_id;";
-                            
-                $this->db->runSql($notice_sql, [
+            foreach ($delete_file_ids as $index => $file_id) {
+                // 예) file_id_0
+                $key = 'file_id_' . $index;
+                // 예) :file_id_0, :file_id_1, ...
+                $placeholders[] = ':' . $key;
+                // 예) $params = [
+                //       'post_id' => 1,
+                //       'file_id_0' => 21,
+                //       'file_id_1' => 22
+                //     ];
+                $params[$key] = $file_id;
+            }
+
+            $select_file_sql = "SELECT id, file_path
+                                FROM post_file
+                                WHERE post_id = :post_id
+                                  AND id IN (" . implode(',', $placeholders) . ");";
+
+            $file_stmt = $this->db->runSql($select_file_sql, $params);
+            $delete_files = $file_stmt ? $file_stmt->fetchAll() : [];
+
+            // 실제 파일 삭제
+            foreach ($delete_files as $file) {
+                $full_path = APP_ROOT . '/' . $file['file_path'];
+
+                if (is_file($full_path)) {
+                    unlink($full_path);
+                }
+            }
+
+            // DB 파일 정보 삭제
+            $delete_sql = "DELETE FROM post_file
+                           WHERE post_id = :post_id
+                             AND id IN (" . implode(',', $placeholders) . ");";
+
+            $this->db->runSql($delete_sql, $params);
+        }
+
+        // 새 첨부파일 추가
+        if (!empty($files)) {
+            $insert_file_sql = "INSERT INTO post_file (
+                                  post_id,
+                                  file_path,
+                                  org_name,
+                                  created_at
+                                )
+                                VALUES (
+                                  :post_id,
+                                  :file_path,
+                                  :org_name,
+                                  NOW()
+                                );";
+
+            foreach ($files as $file) {
+                $this->db->runSql($insert_file_sql, [
                     'post_id'   => $post_id,
-                    'is_pinned' => $data['is_pinned'] ?? 0,
+                    'file_path' => $file['file_path'],
+                    'org_name'  => $file['org_name'],
                 ]);
             }
-    
-            // 첨부파일 삭제 처리
-            if (!empty($delete_file_ids)) {
-                // 삭제 대상 파일 조회
-                $placeholders = [];
-                $params = [
-                    'post_id' => $post_id,
-                ];
-
-                foreach ($delete_file_ids as $index => $file_id) {
-                    $key = 'file_id_' . $index;
-                    // 예) :file_id_0, :file_id_1, ...
-                    $placeholders[] = ':' . $key;
-                    // 예) $params = [
-                    //     'post_id' => 1,
-                    //     'file_id_0' => 21,
-                    //     'file_id_1' => 22
-                    // ];
-                    $params[$key] = $file_id;
-                }
-
-                $select_file_sql = "SELECT id, file_path
-                                    FROM post_file
-                                    WHERE post_id = :post_id
-                                     AND id IN (" . implode(',', $placeholders) . ");";
-
-                $file_stmt = $this->db->runSql($select_file_sql, $params);
-                $delete_files = $file_stmt ? $file_stmt->fetchAll() : [];
-
-                // 실제 파일 삭제
-                foreach ($delete_files as $file) {
-                    $full_path = APP_ROOT . '/' . $file['file_path'];
-
-                    if (is_file($full_path)) {
-                        unlink($full_path);
-                    }
-                }
-
-                // DB 파일 정보 삭제
-                $delete_sql = "DELETE FROM post_file
-                               WHERE post_id = :post_id
-                                AND id IN (" . implode(',', $placeholders) . ");";
-
-                $this->db->runSql($delete_sql, $params);
-            }
-
-            // 새 첨부파일 추가
-            if (!empty($files)) {
-                $insert_file_sql = "INSERT INTO post_file (post_id, file_path, org_name, created_at)
-                                    VALUES (:post_id, :file_path, :org_name, NOW());";
-
-                foreach ($files as $file) {
-                    $this->db->runSql($insert_file_sql, [
-                        'post_id'   => $post_id,
-                        'file_path' => $file['file_path'],
-                        'org_name'  => $file['org_name'],
-                    ]);
-                }
-            }
-    
-            $this->db->commit();
-
-        } catch (\Throwable $e) {
-            $this->db->rollBack();
-            throw $e; 
         }
     }
 

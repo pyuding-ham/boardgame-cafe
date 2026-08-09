@@ -35,10 +35,15 @@ if (in_array($boardName, $allowed_boards)) {
     $boardController = new BoardController($cms);
     $siteMenuController = new SiteMenuController($cms);
 
-    $board_title = [
-        'board_title' => $siteMenuController->getMenuTitleByPageCode($boardName)
-    ];
+    $data = [];
 
+    $data = array_merge([
+        // 메뉴 코드
+        'board_name'  => $boardName,
+        // 메뉴 이름
+        'board_title' => $siteMenuController->getMenuTitleByPageCode($boardName),
+    ], $data);
+    
     // 1. 게시글 상세
     if ($boardAction === 'view') {
         // 보드게임 소개 게시판은 슬러그, 그 외는 ID로 조회
@@ -53,8 +58,6 @@ if (in_array($boardName, $allowed_boards)) {
         if (!$data) {
             throw new PostNotFoundException(ErrorCode::POST_NOT_FOUND_READ->value);
         }
-
-        $data = array_merge($board_title, $data);
 
         // 템플릿 렌더링
         echo $twig->render($boardName . '-view.html', $data);
@@ -93,8 +96,6 @@ if (in_array($boardName, $allowed_boards)) {
             $data['errors']  = [];
         }
 
-        $data = array_merge($board_title, $data);
-
         // 템플릿 렌더링
         echo $twig->render($boardName . '-write.html', $data);
         exit;
@@ -121,7 +122,10 @@ if (in_array($boardName, $allowed_boards)) {
 
                 $data['post'] = array_merge(
                     $result['post'],
-                    ['files' => $editData['post']['files'] ?? []]
+                    [
+                        'files' => $editData['post']['files'] ?? [],
+                        'images' => $editData['post']['images'] ?? []
+                    ]
                 );
             }
         } 
@@ -132,8 +136,6 @@ if (in_array($boardName, $allowed_boards)) {
             $data['post'] = $result['post'];
             $data['errors'] = [];
         }
-
-        $data = array_merge($board_title, $data);
 
         // 템플릿 렌더링
         echo $twig->render($boardName . '-edit.html', $data);
@@ -157,7 +159,6 @@ if (in_array($boardName, $allowed_boards)) {
     else {
         $data = $boardController->index($currentPage, $boardName);
         $data['status'] = $status;
-        $data = array_merge($board_title, $data);
         
         // 템플릿 렌더링
         echo $twig->render($boardName . '-list.html', $data);

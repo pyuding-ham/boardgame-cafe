@@ -108,7 +108,7 @@ class BoardController {
      * @param string $boardName 게시판 식별자 이름
      * @return array|false 게시글 데이터 배열 또는 실패 시 false
      */
-    public function view(string|int $identifier, string $boardName = 'notice'): array|false {
+    public function view(string|int $identifier, ?string $boardName): array|false {
         $board_service = $this->cms->getBoard();
 
         // 게시판 이름에 따라 다른 상세 보기 데이터 호출
@@ -116,7 +116,7 @@ class BoardController {
         if ($boardName === 'boardgame') {
             $post = $board_service->getBoardgamePostBySlug('boardgame', (string)$identifier);
         }
-        // 기본 게시판 및 공지사항
+        // 그 외의 게시판
         else {
             $post = $board_service->getBoardPost($boardName, (int)$identifier);
         }
@@ -311,6 +311,19 @@ class BoardController {
             }
         }
 
+        if (!empty($errors)) {
+            return [
+                'success' => false,
+                'errors'  => $errors,
+                'post' => [
+                    'title' => $title,
+                    'content' => $content,
+                    'address' => $address,
+                    'is_pinned' => $is_pinned,
+                ]
+            ];
+        }
+
         // 파일 업로드 처리 (최대 3개, 1개의 파일 당 10MB 제한)
         $uploaded_files = [];
         $max_file_count = 3;
@@ -381,7 +394,7 @@ class BoardController {
                         'content'   => $content,
                         'address'   => $address,
                         'thumbnail' => $thumbnail_file['file_path'] ?? null,
-                    ],
+                    ]
                 );
 
                 $board_service->insertBoardImage($post_id, $thumbnail_file, $images_files);
@@ -405,7 +418,7 @@ class BoardController {
                         'title'     => $title,
                         'content'   => $content,
                         'is_pinned' => $is_pinned,
-                    ],
+                    ]
                 );
 
                 $board_service->insertBoardFile($post_id, $uploaded_files);
@@ -425,9 +438,7 @@ class BoardController {
                 [
                     'title'     => $title,
                     'content'   => $content,
-                ], 
-                $thumbnail_file,
-                $uploaded_files
+                ]
             );
         }
 
@@ -469,16 +480,18 @@ class BoardController {
         int $userId
     ): array
     {
-        // 공지사항 게시판일 때 관리자 여부 체크
+        // 지점소개, 공지사항 게시판일 때 관리자 여부 체크
         $userService = $this->cms->getUser();
         
         if (($boardName === 'branch' || $boardName == 'notice') && !$userService->isAdmin($userId)) {
             throw new AuthorizationException(ErrorCode::ACCESS_DENIED->value);
         }
 
-        $title     = trim($postData['title'] ?? '');
-        $content   = trim($postData['content'] ?? '');
-        $isPinned  = isset($postData['is_pinned']) ? 1 : 0;
+        $title            = trim($postData['title'] ?? '');
+        $content          = trim($postData['content'] ?? '');
+        $address          = trim($postData['address'] ?? '');
+        $delete_thumbnail = trim($postData['delete_thumbnail'] ?? 'N');
+        $is_pinned        = isset($postData['is_pinned']) ? 1 : 0;
 
         
         // 삭제할 첨부파일 목록 생성 및 정제
@@ -531,6 +544,18 @@ class BoardController {
             }
         }
 
+        // 지점소개
+        if ($boardName === 'branch') {
+            // 1. 주소 필수 입력 값 검사
+            if (empty($address)) {
+                $errors['address'] = '주소를 입력해 주세요.';
+            }
+            // 2. 주소 글자 수 검사 (최대 100자)
+            if (empty($errors['address']) && !Validate::isText($address, 1, 255)) {
+                $errors['address'] = '주소는 최대 255자까지 입력할 수 있습니다.';
+            }
+        }
+
         if (!empty($errors)) {
             return [
                 'success' => false,
@@ -538,7 +563,130 @@ class BoardController {
                 'post' => [
                     'title' => $title,
                     'content' => $content,
-                    'is_pinned' => $isPinned,
+                    'address' => $address,
+                    'is_pinned' => $is_pinned,
+                ]
+            ];
+        }
+
+        // 대표 이미지 수정 처리 (파일 당 5MB 제한)
+        $thumbnail_file = [];
+        $delete_image_ids = json_decode(
+            $postData['deleted_images'] ?? '[]',
+            true
+        );
+        $image_orders = json_decode(
+            $postData['image_orders'] ?? '[]',
+            true
+        );
+        $max_img_size = 5 * 1024 * 1024;
+
+        if (!empty(isset($fileData['thumbnail']) && !empty($fileData['thumbnail']['name']))) {
+
+            // 업로드 이미지 유효성 검사
+            $image_errors = $this->validateImageUpload($fileData['thumbnail'], $max_img_size);
+
+            if (!empty($image_errors)) {
+                $errors['thumbnail'] = $image_errors[0];
+
+            } else {
+                $upload_dir = APP_ROOT . '/public/uploads/boards/' . $boardName . '/';
+
+                if (!is_dir($upload_dir)) {
+                    mkdir($upload_dir, 0755, true);
+                }
+
+                $ext = strtolower(
+                    pathinfo($fileData['thumbnail']['name'], PATHINFO_EXTENSION)
+                );
+
+                $new_name = 'thumb_' . uniqid('', true) . '.' . $ext;
+                $file_path = $upload_dir . $new_name;
+
+                if (move_uploaded_file($fileData['thumbnail']['tmp_name'], $file_path)) {
+                    $thumbnail_file = [
+                        'file_path' => 'public/uploads/boards/' . $boardName . '/' . $new_name,
+                        'org_name'  => $fileData['thumbnail']['name'],
+                    ];
+                } else {
+                    $errors['thumbnail'] = '대표 이미지 업로드에 실패했습니다.';
+                }
+            }
+        }
+
+        if (!empty($errors)) {
+            return [
+                'success' => false,
+                'errors'  => $errors,
+                'post' => [
+                    'title' => $title,
+                    'content' => $content,
+                    'address' => $address,
+                    'is_pinned' => $is_pinned,
+                ]
+            ];
+        }
+
+        // 상세 이미지 업로드 처리 (파일 당 5MB 제한)
+        $images_files = [];
+        $max_file_count = 10;
+        $max_file_size  = 5 * 1024 * 1024;
+
+        if (isset($fileData['detailImages']) && !empty($fileData['detailImages']['name'][0])) {
+
+            $upload_dir = APP_ROOT . '/public/uploads/boards/' . $boardName . '/';
+
+            if (!is_dir($upload_dir)) {
+                mkdir($upload_dir, 0755, true);
+            }
+
+            foreach ($fileData['detailImages']['name'] as $key => $name) {
+                if (count($images_files) >= $max_file_count) {
+                    break;
+                }
+
+                // 파일 배열 생성
+                $file = [
+                    'name'     => $fileData['detailImages']['name'][$key],
+                    'type'     => $fileData['detailImages']['type'][$key],
+                    'tmp_name' => $fileData['detailImages']['tmp_name'][$key],
+                    'error'    => $fileData['detailImages']['error'][$key],
+                    'size'     => $fileData['detailImages']['size'][$key],
+                ];
+
+                // 업로드 이미지 유효성 검사
+                $image_errors = $this->validateImageUpload($file, $max_file_size);
+
+                if (!empty($image_errors)) {
+                    $errors['detail_images'] = $image_errors[0];
+                    break;
+                }
+
+                $ext = strtolower(
+                    pathinfo($name, PATHINFO_EXTENSION)
+                );
+
+                $new_name = 'detail_' . uniqid('', true) . '.' . $ext;
+                $file_path = $upload_dir . $new_name;
+
+                if (move_uploaded_file($file['tmp_name'], $file_path)) {
+                    $images_files[] = [
+                        'file_path'  => 'public/uploads/boards/' . $boardName . '/' . $new_name,
+                        'org_name'   => $name,
+                    ];
+                }
+            }
+        }
+
+        if (!empty($errors)) {
+            return [
+                'success' => false,
+                'errors'  => $errors,
+                'post' => [
+                    'title' => $title,
+                    'content' => $content,
+                    'address' => $address,
+                    'is_pinned' => $is_pinned,
                 ]
             ];
         }
@@ -591,32 +739,72 @@ class BoardController {
                 'post' => [
                     'title' => $title,
                     'content' => $content,
-                    'is_pinned' => $isPinned,
+                    'address' => $address,
+                    'is_pinned' => $is_pinned,
                 ]
             ];
         }
 
         // DB 서비스 호출
-        $boardService = $this->cms->getBoard();
+        $board_service = $this->cms->getBoard();
+        $db = $this->cms->getDb();
 
+        // 지점소개
+        if ($boardName === 'branch') {
+            $db->beginTransaction();
+
+            try {
+                $board_service->updateBoardPost(
+                    'branch',
+                    $postId,
+                    $userId,
+                    [
+                        'title'     => $title,
+                        'content'   => $content,
+                        'address'   => $address,
+                        'thumbnail' => $thumbnail_file['file_path'] ?? null,
+                    ],
+                );
+
+                $board_service->updateBoardImage($postId, $thumbnail_file, $images_files, $delete_image_ids, $image_orders, $delete_thumbnail);
+
+                $db->commit();
+            
+            } catch (\Throwable $e) {
+                $db->rollBack();
+                throw $e; 
+            }
+        }
         // 공지사항
-        if ($boardName === 'notice') {
-            $boardService->updateBoardPost(
-                'notice',
-                $postId,
-                $userId,
-                [
-                    'title'     => $title,
-                    'content'   => $content,
-                    'is_pinned' => $isPinned,
-                ],
-                $uploadedFiles,
-                $deleteFileIds
-            );
+        elseif ($boardName === 'notice') {
+            $db->beginTransaction();
+
+            try {
+                $board_service->updateBoardPost(
+                    'notice',
+                    $postId,
+                    $userId,
+                    [
+                        'title'     => $title,
+                        'content'   => $content,
+                        'is_pinned' => $is_pinned,
+                    ],
+                    $uploadedFiles,
+                    $deleteFileIds
+                );
+
+                $board_service->updateBoardFile($postId, $uploadedFiles, $deleteFileIds);
+
+                $db->commit();
+
+            } catch (\Throwable $e) {
+                $db->rollBack();
+                throw $e; 
+            }
         }
         // 기본 게시판
         else {
-            $boardService->updateBoardPost(
+            $board_service->updateBoardPost(
                 $boardName,
                 $postId,
                 $userId,
@@ -624,9 +812,7 @@ class BoardController {
                     'title'           => $title,
                     'content'         => $content,
                     'thumbnail'       => $thumbnail ?? null,
-                ], 
-                $uploadedFiles,
-                $deleteFileIds
+                ]
             );
         }
 
