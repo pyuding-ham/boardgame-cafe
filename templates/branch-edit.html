@@ -57,7 +57,7 @@
 
                 <div id="thumbnailPreview">
                     {% if hasThumbnail %}
-                        <img src="/uploads/boards/branch/{{ post.thumbnail|split('/')|last }}">
+                        <img src="{{ post.thumbnail|replace({'public': ''}) }}">
                         <button class="delete-btn"><i class="bi bi-x-lg"></i></button>
                     {% endif %}
                 </div>
@@ -250,7 +250,7 @@ document.addEventListener('DOMContentLoaded', function() {
             imageList.push({
                 type: "OLD",
                 imageId: "{{ image.id }}",
-                url: "/uploads/boards/branch/{{ image.image_path|split('/')|last }}"
+                url: "{{ image.image_path|replace({'public': ''}) }}"
             });
         {% endfor %}
     {% endif %}

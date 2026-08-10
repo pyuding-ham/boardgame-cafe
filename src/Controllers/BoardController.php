@@ -3,6 +3,7 @@ declare(strict_types = 1);
 
 namespace BoardgameCafe\Controllers;
 
+use Exception;
 use BoardgameCafe\Validate\Validate;
 use BoardgameCafe\Exceptions\NotFoundException;
 use BoardgameCafe\Exceptions\PostNotFoundException;
@@ -228,22 +229,23 @@ class BoardController {
                 $errors['thumbnail'] = $image_errors[0];
 
             } else {
-                $upload_dir = APP_ROOT . '/public/uploads/boards/' . $boardName . '/';
+                $date_path = date('Y/m/d') . '/';
+                $upload_dir = APP_ROOT . '/public/uploads/boards/' . $boardName . '/' . $date_path;
 
-                if (!is_dir($upload_dir)) {
-                    mkdir($upload_dir, 0755, true);
+                if (!is_dir($upload_dir) && !mkdir($upload_dir, 0755, true)) {
+                    throw new Exception('업로드 폴더를 생성할 수 없습니다.');
                 }
 
                 $ext = strtolower(
                     pathinfo($fileData['thumbnail']['name'], PATHINFO_EXTENSION)
                 );
-
+                
                 $new_name = 'thumb_' . uniqid('', true) . '.' . $ext;
                 $file_path = $upload_dir . $new_name;
 
                 if (move_uploaded_file($fileData['thumbnail']['tmp_name'], $file_path)) {
                     $thumbnail_file = [
-                        'file_path' => 'public/uploads/boards/' . $boardName . '/' . $new_name,
+                        'file_path' => 'public/uploads/boards/' . $boardName . '/' . $date_path . $new_name,
                         'org_name'  => $fileData['thumbnail']['name'],
                     ];
                 } else {
@@ -272,10 +274,11 @@ class BoardController {
 
         if (isset($fileData['detailImages']) && !empty($fileData['detailImages']['name'][0])) {
 
-        $upload_dir = APP_ROOT . '/public/uploads/boards/' . $boardName . '/';
+            $date_path = date('Y/m/d') . '/';
+            $upload_dir = APP_ROOT . '/public/uploads/boards/' . $boardName . '/' . $date_path;
 
-            if (!is_dir($upload_dir)) {
-                mkdir($upload_dir, 0755, true);
+            if (!is_dir($upload_dir) && !mkdir($upload_dir, 0755, true)) {
+                throw new Exception('업로드 폴더를 생성할 수 없습니다.');
             }
 
             foreach ($fileData['detailImages']['name'] as $key => $name) {
@@ -309,9 +312,11 @@ class BoardController {
 
                 if (move_uploaded_file($file['tmp_name'], $file_path)) {
                     $images_files[] = [
-                        'file_path'  => 'public/uploads/boards/' . $boardName . '/' . $new_name,
+                        'file_path'  => 'public/uploads/boards/' . $boardName . '/' . $date_path . $new_name,
                         'org_name'   => $name,
                     ];
+                } else {
+                    $errors['detail_images'] = '상세 이미지 업로드에 실패했습니다.';
                 }
             }
         }
@@ -335,10 +340,11 @@ class BoardController {
         $max_file_size  = 10 * 1024 * 1024; 
 
         if (!empty(isset($fileData['attached_files']) && $fileData['attached_files']['name'])) {
-            $upload_dir = APP_ROOT . '/public/uploads/attachments/';
+            $date_path = date('Y/m/d') . '/';
+            $upload_dir = APP_ROOT . '/public/uploads/attachments/' . $date_path;
             
-            if (!is_dir($upload_dir)) {
-                mkdir($upload_dir, 0755, true);
+            if (!is_dir($upload_dir) && !mkdir($upload_dir, 0755, true)) {
+                throw new Exception('업로드 폴더를 생성할 수 없습니다.');
             }
 
             foreach ($fileData['attached_files']['name'] as $key => $name) {
@@ -361,8 +367,8 @@ class BoardController {
 
                     if (move_uploaded_file($tmp_name, $file_path)) {
                         $uploaded_files[] = [
-                            'file_path' => 'public/uploads/attachments/' . $new_name,
-                            'org_name'  => $name
+                            'file_path' => 'public/uploads/attachments/' . $date_path . $new_name,
+                            'org_name'  => $name,
                         ];
                     }
                 }
@@ -501,18 +507,18 @@ class BoardController {
 
         
         // 삭제할 첨부파일 목록 생성 및 정제
-        $deleteFileIds = $postData['delete_file_ids'] ?? [];
+        $delete_file_ids = $postData['delete_file_ids'] ?? [];
 
         // 숫자 이외의 값 제거
-        $deleteFileIds = array_filter(
-            $deleteFileIds,
+        $delete_file_ids = array_filter(
+            $delete_file_ids,
             fn($id) => is_numeric($id)
         );
 
         // 문자열 숫자를 정수로 변환
-        $deleteFileIds = array_map(
+        $delete_file_ids = array_map(
             'intval',
-            $deleteFileIds
+            $delete_file_ids
         );
 
         $errors = [];
@@ -596,10 +602,11 @@ class BoardController {
                 $errors['thumbnail'] = $image_errors[0];
 
             } else {
-                $upload_dir = APP_ROOT . '/public/uploads/boards/' . $boardName . '/';
+                $date_path = date('Y/m/d') . '/';
+                $upload_dir = APP_ROOT . '/public/uploads/boards/' . $boardName . '/' . $date_path;
 
-                if (!is_dir($upload_dir)) {
-                    mkdir($upload_dir, 0755, true);
+                if (!is_dir($upload_dir) && !mkdir($upload_dir, 0755, true)) {
+                    throw new Exception('업로드 폴더를 생성할 수 없습니다.');
                 }
 
                 $ext = strtolower(
@@ -611,7 +618,7 @@ class BoardController {
 
                 if (move_uploaded_file($fileData['thumbnail']['tmp_name'], $file_path)) {
                     $thumbnail_file = [
-                        'file_path' => 'public/uploads/boards/' . $boardName . '/' . $new_name,
+                        'file_path' => 'public/uploads/boards/' . $boardName . '/' . $date_path . $new_name,
                         'org_name'  => $fileData['thumbnail']['name'],
                     ];
                 } else {
@@ -639,11 +646,11 @@ class BoardController {
         $max_file_size  = 5 * 1024 * 1024;
 
         if (isset($fileData['detailImages']) && !empty($fileData['detailImages']['name'][0])) {
+            $date_path = date('Y/m/d') . '/';
+            $upload_dir = APP_ROOT . '/public/uploads/boards/' . $boardName . '/' . $date_path;
 
-            $upload_dir = APP_ROOT . '/public/uploads/boards/' . $boardName . '/';
-
-            if (!is_dir($upload_dir)) {
-                mkdir($upload_dir, 0755, true);
+            if (!is_dir($upload_dir) && !mkdir($upload_dir, 0755, true)) {
+                throw new Exception('업로드 폴더를 생성할 수 없습니다.');
             }
 
             foreach ($fileData['detailImages']['name'] as $key => $name) {
@@ -677,9 +684,11 @@ class BoardController {
 
                 if (move_uploaded_file($file['tmp_name'], $file_path)) {
                     $images_files[] = [
-                        'file_path'  => 'public/uploads/boards/' . $boardName . '/' . $new_name,
+                        'file_path'  => 'public/uploads/boards/' . $boardName . '/' . $date_path . $new_name,
                         'org_name'   => $name,
                     ];
+                } else {
+                    $errors['detail_images'] = '상세 이미지 업로드에 실패했습니다.';
                 }
             }
         }
@@ -698,39 +707,40 @@ class BoardController {
         }
 
         // 파일 업로드 처리 (최대 3개, 1개의 파일 당 10MB 제한)
-        $uploadedFiles = [];
+        $uploaded_files = [];
 
-        if (!empty($deleteFileIds) || !empty($fileData['attached_files']['name'])) {
-            $maxFileCount = 3;
-            $maxFileSize  = 10 * 1024 * 1024; 
+        if (!empty($delete_file_ids) || !empty($fileData['attached_files']['name'])) {
+            $max_file_count = 3;
+            $max_file_size  = 10 * 1024 * 1024; 
     
-            $uploadDir = APP_ROOT . '/public/uploads/attachments/';
+            $date_path = date('Y/m/d') . '/';
+            $upload_dir = APP_ROOT . '/public/uploads/attachments/' . $date_path;
             
-            if (!is_dir($uploadDir)) {
-                mkdir($uploadDir, 0755, true);
+            if (!is_dir($upload_dir) && !mkdir($upload_dir, 0755, true)) {
+                throw new Exception('업로드 폴더를 생성할 수 없습니다.');
             }
 
             foreach ($fileData['attached_files']['name'] as $key => $name) {
-                if (count($uploadedFiles) >= $maxFileCount) {
+                if (count($uploaded_files) >= $max_file_count) {
                     break;
                 }
 
                 if ($fileData['attached_files']['error'][$key] === UPLOAD_ERR_OK) {
-                    $tmpName = $fileData['attached_files']['tmp_name'][$key];
+                    $tmp_name = $fileData['attached_files']['tmp_name'][$key];
                     $size     = $fileData['attached_files']['size'][$key];
 
-                    if ($size > $maxFileSize) {
+                    if ($size > $max_file_size) {
                         $errors['files'] = '파일 당 최대 용량(10MB)을 초과했습니다.';
                         break;
                     }
 
-                    $ext      = pathinfo($name, PATHINFO_EXTENSION);
-                    $newName = 'notice_' . uniqid('', true) . '.' . $ext; 
-                    $filePath = $uploadDir . $newName;
+                    $ext       = pathinfo($name, PATHINFO_EXTENSION);
+                    $new_name  = 'notice_' . uniqid('', true) . '.' . $ext; 
+                    $file_path = $upload_dir . $new_name;
 
-                    if (move_uploaded_file($tmpName, $filePath)) {
-                        $uploadedFiles[] = [
-                            'file_path' => 'public/uploads/attachments/' . $newName,
+                    if (move_uploaded_file($tmp_name, $file_path)) {
+                        $uploaded_files[] = [
+                            'file_path' => 'public/uploads/attachments/' . $date_path . $new_name,
                             'org_name'  => $name,
                         ];
                     }
@@ -795,11 +805,11 @@ class BoardController {
                         'content'   => $content,
                         'is_pinned' => $is_pinned,
                     ],
-                    $uploadedFiles,
-                    $deleteFileIds
+                    $uploaded_files,
+                    $delete_file_ids
                 );
 
-                $board_service->updateBoardFile($postId, $uploadedFiles, $deleteFileIds);
+                $board_service->updateBoardFile($postId, $uploaded_files, $delete_file_ids);
 
                 $db->commit();
 

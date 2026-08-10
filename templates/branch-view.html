@@ -44,7 +44,7 @@
                 <div class="carousel-inner">
                     {% for item in post.images %}
                         <div class="carousel-item {{ loop.first ? 'active' : '' }}">
-                            <img src="/uploads/boards/{{ board_name }}/{{ item.image_path|split('/')|last }}" alt="{{ post.title }}">
+                            <img src="{{ item.image_path|replace({'public': ''}) }}" alt="{{ post.title }}">
                         </div>
                     {% endfor %}
                 </div>
