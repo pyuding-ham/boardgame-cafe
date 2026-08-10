@@ -46,32 +46,39 @@ class BoardController {
         ];
 
         // 3. 페이징 설정
-        $per_page = 10; 
+        $per_page = 10;
         $offset = ($page - 1) * $per_page;
 
         $board_service = $this->cms->getBoard();
         
         // 4. 게시판 이름에 따라 다른 서비스 메서드 호출
+        // 지점소개
+        if ($boardName === 'branch') {
+            $per_page = 9;
+
+            $list = $board_service->getBoardList($boardName, $per_page, $offset, $filters);
+            $total_count = $board_service->getBoardTotalCount($boardName, $filters);
+        }
         // 공지사항
-        if ($boardName === 'notice') {
+        elseif ($boardName === 'notice') {
             $list = $board_service->getBoardList('notice', $per_page, $offset, $filters);
             $total_count = $board_service->getBoardTotalCount('notice', $filters);
             $start_num = $total_count - $offset;
 
             // 글 번호 가공
-            foreach ($list as &$article) {
-                if ($article['is_pinned'] == 1) {
+            foreach ($list as &$post) {
+                if ($post['is_pinned'] == 1) {
                     // 상단 고정 글(공지)은 번호 자리를 비워둠
-                    $article['board_no'] = null; 
+                    $post['board_no'] = null; 
                     // 번호가 뜨지 않도록 마이너스 처리
                     $start_num--; 
                 } else {
                     // 상단 고정 글이 아닌 글
-                    $article['board_no'] = $start_num;
+                    $post['board_no'] = $start_num;
                     $start_num--; 
                 }
             }
-            unset($article);
+            unset($post);
         }
         // 기본 게시판
         else {
@@ -80,11 +87,11 @@ class BoardController {
             $start_num = $total_count - $offset;
 
             // 글 번호 가공
-            foreach ($list as &$article) {
-                $article['board_no'] = $start_num;
+            foreach ($list as &$post) {
+                $post['board_no'] = $start_num;
                 $start_num--;
             }
-            unset($article);
+            unset($post);
         }
 
         $total_pages = (int)ceil($total_count / $per_page);
