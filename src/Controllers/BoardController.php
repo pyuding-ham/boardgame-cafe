@@ -103,7 +103,6 @@ class BoardController {
             'total_count' => $total_count,
             'keyword' => $keyword,
             'search_type' => $search_type,
-            'board_name' => $boardName,
             'session' => $_SESSION,
         ];
     }
@@ -135,7 +134,6 @@ class BoardController {
 
         return [
             'post' => $post,
-            'board_name' => $boardName,
         ];
     }
 

@@ -37,12 +37,12 @@ if (in_array($boardName, $allowed_boards)) {
 
     $data = [];
 
-    $data = array_merge([
+    $data = array_merge($data, [
         // 메뉴 코드
         'board_name'  => $boardName,
         // 메뉴 이름
         'board_title' => $siteMenuController->getMenuTitleByPageCode($boardName),
-    ], $data);
+    ]);
     
     // 1. 게시글 상세
     if ($boardAction === 'view') {
@@ -53,7 +53,7 @@ if (in_array($boardName, $allowed_boards)) {
             throw new PostNotFoundException(ErrorCode::POST_NOT_FOUND_READ->value);
         }
 
-        $data = $boardController->view($identifier, $boardName);
+        $data = array_merge($data, $boardController->view($identifier, $boardName));
         
         if (!$data) {
             throw new PostNotFoundException(ErrorCode::POST_NOT_FOUND_READ->value);
@@ -157,7 +157,7 @@ if (in_array($boardName, $allowed_boards)) {
     }
     // 5. 게시판 목록
     else {
-        $data = $boardController->index($currentPage, $boardName);
+        $data = array_merge($data, $boardController->index($currentPage, $boardName));
         $data['status'] = $status;
         
         // 템플릿 렌더링
