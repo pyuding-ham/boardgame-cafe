@@ -41,13 +41,35 @@ class Board
         
         // 2. 게시판별 분기 처리
         switch ($board_name) {
+            // 게임소개
+            case 'boardgame':
+                $sql = "SELECT
+                          p.id,
+                          p.thumbnail,
+                          p.title, '관리자' AS nickname,
+                          p.created_at,
+                          bd.category,
+                          bd.player_count,
+                          bd.level,
+                          bd.play_time,
+                          bd.hashtag,
+                          0 AS is_pinned
+                        FROM post p
+                          INNER JOIN site_menu m
+                            ON p.site_menu_id = m.id
+                          INNER JOIN boardgame_detail bd
+                            ON p.id = bd.post_id";
+                break;
+
             // 공지사항
             case 'notice':
                 $sql = "SELECT p.id, p.title, '관리자' AS nickname, p.created_at,
                             COALESCE(nd.is_pinned, 0) AS is_pinned
                         FROM post p
-                        INNER JOIN site_menu m ON p.site_menu_id = m.id
-                        INNER JOIN notice_detail nd ON p.id = nd.post_id";
+                          INNER JOIN site_menu m
+                            ON p.site_menu_id = m.id
+                          INNER JOIN notice_detail nd
+                            ON p.id = nd.post_id";
                 break;
 
             // 기본 게시판
@@ -55,7 +77,8 @@ class Board
                 $sql = "SELECT p.id, p.thumbnail, p.title, p.writer_nickname AS nickname, p.created_at,
                             0 AS is_pinned
                         FROM post p
-                        INNER JOIN site_menu m ON p.site_menu_id = m.id";
+                          INNER JOIN site_menu m
+                            ON p.site_menu_id = m.id";
                 break;
         }
 

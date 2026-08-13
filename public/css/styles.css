@@ -14,6 +14,13 @@ body {
     margin: 0 auto;
 }
 
+.nav-fill .nav-item .nav-link:hover {
+    background-color: rgba(var(--bs-secondary-bg-rgb),var(--bs-bg-opacity));
+}
+.nav-fill .nav-item .nav-link.active {
+    color: var(--bs-nav-pills-link-active-color) !important;
+    background-color: var(--bs-nav-pills-link-active-bg) !important;
+}
 
 /* 비밀번호 보이기 버튼 */
 .input-group .toggle-password {
@@ -90,6 +97,9 @@ body {
 }
 
 /* 게시판 목록 */
+.board-container .card-body .card-title {
+    font-size: 1.4rem;
+}
 .board-container table {
     font-size: 0.95rem;
 }

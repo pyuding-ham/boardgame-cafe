@@ -1,0 +1,362 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+{# 토스트 팝업 #}
+<div id="toast-container" class="toast-container"></div>
+{% if status == 'write_success' %}
+    <script>window.addEventListener('DOMContentLoaded', () => showToast('글 작성이 완료되었습니다.'));</script>
+{% elseif status == 'update_success' %}
+    <script>window.addEventListener('DOMContentLoaded', () => showToast('글 수정이 완료되었습니다.'));</script>
+{% elseif status == 'delete_success' %}
+    <script>window.addEventListener('DOMContentLoaded', () => showToast('글 삭제가 완료되었습니다.'));</script>
+{% endif %}
+
+<div class="container board-container my-5">
+    <!-- 타이틀 영역 -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="fw-bold mb-0">{{ board_title }}</h2>
+    </div>
+    
+    <p class="text-muted small mb-3">총 <strong class="text-primary">{{ total_count }}</strong>개의 글</p>
+
+    <!-- 카테고리 탭 버튼 영역 -->
+    <ul class="nav nav-pills nav-fill w-100 bg-white border-bottom border-top py-2 px-3 gap-2 mb-4" id="boardgameTab" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active text-dark rounded-0 py-2" data-bs-toggle="tab" data-bs-target="#all-pane" type="button" role="tab">전체</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link text-dark rounded-0 py-2" data-bs-toggle="tab" data-bs-target="#strategy-pane" type="button" role="tab">전략</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link text-dark rounded-0 py-2" data-bs-toggle="tab" data-bs-target="#party-pane" type="button" role="tab">파티</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link text-dark rounded-0 py-2" data-bs-toggle="tab" data-bs-target="#theme-adventure-pane" type="button" role="tab">테마/모험</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link text-dark rounded-0 py-2" data-bs-toggle="tab" data-bs-target="#kids-pane" type="button" role="tab">어린이</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link text-dark rounded-0 py-2" data-bs-toggle="tab" data-bs-target="#etc-pane" type="button" role="tab">기타</button>
+        </li>
+    </ul>
+
+    <!-- 게시글 영역 -->
+    <div class="container my-4">
+        <div class="tab-content" id="boardgameTabContent">
+
+            <!-- 난이도 셀렉트 박스 -->
+            <div class="row mb-4 justify-content-end">
+                <div class="d-flex col-6 col-sm-4 col-md-3 col-lg-2">
+                    <label class="input-group-text bg-transparent border-0 fw-bold" for="difficultySelect">난이도</label>
+                    <select class="form-select form-select-sm text-secondary small" id="difficultySelect">
+                        <option value="all">전체</option>
+                        <option value="최하">최하</option>
+                        <option value="하">하</option>
+                        <option value="중">중</option>
+                        <option value="상">상</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- 게시글이 없거나 검색 결과가 없는 경우 -->
+            <div id="no-items-message" class="fade {% if list is empty %}d-block show{% else %}d-none{% endif %}">
+                <div class="text-center text-muted py-5">
+                    <i class="bi bi-exclamation-circle d-block fs-4 mb-2"></i>
+                    검색 결과가 없거나 등록된 보드게임이 없습니다.
+                </div>
+            </div>
+
+            <!-- ==================== 카테고리 탭 ==================== -->
+
+            <!-- 전체 -->
+            <div class="tab-pane fade show active" id="all-pane" role="tabpanel" tabindex="0">
+                <div class="row row-cols-1 row-cols-md-3 g-4">
+                    {% for item in list %}
+                        {{ _self.render_card(item, doc_root, board_name) }}
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- 전략 -->
+            <div class="tab-pane fade" id="strategy-pane" role="tabpanel" tabindex="0">
+                <div class="row row-cols-1 row-cols-md-3 g-4">
+                    {% for item in list %}
+                        {% if item.category_name == '전략' %}
+                            {{ _self.render_card(item, doc_root, board_name) }}
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- 파티 -->
+            <div class="tab-pane fade" id="party-pane" role="tabpanel" tabindex="0">
+                <div class="row row-cols-1 row-cols-md-3 g-4">
+                    {% for item in list %}
+                        {% if item.category_name == '파티' %}
+                            {{ _self.render_card(item, doc_root, board_name) }}
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- 테마/모험 -->
+            <div class="tab-pane fade" id="theme-adventure-pane" role="tabpanel" tabindex="0">
+                <div class="row row-cols-1 row-cols-md-3 g-4">
+                    {% for item in list %}
+                        {% if item.category_name == '테마/모험' %}
+                            {{ _self.render_card(item, doc_root, board_name) }}
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- 어린이 -->
+            <div class="tab-pane fade" id="kids-pane" role="tabpanel" tabindex="0">
+                <div class="row row-cols-1 row-cols-md-3 g-4">
+                    {% for item in list %}
+                        {% if item.category_name == '어린이' %}
+                            {{ _self.render_card(item, doc_root, board_name) }}
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- 기타 -->
+            <div class="tab-pane fade" id="etc-pane" role="tabpanel" tabindex="0">
+                <div class="row row-cols-1 row-cols-md-3 g-4">
+                    {% for item in list %}
+                        {% if item.category_name == '기타' %}
+                            {{ _self.render_card(item, doc_root, board_name) }}
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- ==================== 난이도 셀렉트 박스 ==================== -->
+    
+            <!-- 최하 -->
+            <div class="tab-pane fade" id="level-worst-pane" role="tabpanel">
+                <div class="row row-cols-1 row-cols-md-3 g-4">
+                    {% for item in list %}
+                        {% if item.level == '최하' %}
+                            {{ _self.render_card(item, doc_root, board_name) }}
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- 하 -->
+            <div class="tab-pane fade" id="level-easy-pane" role="tabpanel">
+                <div class="row row-cols-1 row-cols-md-3 g-4">
+                    {% for item in list %}
+                        {% if item.level == '하' %}
+                            {{ _self.render_card(item, doc_root, board_name) }}
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- 중 -->
+            <div class="tab-pane fade" id="level-normal-pane" role="tabpanel">
+                <div class="row row-cols-1 row-cols-md-3 g-4">
+                    {% for item in list %}
+                        {% if item.level == '중' %}
+                            {{ _self.render_card(item, doc_root, board_name) }}
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- 상 -->
+            <div class="tab-pane fade" id="level-hard-pane" role="tabpanel">
+                <div class="row row-cols-1 row-cols-md-3 g-4">
+                    {% for item in list %}
+                        {% if item.level == '상' %}
+                            {{ _self.render_card(item, doc_root, board_name) }}
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            
+            {% macro render_card(item, doc_root, board_name) %}
+                <div class="col game-card-item fade show" data-category="{{ item.category }}" data-level="{{ item.level }}">
+
+                    <div class="card position-relative h-100 border-0 rounded-0">
+
+                        <span class="badge bg-primary position-absolute top-0 end-0 rounded-0 z-3">{{ item.category_name }}</span>
+
+                        <a href="{{ doc_root }}board/{{ board_name }}/view/{{ item.id }}" class="text-decoration-none text-dark">
+
+                            <div class="ratio ratio-4x3">
+                                {% if item.thumbnail %}
+                                    <img src="{{ item.thumbnail|replace({'public': ''}) }}" class="card-img-top object-fit-cover rounded-0" alt="{{ item.title }}">
+                                {% else %}
+                                    <img src="/img/defaults/post_4x3.svg" class="card-img-top object-fit-cover rounded-0" alt="게시글 기본 이미지">
+                                {% endif %}
+                            </div>
+
+                            <div class="card-body px-0 pt-4 pb-0">
+                                <h3 class="card-title text-truncate mb-2">{{ item.title }}</h3>
+                                <div class="info">
+                                    <span class="level badge bg-body-secondary text-dark">난이도 {{ item.level }}</span>
+                                    <span class="play_time badge bg-body-secondary text-dark"><i class="bi bi-clock-fill"></i> {{ item.play_time }}</span>
+                                    <span class="player_count badge bg-body-secondary text-dark"><i class="bi bi-people-fill"></i> {{ item.player_count }}</span>
+                                </div>
+                            </div>
+
+                        </a>
+
+                        <div class="hashtag mt-3">
+                            <span class="text-muted small">{{ item.hashtag }}</span>
+                        </div>
+                    </div>
+
+                </div>
+            {% endmacro %}
+
+        </div>
+    </div>
+
+    <!-- 페이지네이션 -->
+    {% if total_pages > 1 %}
+        <nav class="d-flex justify-content-center gap-1 mt-4 mb-4">
+
+            {# 1. 처음 화살표 #}
+            {% if current_page > 1 %}
+                <a class="page-num-link" href="{{ doc_root }}board/{{ board_name }}/page/1" title="처음 페이지">
+                    <i class="bi bi-chevron-double-left"></i>
+                </a>
+                {# 2. 이전 화살표 #}
+                <a class="page-num-link" href="{{ doc_root }}board/{{ board_name }}/page/{{ current_page - 1 }}" title="이전 페이지">
+                    <i class="bi bi-chevron-left"></i>
+                </a>
+            {% endif %}
+
+            {# 3. 1부터 마지막 페이지까지 번호 출력 #}
+            {% for p in 1..total_pages %}
+                <a class="page-num-link {% if p == current_page %}active{% endif %}" 
+                href="{{ doc_root }}board/{{ board_name }}/page/{{ p }}">
+                    {{ p }}
+                </a>
+            {% endfor %}
+
+            {# 4. 다음 화살표  #}
+            {% if current_page < total_pages %}
+                <a class="page-num-link" href="{{ doc_root }}board/{{ board_name }}/page/{{ current_page + 1 }}" title="다음 페이지">
+                    <i class="bi bi-chevron-right"></i>
+                </a>
+                {# 5. 마지막 화살표 #}
+                <a class="page-num-link" href="{{ doc_root }}board/{{ board_name }}/page/{{ total_pages }}" title="마지막 페이지">
+                    <i class="bi bi-chevron-double-right"></i>
+                </a>
+            {% endif %}
+
+        </nav>
+    {% endif %}
+
+    <!-- 검색 및 글쓰기 버튼 영역 -->
+    <div class="board-search d-flex justify-content-center align-items-center position-relative mt-5">
+
+        <!-- 1. 검색 폼 -->
+        <form action="{{ doc_root }}board/{{ board_name }}" method="post" class="row g-1 justify-content-center">
+            <!-- 검색 조건 선택 -->
+            <div class="col-auto">
+                <select name="search_type" class="form-select form-select-sm border-secondary-subtle">
+                    <option value="all" {% if search_type == 'all' %}selected{% endif %}>전체</option>
+                    <option value="title" {% if search_type == 'title' %}selected{% endif %}>제목</option>
+                    <option value="content" {% if search_type == 'content' %}selected{% endif %}>내용</option>
+                </select>
+            </div>
+            <!-- 검색 키워드 인풋 -->
+            <div class="col">
+                <input type="text" name="keyword" value="{{ keyword }}" class="form-control form-control-sm border-secondary-subtle" placeholder="검색어를 입력해 주세요.">
+            </div>
+            <!-- 검색 버튼 -->
+            <div class="col-auto">
+                <button type="submit" class="btn btn-dark btn-sm px-3">검색</button>
+            </div>
+        </form>
+
+        <!-- 2. 글쓰기 버튼 -->
+        <!-- 관리자 권한만 글쓰기 버튼 노출 -->
+        {% if session.role == 'ADMIN' %}
+            <a href="{{ doc_root }}board/{{ board_name }}/write" class="btn btn-primary btn-sm rounded-1 px-3 text-nowrap position-absolute end-0">
+                <i class="bi bi-pencil"></i> 글쓰기
+            </a>
+        {% endif %}
+
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // 토스트 팝업
+    function showToast(message) {
+        const container = document.getElementById('toast-container');
+        if (!container) return;
+    
+        const toast = document.createElement('div');
+        toast.className = 'toast-message';
+        toast.innerText = message;
+    
+        container.appendChild(toast);
+    
+        // 애니메이션이 끝나는 2.8초 뒤에 메모리에서 안전하게 제거
+        setTimeout(() => {
+            toast.remove();
+        }, 2800);
+    }
+    
+    // 카테고리 탭 전환 시 실행
+    const tabContainer = document.getElementById('boardgameTab');
+
+    if (tabContainer) {
+        tabContainer.querySelectorAll('[data-bs-toggle="tab"]').forEach(tabTrigger => {
+            tabTrigger.addEventListener('shown.bs.tab', function () {
+                filterGames();
+            });
+        });
+    }
+
+    // 난이도 셀렉트 박스 값 전환 시 실행
+    document.getElementById('difficultySelect').addEventListener('change', filterGames);
+
+    function filterGames() {
+        const difficultySelect = document.getElementById('difficultySelect');
+        const selectedLevel = difficultySelect.value;
+        const noMessage = document.getElementById('no-items-message');
+        let visibleCount = 0;
+
+        const activePane = document.querySelector('.tab-content .tab-pane.active');
+        if (!activePane) return;
+        
+        const cards = activePane.querySelectorAll('.game-card-item');
+
+        cards.forEach(card => card.classList.remove('show'));
+        noMessage.classList.remove('show');
+
+        setTimeout(() => {
+            cards.forEach(card => {
+                const cardLevel = card.getAttribute('data-level').trim();
+
+                if (selectedLevel === 'all' || cardLevel === selectedLevel) {
+                    card.classList.remove('d-none');
+                    setTimeout(() => card.classList.add('show'), 50);
+                    visibleCount++;
+                } else {
+                    card.classList.add('d-none');
+                }
+            });
+
+            if (visibleCount === 0) {
+                noMessage.classList.remove('d-none');
+                setTimeout(() => noMessage.classList.add('show'), 50);
+            } else {
+                noMessage.classList.add('d-none');
+            }
+        }, 150);
+    }
+</script>
+{% endblock %}

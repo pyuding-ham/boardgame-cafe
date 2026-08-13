@@ -5,10 +5,9 @@ namespace BoardgameCafe\Controllers;
 
 use Exception;
 use BoardgameCafe\Validate\Validate;
-use BoardgameCafe\Exceptions\NotFoundException;
+use BoardgameCafe\Enums\GameCategory;
 use BoardgameCafe\Exceptions\PostNotFoundException;
 use BoardgameCafe\Exceptions\AuthorizationException;
-use BoardgameCafe\Exceptions\AuthenticationException;
 use BoardgameCafe\Exceptions\ErrorCode;
 
 class BoardController {
@@ -50,20 +49,45 @@ class BoardController {
         $per_page = 10;
         $offset = ($page - 1) * $per_page;
 
+        // 4. 총 게시글 개수
+        // DB 서비스 호출
         $board_service = $this->cms->getBoard();
-        
-        // 4. 게시판 이름에 따라 다른 서비스 메서드 호출
-        // 지점소개
-        if ($boardName === 'branch') {
+        $total_count = $board_service->getBoardTotalCount($boardName, $filters);
+
+        // 5. 게시판 이름에 따라 다른 서비스 메서드 호출
+        // 게임소개
+        if ($boardName === 'boardgame') {
             $per_page = 9;
 
             $list = $board_service->getBoardList($boardName, $per_page, $offset, $filters);
-            $total_count = $board_service->getBoardTotalCount($boardName, $filters);
+
+            foreach ($list as $key => $post) {
+                // 카테고리
+                if (isset($post['category'])) {
+                    $list[$key]['category_name'] = GameCategory::getName((int)$post['category']);
+                }
+
+                // 해시태그
+                if (isset($post['hashtag']) && !empty($post['hashtag'])) {
+                    $tags_array = explode(',', $post['hashtag']);
+
+                    $formatted_array = array_map(function($tag) {
+                        return '#' . trim($tag);
+                    }, $tags_array);
+
+                    $list[$key]['hashtag'] = implode(' ', array_filter($formatted_array));
+                }
+            }
+        }
+        // 지점소개
+        elseif ($boardName === 'branch') {
+            $per_page = 9;
+
+            $list = $board_service->getBoardList($boardName, $per_page, $offset, $filters);
         }
         // 공지사항
         elseif ($boardName === 'notice') {
             $list = $board_service->getBoardList('notice', $per_page, $offset, $filters);
-            $total_count = $board_service->getBoardTotalCount('notice', $filters);
             $start_num = $total_count - $offset;
 
             // 글 번호 가공
@@ -84,7 +108,6 @@ class BoardController {
         // 기본 게시판
         else {
             $list = $board_service->getBoardList($boardName, $per_page, $offset, $filters);
-            $total_count = $board_service->getBoardTotalCount($boardName, $filters);
             $start_num = $total_count - $offset;
 
             // 글 번호 가공
