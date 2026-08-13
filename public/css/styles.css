@@ -115,6 +115,11 @@ body {
     width: 100%;
 }
 
+/* 게시글 좋아요 */
+.like-count {
+    font-size: 0.7rem;
+}
+
 /* 페이지네이션 */
 .page-num-link {
     display: flex;

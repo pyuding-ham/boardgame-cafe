@@ -53,7 +53,8 @@ class Board
                           bd.level,
                           bd.play_time,
                           bd.hashtag,
-                          0 AS is_pinned
+                          0 AS is_pinned,
+                          (SELECT COUNT(*) FROM post_like pl WHERE pl.post_id = p.id) AS like_count
                         FROM post p
                           INNER JOIN site_menu m
                             ON p.site_menu_id = m.id
