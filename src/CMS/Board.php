@@ -49,6 +49,7 @@ class Board
                           p.title, '관리자' AS nickname,
                           p.created_at,
                           bd.category,
+                          bd.slug,
                           bd.player_count,
                           bd.level,
                           bd.play_time,
