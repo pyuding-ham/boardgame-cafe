@@ -152,6 +152,70 @@ class Board
     }
 
     /**
+     * 단일 게시글 상세 조회 (Slug)
+     */
+    public function getBoardPostBySlug(string $page_code, string $slug, ?int $user_id = null): array|bool
+    {
+        // 1. 게시판별 게시글 조회 분기 처리
+        switch ($page_code) {
+            // 게임소개
+            case 'boardgame':
+                $sql = "SELECT
+                          p.id,
+                          '관리자' AS nickname,
+                          p.title,
+                          p.content,
+                          p.created_at,
+                          bd.category,
+                          bd.slug,
+                          bd.player_count,
+                          bd.level,
+                          bd.play_time,
+                          bd.hashtag,
+                          0 AS is_pinned,
+                          (SELECT COUNT(*) FROM post_like pl WHERE pl.post_id = p.id) AS like_count,
+                          IF(EXISTS(
+                            SELECT 1
+                            FROM post_like pl 
+                            WHERE pl.post_id = p.id
+                              AND pl.user_id = :user_id
+                          ), 1, 0) AS is_liked
+                        FROM post p
+                          INNER JOIN site_menu m
+                            ON p.site_menu_id = m.id
+                          INNER JOIN boardgame_detail bd
+                            ON p.id = bd.post_id
+                        WHERE bd.slug = :slug
+                          AND p.is_deleted = 0;";
+                break;
+        }
+
+        $stmt = $this->db->runSql($sql, [
+            'user_id' => $user_id,
+            'slug' => $slug,
+        ]);
+        $post = $stmt ? $stmt->fetch() : false;
+
+        // 게시글이 존재하지 않거나 삭제된 경우 예외 처리
+        if (!$post) {
+            throw new PostNotFoundException(ErrorCode::POST_NOT_FOUND_READ->value);
+        }
+        
+        // 2. 이미지 목록 조회
+        $image_sql = "SELECT id, image_path, org_name, sort_order
+                      FROM post_image
+                      WHERE post_id = :post_id
+                        AND file_type = 'DETAIL'
+                      ORDER BY sort_order;";
+
+        $image_stmt = $this->db->runSql($image_sql, ['post_id' => $post['id']]);
+        
+        $post['images'] = $image_stmt ? $image_stmt->fetchAll() : [];
+
+        return $post;
+    }
+
+    /**
      * 단일 게시글 상세 조회
      */
     public function getBoardPost(string $page_code, int $id): array|bool

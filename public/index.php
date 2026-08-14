@@ -55,7 +55,7 @@ if (str_contains($raw_uri, 'password-reset')) {
                 if (is_numeric($identifier)) {
                     $postId = (int)$identifier;
                 } else {
-                    $postSlug = $identifier; 
+                    $postSlug = (string)$identifier; 
                 }
             // 4. 게시글 작성
             } elseif ($actionKeyword === 'write') {

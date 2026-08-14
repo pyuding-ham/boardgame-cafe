@@ -1,0 +1,159 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="container board-view-container my-5">
+    <!-- 게시판 타이틀 영역 -->
+    <div class="board-view__board mb-4">
+        <h3 class="title mb-0">{{ board_title }}</h3>
+    </div>
+
+    <!-- 게시글 상단 영역 -->
+    <div class="board-view__header mb-5">
+        <div class="top">
+            <h2 class="title mb-0">{{ post.title }}</h2>
+        </div>
+        
+        <div class="bottom row mt-4">
+            <div class="writer col-12 col-md-6">
+                <span class="me-3">
+                    <strong>작성자</strong> {{ post.nickname }}
+                </span>
+            </div>
+            <div class="day col-12 col-md-6 text-md-end">
+                <span class="text-muted">
+                    <strong>작성일</strong> {{ post.created_at|date('Y-m-d H:i') }}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 보드게임 정보 영역 -->
+    <div class="board-view__boardgame mb-5">
+        <div class="card bg-light border-0 rounded-0 shadow-none">
+            <div class="card-body p-4">
+                
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <!-- 카테고리 -->
+                    <span class="badge bg-primary rounded-0 px-3 py-2 fs-7">
+                        {{ post.category_name }}
+                    </span>
+                    
+                    <!-- 좋아요 -->
+                    <button type="button" class="btn btn-link p-0 text-decoration-none d-flex align-items-center gap-1 text-danger">
+                        {% if post.is_liked == 1 %}
+                            <i class="bi bi-heart-fill"></i>
+                        {% else %}
+                            <i class="bi bi-heart"></i>
+                        {% endif %}
+                        <span>{{ post.like_count }}</span>
+                    </button>
+                </div>
+
+                <div class="row g-0 text-secondary my-1 border-bottom border-top py-3">
+                    <!-- 난이도 -->
+                    <div class="col-4 text-center border-end border-secondary-subtle">
+                        <div class="text-muted small mb-1">난이도</div>
+                        <div class="fw-bold text-dark fs-5">{{ post.level }}</div>
+                    </div>
+
+                    <!-- 플레이 시간 -->
+                    <div class="col-4 text-center border-end border-secondary-subtle">
+                        <div class="text-muted small mb-1">플레이 시간</div>
+                        <div class="fw-bold text-dark fs-5">{{ post.play_time }}</div>
+                    </div>
+
+                    <!-- 인원 -->
+                    <div class="col-4 text-center">
+                        <div class="text-muted small mb-1">인원</div>
+                        <div class="fw-bold text-dark fs-5">{{ post.player_count }}</div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- 이미지 슬라이드 영역 -->
+    <div class="board-view__image mb-3">
+        {% if post.images is not empty %}
+            <div id="customCarousel" class="carousel slide" data-bs-ride="carousel">
+
+                <!-- 하단 이동 버튼 -->
+                {% if post.images|length > 1 %}
+                    <div class="carousel-indicators custom-indicators">
+                        {% for item in post.images %}
+                            <button type="button" data-bs-target="#customCarousel" data-bs-slide-to="{{ loop.index0 }}" class="{{ loop.first ? 'active' : '' }}" aria-current="true" aria-label="{{ loop.index }}번째 이미지"></button>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+        
+                <div class="carousel-inner">
+                    {% for item in post.images %}
+                        <div class="carousel-item {{ loop.first ? 'active' : '' }}">
+                            <img src="{{ item.image_path|replace({'public': ''}) }}" alt="{{ post.title }}">
+                        </div>
+                    {% endfor %}
+                </div>
+    
+                <!-- 좌우 이동 화살표 -->
+                {% if post.images|length > 1 %}
+                    <button class="carousel-control-prev" type="button" data-bs-target="#customCarousel" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">이전 이미지</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#customCarousel" data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">다음 이미지</span>
+                    </button>
+                {% endif %}
+    
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- 게시글 본문 영역 -->
+    <div class="board-view__content border p-4 bg-white mb-4">{{ post.content|raw }}</div>
+
+    <!-- 해시태그 영역 -->
+    {% if post.hashtag %}
+        <div class="board-view__hashtag text-end text-muted mb-5">
+            {{ post.hashtag }}
+        </div>
+    {% endif %}
+
+    <!-- 게시글 하단 버튼 영역 -->
+    <div class="board-view__footer d-flex justify-content-between gap-2">
+        <a href="{{ doc_root }}board/{{ board_name }}" class="btn btn-secondary px-4 rounded-0">목록으로</a>
+        
+        {% if session.role == 'ADMIN' %}
+            <div>
+                <a href="{{ doc_root }}board/{{ board_name }}/edit/{{ post.id }}" class="btn btn-outline-primary me-1 rounded-0">수정</a>
+                <a href="{{ doc_root }}board/{{ board_name }}/delete/{{ post.id }}" class="btn btn-outline-danger rounded-0" onclick="return confirm('해당 게시글을 정말 삭제하시겠습니까?');">삭제</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // 이미지 슬라이드
+    const myCarousel = document.getElementById('customCarousel');
+    const thumbnails = document.querySelectorAll('.thumb');
+
+    // 슬라이드가 전환될 때 실행되는 이벤트 리스너
+    if (myCarousel) {
+        myCarousel.addEventListener('slide.bs.carousel', event => {
+            // 모든 썸네일에서 active 클래스 제거
+            thumbnails.forEach(thumb => thumb.classList.remove('active'));
+            
+            // 현재 활성화되는 슬라이드 인덱스에 맞는 썸네일에 active 클래스 추가
+            const activeIndex = event.to;
+
+            if (thumbnails[activeIndex]) {
+                thumbnails[activeIndex].classList.add('active');
+            }
+        });
+    }
+</script>
+{% endblock %}

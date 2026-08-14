@@ -138,17 +138,33 @@ class BoardController {
      * @param string $boardName 게시판 식별자 이름
      * @return array|false 게시글 데이터 배열 또는 실패 시 false
      */
-    public function view(string|int $identifier, ?string $boardName): array|false {
+    public function view(string|int $identifier, ?string $boardName, ?int $userId = null): array|false {
         $board_service = $this->cms->getBoard();
 
         // 게시판 이름에 따라 다른 상세 보기 데이터 호출
         // 게임소개
         if ($boardName === 'boardgame') {
-            $post = $board_service->getBoardgamePostBySlug('boardgame', (string)$identifier);
+            $post = $board_service->getBoardPostBySlug($boardName, $identifier, $userId);
+
+            // 카테고리
+            if (isset($post['category'])) {
+                $post['category_name'] = GameCategory::getName((int)$post['category']);
+            }
+
+            // 해시태그
+            if (isset($post['hashtag']) && !empty($post['hashtag'])) {
+                $tags_array = explode(',', $post['hashtag']);
+
+                $formatted_array = array_map(function($tag) {
+                    return '#' . trim($tag);
+                }, $tags_array);
+
+                $post['hashtag'] = implode(' ', array_filter($formatted_array));
+            }
         }
         // 그 외의 게시판
         else {
-            $post = $board_service->getBoardPost($boardName, (int)$identifier);
+            $post = $board_service->getBoardPost($boardName, $identifier);
         }
 
         // 게시글이 존재하지 않거나 삭제된 경우 예외 처리
