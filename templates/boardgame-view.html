@@ -39,13 +39,13 @@
                     </span>
                     
                     <!-- 좋아요 -->
-                    <button type="button" class="btn btn-link p-0 text-decoration-none d-flex align-items-center gap-1 text-danger">
+                    <button type="button" id="btnPostLike" class="btn btn-link p-0 text-decoration-none d-flex align-items-center gap-1 text-danger" data-post-id="{{ post.id }}">
                         {% if post.is_liked == 1 %}
-                            <i class="bi bi-heart-fill"></i>
+                            <i id="likeIcon" class="bi bi-heart-fill"></i>
                         {% else %}
-                            <i class="bi bi-heart"></i>
+                            <i id="likeIcon" class="bi bi-heart"></i>
                         {% endif %}
-                        <span>{{ post.like_count }}</span>
+                        <span id="likeCount">{{ post.like_count }}</span>
                     </button>
                 </div>
 
@@ -136,6 +136,7 @@
 {% endblock %}
 
 {% block scripts %}
+<script src="/js/like.js"></script>
 <script>
     // 이미지 슬라이드
     const myCarousel = document.getElementById('customCarousel');
