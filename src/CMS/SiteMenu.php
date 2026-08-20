@@ -30,6 +30,25 @@ class SiteMenu
     }
 
     /**
+     * 특정 페이지 코드(page_code)로 메뉴 아이디 정보 조회
+     */
+    public function getMenuIdByPageCode(string $pageCode): string|false
+    {
+        $sql = "SELECT id
+                FROM site_menu
+                WHERE page_code = :page_code
+                  AND is_exposed = 1;";
+
+        $stmt = $this->db->runSql($sql, ['page_code' => $pageCode]);
+
+        if ($stmt) {
+            return $stmt->fetchColumn();
+        }
+
+        return false;
+    }
+
+    /**
      * 특정 페이지 코드(page_code)로 단일 메뉴 정보 조회
      */
     public function getMenuTitleByPageCode(string $pageCode): array|false

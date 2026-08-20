@@ -63,8 +63,8 @@ class BoardController {
 
             foreach ($list as $key => $post) {
                 // 카테고리
-                if (isset($post['category'])) {
-                    $list[$key]['category_name'] = GameCategory::getName((int)$post['category']);
+                if (isset($post['post_category_id'])) {
+                    $list[$key]['category_name'] = GameCategory::getName((int)$post['post_category_id']);
                 }
 
                 // 해시태그
@@ -147,8 +147,8 @@ class BoardController {
             $post = $board_service->getBoardPostBySlug($boardName, $identifier, $userId);
 
             // 카테고리
-            if (isset($post['category'])) {
-                $post['category_name'] = GameCategory::getName((int)$post['category']);
+            if (isset($post['post_category_id'])) {
+                $post['category_name'] = GameCategory::getName((int)$post['post_category_id']);
             }
 
             // 해시태그
@@ -182,11 +182,11 @@ class BoardController {
      */
     public function insert(string $boardName, array $postData, array $fileData, int $userId): array
     {
-        // 지점소개, 공지사항 게시판일 때 관리자 여부 체크
+        // 게임소개, 지점소개, 공지사항 게시판일 때 관리자 여부 체크
         // DB 서비스 호출
         $user_service = $this->cms->getUser();
         
-        if (($boardName === 'branch'|| $boardName === 'notice') && !$user_service->isAdmin($userId)) {
+        if (($boardName === 'boardgame'|| $boardName === 'branch'|| $boardName === 'notice') && !$user_service->isAdmin($userId)) {
             throw new AuthorizationException(ErrorCode::ACCESS_DENIED->value);
         }
 
@@ -431,8 +431,38 @@ class BoardController {
         $board_service = $this->cms->getBoard();
         $db = $this->cms->getDb();
 
+        // 게임소개
+        if ($boardName === 'boardgame') {
+            $db->beginTransaction();
+
+            try {
+                $post_id = $board_service->insertBoardPost(
+                    'boardgame',
+                    $userId,
+                    [
+                        'title'        => $title,
+                        'slug'         => $postData['slug'],
+                        'category'     => $postData['category_id'],
+                        'level'        => $postData['level_id'] ?? null,
+                        'play_time'    => $postData['play_time'] ?? null,
+                        'player_count' => $postData['player_count'] ?? null,
+                        'hashtag'      => $postData['hashtag'] ?? null,
+                        'content'      => $content,
+                        'thumbnail'    => $thumbnail_file['file_path'] ?? null,
+                    ]
+                );
+
+                $board_service->insertBoardImage($post_id, $thumbnail_file, $images_files);
+
+                $db->commit();
+            
+            } catch (\Throwable $e) {
+                $db->rollBack();
+                throw $e; 
+            }
+        }
         // 지점소개
-        if ($boardName === 'branch') {
+        elseif ($boardName === 'branch') {
             $db->beginTransaction();
 
             try {
@@ -495,6 +525,180 @@ class BoardController {
         return [
             'success' => true,
         ];
+    }
+
+    /**
+     * 게시글 작성 (게임소개)
+     */
+    public function insertBoardgame(string $boardName, array $postData, array $fileData, int $userId): array
+    {
+        // 관리자 여부 체크
+        // DB 서비스 호출
+        $user_service = $this->cms->getUser();
+
+        if (!$user_service->isAdmin($userId)) {
+            throw new AuthorizationException(ErrorCode::ACCESS_DENIED->value);
+        }
+
+        $title        = trim($postData['title'] ?? '');
+        $slug         = trim($postData['slug'] ?? '');
+        $category     = trim($postData['category_id'] ?? '');
+        $level        = isset($postData['level_id']) ? trim($postData['level_id']) : null;
+        $play_time    = trim($postData['play_time'] ?? '');
+        $player_count = trim($postData['player_count'] ?? '');
+        $content      = trim($postData['content'] ?? '');
+        $hashtag      = trim($postData['hashtag'] ?? '');
+        $errors       = [];
+
+        // 게시글 내용 글자 수 카운트 변수
+        $decoded_for_length = html_entity_decode($content, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $pure_text_for_length = strip_tags($decoded_for_length);
+        $clean_content_for_length = preg_replace('/[\s\x{00a0}\x{200b}]+/u', '', $pure_text_for_length);
+        // 순수 글자 수
+        $real_text_length = mb_strlen($clean_content_for_length, 'UTF-8');
+        // HTML 태그를 포함한 용량
+        $html_byte_length = strlen($content);
+
+        // DB 서비스 호출
+        $board_service = $this->cms->getBoard();
+
+
+        // 입력 값 검증
+
+        // 1. 제목
+        // 필수 입력 값 검사
+        if (empty($title)) {
+            $errors['title'] = '제목을 입력해 주세요.';
+        }
+        // 글자 수 검사
+        elseif (!Validate::isText($title, 1, 100)) {
+            $errors['title'] = '제목은 최대 100자까지 입력할 수 있습니다.';
+        }
+
+        // 2. 페이지 주소
+        // 필수 입력 값 검사
+        if (empty($slug)) {
+            $errors['slug'] = '페이지 주소를 입력해 주세요.';
+        }
+        // 글자 수 검사
+        elseif (empty($errors['slug']) && !Validate::isText($slug, 1, 255)) {
+            $errors['slug'] = '페이지 주소는 최대 255자까지 입력할 수 있습니다.';
+        }
+        // 슬러그 값 가공
+        else {
+            $clean_slug = $this->sanitize_slug($slug);
+
+            // 슬러그 빈 값 검사
+            if (empty($clean_slug)) {
+                $errors['slug'] = "올바른 페이지 주소 형식이 아닙니다. 영문이나 숫자를 포함해 주세요.";
+            }
+            // 슬러그 중복체크 및 숫자 붙이기
+            else {
+                $final_slug = $clean_slug;
+                $counter = 1;
+        
+                while (true) {
+                    $is_duplicate = $board_service->isSlugExists($final_slug);
+                    
+                    if (!$is_duplicate) {
+                        break;
+                    }
+
+                    $final_slug = $clean_slug . '-' . $counter;
+                    $counter++;
+                }
+
+                $slug = $postData['slug'] = $final_slug;
+            }
+        }
+
+        // 3. 카테고리
+        // 필수 입력 값 검사
+        if (empty($category)) {
+            $errors['category'] = '카테고리를 선택해 주세요.';
+        }
+        // 위변조 검증
+        elseif (!$board_service->hasCategory($category)) {
+            $errors['category'] = '올바르지 않은 카테고리 선택입니다.';
+        }
+
+        // 4. 난이도
+        // 위변조 검증
+        if (!empty($level) && !$board_service->hasBoardgameLevel($level)) {
+            $errors['level'] = '올바르지 않은 난이도 선택입니다.';
+        }
+
+        // 5. 플레이 인원 글자 수 검사
+        if (!Validate::isText($player_count, 0, 20)) {
+            $errors['player_count'] = '플레이 인원은 최대 20자까지 입력할 수 있습니다.';
+        }
+        
+        // 6. 플레이 시간 글자 수 검사
+        if (!Validate::isText($play_time, 0, 20)) {
+            $errors['play_time'] = '플레이 시간은 최대 20자까지 입력할 수 있습니다.';
+        }
+
+        // 7. 내용
+        // 필수 입력 값 검사
+        if ($real_text_length === 0 || empty($clean_content_for_length)) {
+            $errors['content'] = '내용을 입력해주세요.';
+        }
+
+        if (empty($errors['content'])) {
+            // 글자 수 검사
+            if ($real_text_length > 5000) {
+                $errors['content'] = '본문 내용은 최대 5,000자까지 입력 가능합니다. (현재 ' . number_format($real_text_length) . '자)';
+            } 
+            // 과도한 HTML 태그 서식 입력 방지
+            elseif ($html_byte_length > 50000) {
+                $errors['content'] = '과도한 서식(색상, 굵기 등)이 포함되어 저장할 수 없습니다. 서식을 조금 줄여주세요.';
+            }
+        }
+        
+        // 8. 해시태그 글자 수 검사
+        if (!Validate::isText($hashtag, 0, 255)) {
+            $errors['hashtag'] = '해시태그는 최대 255자까지 입력할 수 있습니다.';
+        }
+
+        if (!empty($errors)) {
+            return [
+                'success' => false,
+                'errors'  => $errors,
+                'post' => [
+                    'title'             => $title,
+                    'content'           => $content,
+                    'slug'              => $slug,
+                    'category_selected' => $category,
+                    'level_selected'    => $level,
+                    'play_time'         => $play_time,
+                    'player_count'      => $player_count,
+                    'hashtag'           => $hashtag,
+                ]
+            ];
+        }
+
+        $result = $this->insert($boardName, $postData, $fileData, $userId);
+
+        if (isset($result['success']) && $result['success'] === true) {
+            return [
+                'success' => true,
+            ];
+        } else {
+            return [
+                'success' => false,
+                'errors'  => $errors,
+                'post' => [
+                    'title'             => $title,
+                    'content'           => $content,
+                    'slug'              => $slug,
+                    'category_selected' => $category,
+                    'level_selected'    => $level,
+                    'play_time'         => $play_time,
+                    'player_count'      => $player_count,
+                    'hashtag'           => $hashtag,
+                ]
+            ];
+        }
     }
 
     /**
@@ -900,6 +1104,20 @@ class BoardController {
     }
 
     /**
+     * 게시글 존재 여부 확인
+     */
+    public function isPostExists(string $post_id): bool 
+    {
+        // 1. DB 서비스 호출
+        $board_service = $this->cms->getBoard();
+
+        // 2. 게시글 존재 여부 확인
+        $result = $board_service->isPostExists($post_id);
+
+        return $result;
+    }
+
+    /**
      * 게시글 작성 가능 여부 확인
      */
     public function canWritePost(int $user_id, string $board_name): bool
@@ -907,8 +1125,8 @@ class BoardController {
         // DB 서비스 호출
         $user_service = $this->cms->getUser();
 
-        // 지점소개, 공지사항은 관리자만 작성 가능
-        if ($board_name === 'branch' || $board_name === 'notice') {
+        // 게임소개, 지점소개, 공지사항은 관리자만 작성 가능
+        if ($board_name === 'boardgame' || $board_name === 'branch' || $board_name === 'notice') {
             return $user_service->isAdmin($user_id);
         }
 
@@ -981,5 +1199,43 @@ class BoardController {
         }
 
         return [];
+    }
+
+    /**
+     * 슬러그 값 가공
+     */
+    public function sanitize_slug(string $slug): string
+    {
+        // 1. 소문자로 변환
+        $slug = strtolower($slug);
+        
+        // 2. 영문 소문자, 숫자, 하이픈(-) 외의 모든 문자(한글, 특수문자 등)는 제거
+        $slug = preg_replace('/[^a-z0-9-]/', '', $slug);
+        
+        // 3. 연속으로 들어온 하이픈(--)은 하나의 하이픈(-)으로 축소
+        $slug = preg_replace('/-+/', '-', $slug);
+        
+        // 4. 양끝에 남아있는 하이픈 제거
+        $slug = trim($slug, '-');
+        
+        return $slug;
+    }
+
+    /**
+     * 게시글 등록 화면 출력
+     */
+    public function getWriteForm(string $site_menu_id): array
+    {
+        // DB 서비스 호출
+        $board_service = $this->cms->getBoard();
+
+        $result['category'] = $board_service->getCategory($site_menu_id);
+
+        // 게임소개
+        if ($site_menu_id === '1') {
+            $result['level'] = $board_service->getBoardgameLevel();
+        }
+
+        return $result;
     }
 }

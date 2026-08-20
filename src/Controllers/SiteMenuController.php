@@ -3,6 +3,9 @@ declare(strict_types = 1);
 
 namespace BoardgameCafe\Controllers;
 
+use BoardgameCafe\Exceptions\NotFoundException;
+use BoardgameCafe\Exceptions\ErrorCode;
+
 class SiteMenuController {
     private $cms;
 
@@ -27,6 +30,21 @@ class SiteMenuController {
         $_SESSION['site_menus'] = $dbMenus ? $dbMenus : [];
 
         return $_SESSION['site_menus'];
+    }
+
+    
+    /**
+     * 페이지 코드에 해당하는 메뉴 아이디 반환
+     */
+    public function getMenuIdByPageCode(string $pageCode): string
+    {
+        $menu_id = $this->cms->getSiteMenu()->getMenuIdByPageCode($pageCode);
+
+        if ($menu_id === false) {
+            throw new NotFoundException(ErrorCode::PAGE_NOT_FOUND->value);
+        }
+
+        return $menu_id;
     }
 
     /**

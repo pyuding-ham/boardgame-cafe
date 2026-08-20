@@ -1,6 +1,7 @@
 <?php
 declare(strict_types = 1);
 
+use BoardgameCafe\Controllers\BoardController;
 use BoardgameCafe\Exceptions\NotFoundException;
 use BoardgameCafe\Exceptions\ErrorCode;
 
@@ -51,11 +52,27 @@ if (str_contains($raw_uri, 'password-reset')) {
                 $boardAction = 'view';
                 $identifier = $parts[3] ?? null;
                 
-                // 숫자가 들어오면 ID, 문자가 들어오면 영문 슬러그로 저장
+                // 게시글 식별자가 숫자인 경우
                 if (is_numeric($identifier)) {
-                    $postId = (int)$identifier;
-                } else {
-                    $postSlug = (string)$identifier; 
+                    // 실제 게시글 존재 여부 확인
+                    $boardController = new BoardController($cms);
+                    $isRealPostId = $boardController->isPostExists($identifier);
+
+                    // 게시글 있는 경우
+                    if ($isRealPostId) {
+                        // 슬러그가 아닌 ID로 저장
+                        $postId = (int)$identifier;
+                    }
+                    // 게시글 없는 경우
+                    else {
+                        // 영문 슬러그로 저장
+                        $postSlug = (string)$identifier;
+                    }
+                }
+                // 게시글 식별자가 문자인 경우
+                else {
+                    // 영문 슬러그로 저장
+                    $postSlug = (string)$identifier;
                 }
             // 4. 게시글 작성
             } elseif ($actionKeyword === 'write') {

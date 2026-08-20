@@ -39,6 +39,8 @@ if (in_array($boardName, $allowed_boards)) {
     $data = [];
 
     $data = array_merge($data, [
+        // 메뉴 아이디
+        'board_id' => $siteMenuController->getMenuIdByPageCode($boardName),
         // 메뉴 코드
         'board_name'  => $boardName,
         // 메뉴 이름
@@ -71,7 +73,12 @@ if (in_array($boardName, $allowed_boards)) {
         }
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $result = $boardController->insert($boardName, $_POST, $_FILES, (int)$currentUserId);
+            // 게임소개
+            if ($boardName === 'boardgame') {
+                $result = $boardController->insertBoardgame($boardName, $_POST, $_FILES, (int)$currentUserId);
+            } else {
+                $result = $boardController->insert($boardName, $_POST, $_FILES, (int)$currentUserId);
+            }
             
             if ($result['success']) {
                 redirect("board/{$boardName}", [
@@ -79,21 +86,44 @@ if (in_array($boardName, $allowed_boards)) {
                 ]);
                 exit;
             } else {
+                // 게임소개
+                if (($boardName === 'boardgame')) {
+                    $result['post'] = array_merge(
+                        $result['post'] ?? [],
+                        $boardController->getWriteForm($data['board_id'])
+                    );
+                }
+                    
                 $data['errors'] = $result['errors'];
                 $data['post']   = $result['post'];
             }
         } 
         // 최초 글쓰기 페이지 진입 (GET)
         else {
-            // 지점소개, 공지사항 게시판일 때 관리자 여부 체크
-            if (($boardName === 'branch' || $boardName == 'notice') && !$boardController->canWritePost((int)$currentUserId, $boardName)) {
+            // 게임소개, 지점소개, 공지사항 게시판일 때 관리자 여부 체크
+            if (($boardName === 'boardgame' || $boardName === 'branch' || $boardName === 'notice') && !$boardController->canWritePost((int)$currentUserId, $boardName)) {
                 throw new AuthorizationException(ErrorCode::ACCESS_DENIED->value);
             }
 
-            $data['post'] = [
-                'title' => '',
-                'content' => '',
-            ];
+            // 게임소개
+            if (($boardName === 'boardgame')) {
+                $result = $boardController->getWriteForm($data['board_id']);
+
+                $data['post'] = [
+                    'title' => '',
+                    'category' => $result['category'],
+                    'level' => $result['level'],
+                    'content' => '',
+                ];
+            }
+            // 그 이외 게시판
+            else {
+                $data['post'] = [
+                    'title' => '',
+                    'content' => '',
+                ];
+            }
+
             $data['errors']  = [];
         }
 

@@ -48,7 +48,7 @@ class Board
                           p.thumbnail,
                           p.title, '관리자' AS nickname,
                           p.created_at,
-                          bd.category,
+                          bd.post_category_id,
                           bd.slug,
                           bd.player_count,
                           bd.level,
@@ -166,7 +166,7 @@ class Board
                           p.title,
                           p.content,
                           p.created_at,
-                          bd.category,
+                          bd.post_category_id,
                           bd.slug,
                           bd.player_count,
                           bd.level,
@@ -337,8 +337,46 @@ class Board
         $post_id = $this->db->lastInsertId();
 
         // 게시판별 등록 분기
+        // 게임소개
+        if ($board_name === 'boardgame') {
+            $category     = $data['category'] ?? '';
+            $slug         = $data['slug'] ?? '';
+            $player_count = $data['player_count'] ?? '';
+            $level        = $data['level'] ?? null;
+            $play_time    = $data['play_time'] ?? '';
+            $hashtag      = $data['hashtag'] ?? '';
+
+            $boardgame_sql = "INSERT INTO boardgame_detail (
+                                post_id,
+                                post_category_id,
+                                slug,
+                                player_count,
+                                level,
+                                play_time,
+                                hashtag
+                              ) 
+                              VALUES (
+                                :post_id,
+                                :post_category_id,
+                                :slug,
+                                :player_count,
+                                :level,
+                                :play_time,
+                                :hashtag
+                              );";
+            
+            $this->db->runSql($boardgame_sql, [
+                'post_id'          => $post_id,
+                'post_category_id' => $category,
+                'slug'             => $slug,
+                'player_count'     => $player_count,
+                'level'            => $level,
+                'play_time'        => $play_time,
+                'hashtag'          => $hashtag,
+            ]);
+        }
         // 지점소개
-        if ($board_name === 'branch') {
+        elseif ($board_name === 'branch') {
             $address = $data['address'] ?? '';
 
             $result = $this->getCoordinate($address);
@@ -836,6 +874,23 @@ class Board
     }
 
     /**
+     * 게시글 존재 여부 확인
+     */
+    public function isPostExists(string $post_id): bool 
+    {
+        $sql = "SELECT COUNT(*)
+                FROM post
+                WHERE id = :id
+                  AND is_deleted = 0;";
+        
+        $stmt = $this->db->runSql($sql, [
+            'id' => [$post_id, \PDO::PARAM_INT],
+        ]);
+
+        return $stmt->fetchColumn() > 0;
+    }
+
+    /**
      * 게시글 작성 가능 여부 확인
      */
     public function canWritePost(int $user_id, string $board_name): bool
@@ -877,6 +932,87 @@ class Board
         ]);
 
         return $stmt ? $stmt->fetch() : false;
+    }
+
+    /**
+     * 슬러그 중복 검사
+     */
+    public function isSlugExists(string $slug): bool 
+    {
+        $sql = "SELECT COUNT(*)
+                FROM boardgame_detail
+                WHERE slug = :slug;";
+        
+        $stmt = $this->db->runSql($sql, [
+            'slug' => $slug,
+        ]);
+
+        return $stmt->fetchColumn() > 0;
+    }
+
+    /**
+     * 카테고리 조회
+     */
+    public function getCategory(string $site_menu_id): array|bool
+    {
+        $sql = "SELECT id, name
+                FROM post_category
+                WHERE site_menu_id = :site_menu_id
+                  AND is_deleted = 0;";
+        
+        $stmt = $this->db->runSql($sql, [
+            'site_menu_id' => $site_menu_id,
+        ]);
+
+       return $stmt ? $stmt->fetchAll() : false;
+    }
+
+    /**
+     * 카테고리 존재 여부 확인
+     */
+    public function hasCategory(string $category_id): bool
+    {
+        $sql = "SELECT id
+                FROM post_category
+                WHERE id = :id
+                  AND is_deleted = 0;";
+
+        $stmt = $this->db->runSql($sql, [
+            'id' => [$category_id, \PDO::PARAM_INT],
+        ]);
+
+        return !empty($stmt->fetchColumn());
+    }
+
+    /**
+     * 게임소개 게시판 레벨 조회
+     */
+    public function getBoardgameLevel(): array|bool
+    {
+        $sql = "SELECT id, name
+                FROM boardgame_level
+                WHERE is_deleted = 0;";
+        
+        $stmt = $this->db->runSql($sql);
+
+       return $stmt ? $stmt->fetchAll() : false;
+    }
+
+    /**
+     * 게임소개 게시판 레벨 존재 여부 확인
+     */
+    public function hasBoardgameLevel(?string $level_id): bool
+    {
+        $sql = "SELECT id
+                FROM boardgame_level
+                WHERE id = :id
+                  AND is_deleted = 0;";
+
+        $stmt = $this->db->runSql($sql, [
+            'id' => ($level_id === null) ? null : [$level_id, \PDO::PARAM_INT],
+        ]);
+
+        return !empty($stmt->fetchColumn());
     }
 
     /**
