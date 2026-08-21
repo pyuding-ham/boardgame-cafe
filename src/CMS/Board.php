@@ -173,10 +173,10 @@ class Board
                           p.title,
                           p.content,
                           p.created_at,
-                          bd.post_category_id,
                           bd.slug,
+                          pc.name AS category_name,
                           bd.player_count,
-                          bd.level,
+                          bl.name AS level_name,
                           bd.play_time,
                           bd.hashtag,
                           0 AS is_pinned,
@@ -192,6 +192,10 @@ class Board
                             ON p.site_menu_id = m.id
                           INNER JOIN boardgame_detail bd
                             ON p.id = bd.post_id
+                          LEFT JOIN post_category pc
+                            ON bd.post_category_id = pc.id
+                          LEFT JOIN boardgame_level bl
+                            ON bd.level = bl.id
                         WHERE bd.slug = :slug
                           AND p.is_deleted = 0;";
                 break;

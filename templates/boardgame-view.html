@@ -53,19 +53,25 @@
                     <!-- 난이도 -->
                     <div class="col-4 text-center border-end border-secondary-subtle">
                         <div class="text-muted small mb-1">난이도</div>
-                        <div class="fw-bold text-dark fs-5">{{ post.level }}</div>
+                        {% if post.level_name is defined and post.level_name %}
+                            <div class="fw-bold text-dark fs-5">{{ post.level_name }}</div>
+                        {% else %}-{% endif %}
                     </div>
 
                     <!-- 플레이 시간 -->
                     <div class="col-4 text-center border-end border-secondary-subtle">
                         <div class="text-muted small mb-1">플레이 시간</div>
-                        <div class="fw-bold text-dark fs-5">{{ post.play_time }}</div>
+                        {% if post.play_time is defined and post.play_time %}
+                            <div class="fw-bold text-dark fs-5">{{ post.play_time }}</div>
+                        {% else %}-{% endif %}
                     </div>
 
                     <!-- 인원 -->
                     <div class="col-4 text-center">
                         <div class="text-muted small mb-1">인원</div>
-                        <div class="fw-bold text-dark fs-5">{{ post.player_count }}</div>
+                        {% if post.player_count is defined and post.player_count %}
+                            <div class="fw-bold text-dark fs-5">{{ post.player_count }}</div>
+                        {% else %}-{% endif %}
                     </div>
                 </div>
 
