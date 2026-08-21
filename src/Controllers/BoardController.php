@@ -45,7 +45,10 @@ class BoardController {
         ];
 
         // 3. 페이징 설정
-        $per_page = 10;
+        $per_page = match ($boardName) {
+            'boardgame', 'branch' => 9,
+            default => 10,
+        };
         $offset = ($page - 1) * $per_page;
 
         // 4. 총 게시글 개수
@@ -56,8 +59,6 @@ class BoardController {
         // 5. 게시판 이름에 따라 다른 서비스 메서드 호출
         // 게임소개
         if ($boardName === 'boardgame') {
-            $per_page = 9;
-
             $category = $board_service->getCategory($boardId);
             $level = $board_service->getBoardgameLevel();
 
@@ -78,8 +79,6 @@ class BoardController {
         }
         // 지점소개
         elseif ($boardName === 'branch') {
-            $per_page = 9;
-
             $list = $board_service->getBoardList($boardName, $per_page, $offset, $filters);
         }
         // 공지사항
