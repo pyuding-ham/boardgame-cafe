@@ -5,7 +5,6 @@ namespace BoardgameCafe\Controllers;
 
 use Exception;
 use BoardgameCafe\Validate\Validate;
-use BoardgameCafe\Enums\GameCategory;
 use BoardgameCafe\Exceptions\PostNotFoundException;
 use BoardgameCafe\Exceptions\AuthorizationException;
 use BoardgameCafe\Exceptions\ErrorCode;
@@ -24,7 +23,7 @@ class BoardController {
      * @param string $boardName 게시판 식별자 이름
      * @return array 템플릿 렌더링용 연관 배열
      */
-    public function index(int $page = 1, string $boardName = 'notice'): array {
+    public function index(int $page = 1, ?string $boardName = 'notice', ?string $boardId = '3'): array {
         // 1. PRG 패턴 적용 (검색 처리)
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // 게시판 이름 별로 세션 키를 분리
@@ -59,14 +58,12 @@ class BoardController {
         if ($boardName === 'boardgame') {
             $per_page = 9;
 
+            $category = $board_service->getCategory($boardId);
+            $level = $board_service->getBoardgameLevel();
+
             $list = $board_service->getBoardList($boardName, $per_page, $offset, $filters);
 
             foreach ($list as $key => $post) {
-                // 카테고리
-                if (isset($post['post_category_id'])) {
-                    $list[$key]['category_name'] = GameCategory::getName((int)$post['post_category_id']);
-                }
-
                 // 해시태그
                 if (isset($post['hashtag']) && !empty($post['hashtag'])) {
                     $tags_array = explode(',', $post['hashtag']);
@@ -120,7 +117,7 @@ class BoardController {
 
         $total_pages = (int)ceil($total_count / $per_page);
 
-        return [
+        $data = [
             'list' => $list,
             'current_page' => $page,
             'total_pages' => $total_pages,
@@ -129,6 +126,14 @@ class BoardController {
             'search_type' => $search_type,
             'session' => $_SESSION,
         ];
+
+        // 게임소개
+        if ($boardName === 'boardgame') {
+            $data['category'] = $category;
+            $data['level']    = $level;
+        }
+
+        return $data;
     }
 
     /**
@@ -145,11 +150,6 @@ class BoardController {
         // 게임소개
         if ($boardName === 'boardgame') {
             $post = $board_service->getBoardPostBySlug($boardName, $identifier, $userId);
-
-            // 카테고리
-            if (isset($post['post_category_id'])) {
-                $post['category_name'] = GameCategory::getName((int)$post['post_category_id']);
-            }
 
             // 해시태그
             if (isset($post['hashtag']) && !empty($post['hashtag'])) {

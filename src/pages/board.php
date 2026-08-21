@@ -188,7 +188,7 @@ if (in_array($boardName, $allowed_boards)) {
     }
     // 5. 게시판 목록
     else {
-        $data = array_merge($data, $boardController->index($currentPage, $boardName));
+        $data = array_merge($data, $boardController->index($currentPage, $boardName, $data['board_id']));
         $data['status'] = $status;
         
         // 템플릿 렌더링

@@ -21,24 +21,23 @@
 
     <!-- 카테고리 탭 버튼 영역 -->
     <ul class="nav nav-pills nav-fill w-100 bg-white border-bottom border-top py-2 px-3 gap-2 mb-4" id="boardgameTab" role="tablist">
+
         <li class="nav-item" role="presentation">
             <button class="nav-link active text-dark rounded-0 py-2" data-bs-toggle="tab" data-bs-target="#all-pane" type="button" role="tab">전체</button>
         </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link text-dark rounded-0 py-2" data-bs-toggle="tab" data-bs-target="#strategy-pane" type="button" role="tab">전략</button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link text-dark rounded-0 py-2" data-bs-toggle="tab" data-bs-target="#party-pane" type="button" role="tab">파티</button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link text-dark rounded-0 py-2" data-bs-toggle="tab" data-bs-target="#theme-adventure-pane" type="button" role="tab">테마/모험</button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link text-dark rounded-0 py-2" data-bs-toggle="tab" data-bs-target="#kids-pane" type="button" role="tab">어린이</button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link text-dark rounded-0 py-2" data-bs-toggle="tab" data-bs-target="#etc-pane" type="button" role="tab">기타</button>
-        </li>
+
+        {% for cat in category %}
+            <li class="nav-item" role="presentation">
+                <button class="nav-link text-dark rounded-0 py-2"
+                        data-bs-toggle="tab"
+                        data-bs-target="#{{ cat.id }}"
+                        type="button"
+                        role="tab">
+                    {{ cat.name }}
+                </button>
+            </li>
+        {% endfor %}
+
     </ul>
 
     <!-- 게시글 영역 -->
@@ -51,10 +50,9 @@
                     <label class="input-group-text bg-transparent border-0 fw-bold" for="difficultySelect">난이도</label>
                     <select class="form-select form-select-sm text-secondary small" id="difficultySelect">
                         <option value="all">전체</option>
-                        <option value="최하">최하</option>
-                        <option value="하">하</option>
-                        <option value="중">중</option>
-                        <option value="상">상</option>
+                        {% for lvl in level %}
+                            <option value="{{ lvl.id }}">{{ lvl.name }}</option>
+                        {% endfor %}
                     </select>
                 </div>
             </div>
@@ -79,7 +77,7 @@
             </div>
             
             <!-- 전략 -->
-            <div class="tab-pane fade" id="strategy-pane" role="tabpanel" tabindex="0">
+            <div class="tab-pane fade" id="1" role="tabpanel" tabindex="0">
                 <div class="row row-cols-1 row-cols-md-3 g-4">
                     {% for item in list %}
                         {% if item.category_name == '전략' %}
@@ -90,7 +88,7 @@
             </div>
             
             <!-- 파티 -->
-            <div class="tab-pane fade" id="party-pane" role="tabpanel" tabindex="0">
+            <div class="tab-pane fade" id="2" role="tabpanel" tabindex="0">
                 <div class="row row-cols-1 row-cols-md-3 g-4">
                     {% for item in list %}
                         {% if item.category_name == '파티' %}
@@ -101,7 +99,7 @@
             </div>
             
             <!-- 테마/모험 -->
-            <div class="tab-pane fade" id="theme-adventure-pane" role="tabpanel" tabindex="0">
+            <div class="tab-pane fade" id="3" role="tabpanel" tabindex="0">
                 <div class="row row-cols-1 row-cols-md-3 g-4">
                     {% for item in list %}
                         {% if item.category_name == '테마/모험' %}
@@ -112,7 +110,7 @@
             </div>
             
             <!-- 어린이 -->
-            <div class="tab-pane fade" id="kids-pane" role="tabpanel" tabindex="0">
+            <div class="tab-pane fade" id="4" role="tabpanel" tabindex="0">
                 <div class="row row-cols-1 row-cols-md-3 g-4">
                     {% for item in list %}
                         {% if item.category_name == '어린이' %}
@@ -123,7 +121,7 @@
             </div>
             
             <!-- 기타 -->
-            <div class="tab-pane fade" id="etc-pane" role="tabpanel" tabindex="0">
+            <div class="tab-pane fade" id="5" role="tabpanel" tabindex="0">
                 <div class="row row-cols-1 row-cols-md-3 g-4">
                     {% for item in list %}
                         {% if item.category_name == '기타' %}
@@ -180,7 +178,7 @@
             </div>
             
             {% macro render_card(item, doc_root, board_name) %}
-                <div class="col game-card-item fade show" data-category="{{ item.category }}" data-level="{{ item.level }}">
+                <div class="col game-card-item fade show" data-category="{{ item.post_category_id }}" data-level="{{ item.level }}">
 
                     <div class="card position-relative h-100 border-0 rounded-0">
 
@@ -214,17 +212,42 @@
                                 </div>
 
                                 <div class="info">
-                                    <span class="level badge bg-body-secondary text-dark">난이도 {{ item.level }}</span>
-                                    <span class="play_time badge bg-body-secondary text-dark"><i class="bi bi-clock-fill"></i> {{ item.play_time }}</span>
-                                    <span class="player_count badge bg-body-secondary text-dark"><i class="bi bi-people-fill"></i> {{ item.player_count }}</span>
+                                    <!-- 난이도 -->
+                                    <span class="level badge bg-body-secondary text-dark">
+                                        난이도
+                                        {% if item.level_name is defined and item.level_name %}
+                                            {{ item.level_name }}
+                                        {% else %}
+                                            미정
+                                        {% endif %}
+                                    </span>
+
+                                    <!-- 플레이 타임 -->
+                                    {% if item.play_time is defined and item.play_time %}
+                                        <span class="play_time badge bg-body-secondary text-dark">
+                                            <i class="bi bi-clock-fill"></i>
+                                            {{ item.play_time }}
+                                        </span>
+                                    {% endif %}
+
+                                    <!-- 플레이 인원 -->
+                                    {% if item.player_count is defined and item.player_count %}
+                                        <span class="player_count badge bg-body-secondary text-dark">
+                                            <i class="bi bi-people-fill"></i>
+                                            {{ item.player_count }}
+                                        </span>
+                                    {% endif %}
                                 </div>
                             </div>
 
                         </a>
 
-                        <div class="hashtag mt-3">
-                            <span class="text-muted small">{{ item.hashtag }}</span>
-                        </div>
+                        <!-- 해시태그 -->
+                        {% if item.hashtag is defined and item.hashtag %}
+                            <div class="hashtag mt-3">
+                                <span class="text-muted small">{{ item.hashtag }}</span>
+                            </div>
+                        {% endif %}
                     </div>
 
                 </div>

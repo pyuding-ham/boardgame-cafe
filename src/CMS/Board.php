@@ -46,12 +46,15 @@ class Board
                 $sql = "SELECT
                           p.id,
                           p.thumbnail,
-                          p.title, '관리자' AS nickname,
+                          p.title,
+                          '관리자' AS nickname,
                           p.created_at,
-                          bd.post_category_id,
                           bd.slug,
+                          bd.post_category_id,
+                          pc.name AS category_name,
                           bd.player_count,
                           bd.level,
+                          bl.name AS level_name,
                           bd.play_time,
                           bd.hashtag,
                           0 AS is_pinned,
@@ -60,7 +63,11 @@ class Board
                           INNER JOIN site_menu m
                             ON p.site_menu_id = m.id
                           INNER JOIN boardgame_detail bd
-                            ON p.id = bd.post_id";
+                            ON p.id = bd.post_id
+                          LEFT JOIN post_category pc
+                            ON bd.post_category_id = pc.id
+                          LEFT JOIN boardgame_level bl
+                            ON bd.level = bl.id";
                 break;
 
             // 공지사항
