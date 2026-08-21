@@ -80,7 +80,7 @@
                     <div class="form-group">
                         <label class="form-label fw-bold" for="levelSelect">난이도</label>
                         <select class="form-select {{ (errors.level is defined and errors.level) ? 'is-invalid' : '' }}" id="levelSelect" name="level_id">
-                            <option value="" disabled selected>선택</option>
+                            <option value="" selected>선택</option>
                             {% for level in post.level %}
                                 <option value="{{ level.id }}" {% if post.level_selected and level.id == post.level_selected %}selected{% endif %}>{{ level.name }}</option>
                             {% endfor %}
