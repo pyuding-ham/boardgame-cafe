@@ -349,7 +349,7 @@ class Board
             $category     = $data['category'] ?? '';
             $slug         = $data['slug'] ?? '';
             $player_count = $data['player_count'] ?? '';
-            $level        = $data['level'] ?? null;
+            $level        = $data['level'] ?: null;
             $play_time    = $data['play_time'] ?? '';
             $hashtag      = $data['hashtag'] ?? '';
 
