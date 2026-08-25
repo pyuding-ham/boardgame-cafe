@@ -53,7 +53,7 @@
                     <!-- 난이도 -->
                     <div class="col-4 text-center border-end border-secondary-subtle">
                         <div class="text-muted small mb-1">난이도</div>
-                        {% if post.level_name is defined and post.level_name %}
+                        {% if post.level_name is defined and post.level_name !== '미정' %}
                             <div class="fw-bold text-dark fs-5">{{ post.level_name }}</div>
                         {% else %}-{% endif %}
                     </div>
@@ -123,7 +123,10 @@
     <!-- 해시태그 영역 -->
     {% if post.hashtag %}
         <div class="board-view__hashtag text-end text-muted mb-5">
-            {{ post.hashtag }}
+            {% set tagList = post.hashtag|split(',') %}
+            {% for tag in tagList %}
+                #{{ tag|trim }}
+            {% endfor %}
         </div>
     {% endif %}
 
@@ -133,8 +136,8 @@
         
         {% if session.role == 'ADMIN' %}
             <div>
-                <a href="{{ doc_root }}board/{{ board_name }}/edit/{{ post.id }}" class="btn btn-outline-primary me-1 rounded-0">수정</a>
-                <a href="{{ doc_root }}board/{{ board_name }}/delete/{{ post.id }}" class="btn btn-outline-danger rounded-0" onclick="return confirm('해당 게시글을 정말 삭제하시겠습니까?');">삭제</a>
+                <a href="{{ doc_root }}board/{{ board_name }}/edit/{{ post.slug }}" class="btn btn-outline-primary me-1 rounded-0">수정</a>
+                <a href="{{ doc_root }}board/{{ board_name }}/delete/{{ post.slug }}" class="btn btn-outline-danger rounded-0" onclick="return confirm('해당 게시글을 정말 삭제하시겠습니까?');">삭제</a>
             </div>
         {% endif %}
     </div>

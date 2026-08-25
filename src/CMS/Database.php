@@ -43,8 +43,13 @@ class Database extends \PDO
         $statement = $this->prepare($sql);
 
         foreach ($arguments as $key => $value) {
-            // 플레이스홀더 이름 정합성 처리 (앞에 :이 없으면 붙여줌)
-            $paramName = (strpos($key, ':') === 0) ? $key : ":" . $key;
+            if (is_int($key)) {
+                // 물음표 쿼리인 경우
+                $paramName = $key + 1;
+            } else {
+                // 플레이스홀더 이름 정합성 처리 (앞에 :이 없으면 붙여줌)
+                $paramName = (strpos($key, ':') === 0) ? $key : ":" . $key;
+            }
             
             // 만약 값이 배열이고, 두 번째 인자로 PDO 데이터 타입이 지정되어 있다면
             // 예: 'id' => [$category_id, \PDO::PARAM_INT]

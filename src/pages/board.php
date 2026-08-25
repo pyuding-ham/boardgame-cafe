@@ -111,8 +111,8 @@ if (in_array($boardName, $allowed_boards)) {
 
                 $data['post'] = [
                     'title' => '',
-                    'category' => $result['category'],
-                    'level' => $result['level'],
+                    'category' => $result['category'] ?? null,
+                    'level' => $result['level'] ?? null,
                     'content' => '',
                 ];
             }
@@ -139,7 +139,12 @@ if (in_array($boardName, $allowed_boards)) {
         }
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $result = $boardController->update($boardName, $postId, $_POST, $_FILES, (int)$currentUserId);
+            // 게임소개
+            if ($boardName === 'boardgame') {
+                $result = $boardController->updateBoardgame($boardName, $postId, $_POST, $_FILES, (int)$currentUserId);
+            } else {
+                $result = $boardController->update($boardName, $postId, $_POST, $_FILES, (int)$currentUserId);
+            }
             
             if ($result['success']) {
                 redirect("board/{$boardName}", [
@@ -149,22 +154,46 @@ if (in_array($boardName, $allowed_boards)) {
             } else {
                 $data['errors']  = $result['errors'];
 
-                $editData = $boardController->edit((int)$identifier, $boardName, (int)$currentUserId);
+                $editData = $boardController->edit($identifier, $boardName, (int)$currentUserId);
 
                 $data['post'] = array_merge(
-                    $result['post'],
+                    $result['post'] ?? [],
                     [
                         'files' => $editData['post']['files'] ?? [],
                         'images' => $editData['post']['images'] ?? []
                     ]
                 );
+
+                // 게임소개
+                if (($boardName === 'boardgame')) {
+                    $data['post'] = array_merge(
+                        $data['post'] ?? [],
+                        $boardController->getEditForm($data['board_id'])
+                    );
+                }
             }
         } 
         // 최초 수정 페이지 진입 (GET)
         else {
-            $result = $boardController->edit((int)$identifier, $boardName, (int)$currentUserId);
-            
-            $data['post'] = $result['post'];
+            // 게임소개
+            if (($boardName === 'boardgame')) {
+                $editForm = $boardController->getEditForm($data['board_id']);
+                $editResult = $boardController->edit($identifier, $boardName, (int)$currentUserId);
+
+                $data['post'] = [
+                    'category' => $editForm['category'] ?? null,
+                    'level' => $editForm['level'] ?? null,
+                    ...($editResult['post'] ?? []),
+                ];
+
+            }
+            // 그 이외 게시판
+            else {
+                $result = $boardController->edit($identifier, $boardName, (int)$currentUserId);
+                
+                $data['post'] = $result['post'];
+            }
+
             $data['errors'] = [];
         }
 
@@ -179,7 +208,7 @@ if (in_array($boardName, $allowed_boards)) {
             throw new AuthenticationException();
         }
 
-        $boardController->delete((int)$identifier, $boardName, (int)$currentUserId);
+        $boardController->delete($identifier, $boardName, (int)$currentUserId);
 
         redirect("board/{$boardName}", [
             'status' => 'delete_success',

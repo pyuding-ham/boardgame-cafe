@@ -50,11 +50,32 @@ class Board
                           '관리자' AS nickname,
                           p.created_at,
                           bd.slug,
-                          bd.post_category_id,
-                          pc.name AS category_name,
+                          CASE 
+                            WHEN pc.id IS NULL
+                              OR pc.is_deleted = 1 THEN NULL
+                            ELSE pc.id
+                          END AS category_id,
+
+                          CASE 
+                            WHEN pc.id IS NULL
+                              OR pc.is_deleted = 1 THEN '미분류'
+                            ELSE pc.name
+                          END AS category_name,
                           bd.player_count,
-                          bd.level,
-                          bl.name AS level_name,
+
+                          CASE 
+                            WHEN bl.id IS NULL
+                              OR bl.is_deleted = 1 THEN NULL
+                            ELSE bl.id
+                          END AS level,
+
+                          CASE 
+                            WHEN bl.id IS NULL
+                              OR bl.is_deleted = 1 THEN '미정'
+                            ELSE bl.name 
+                          END AS level_name,
+                          
+                          bd.player_count,
                           bd.play_time,
                           bd.hashtag,
                           0 AS is_pinned,
@@ -171,12 +192,36 @@ class Board
                           p.id,
                           '관리자' AS nickname,
                           p.title,
+                          p.thumbnail,
                           p.content,
                           p.created_at,
                           bd.slug,
-                          pc.name AS category_name,
+
+                          CASE 
+                            WHEN pc.id IS NULL
+                              OR pc.is_deleted = 1 THEN NULL
+                            ELSE pc.id
+                          END AS category_id,
+
+                          CASE 
+                            WHEN pc.id IS NULL
+                              OR pc.is_deleted = 1 THEN '미분류'
+                            ELSE pc.name
+                          END AS category_name,
                           bd.player_count,
-                          bl.name AS level_name,
+
+                          CASE 
+                            WHEN bl.id IS NULL
+                              OR bl.is_deleted = 1 THEN NULL
+                            ELSE bl.id
+                          END AS level_id,
+
+                          CASE 
+                            WHEN bl.id IS NULL
+                              OR bl.is_deleted = 1 THEN '미정'
+                            ELSE bl.name 
+                          END AS level_name,
+
                           bd.play_time,
                           bd.hashtag,
                           0 AS is_pinned,
@@ -536,7 +581,29 @@ class Board
         ]);
 
         // 게시판별 수정 분기
-        if ($board_name === 'notice') {
+        // 게임소개
+        if ($board_name === 'boardgame') {
+            $boardgame_sql = "UPDATE boardgame_detail
+                              SET slug = :slug,
+                                  post_category_id = :post_category_id,
+                                  level = :level,
+                                  play_time = :play_time,
+                                  player_count = :player_count,
+                                  hashtag = :hashtag
+                              WHERE post_id = :post_id;";
+                        
+            $this->db->runSql($boardgame_sql, [
+                'post_id'          => $post_id,
+                'slug'             => $data['slug'],
+                'post_category_id' => $data['category'],
+                'level'            => $data['level'] ?: null,
+                'play_time'        => $data['play_time'] ?? '',
+                'player_count'     => $data['player_count'] ?? '',
+                'hashtag'          => $data['hashtag'] ?? '',
+            ]);
+        }
+        // 공지사항
+        elseif ($board_name === 'notice') {
             $notice_sql = "UPDATE notice_detail 
                            SET is_pinned = :is_pinned 
                            WHERE post_id = :post_id;";
@@ -885,6 +952,25 @@ class Board
     }
 
     /**
+     * 슬러그로 게시글 아이디 조회
+     */
+    public function getPostId(string $detail_table, string $slug): int|false
+    {
+        $sql = "SELECT id
+                FROM post p
+                  INNER JOIN {$detail_table} d
+                    ON p.id = d.post_id
+                WHERE d.slug = :slug
+                  AND p.is_deleted = 0;";
+
+        $stmt = $this->db->runSql($sql, [
+            'slug' => [$slug, \PDO::PARAM_STR],
+        ]);
+
+        return $stmt ? $stmt->fetchColumn() : false;
+    }
+
+    /**
      * 게시글 존재 여부 확인
      */
     public function isPostExists(string $post_id): bool 
@@ -946,17 +1032,53 @@ class Board
     }
 
     /**
+     * 게시글의 소유자 정보 조회 (슬러그)
+     */
+    public function findPostOwnerBySlug(string $detail_table, string $slug): array|false
+    {
+        $sql = "SELECT id, user_id
+                FROM post p
+                  INNER JOIN {$detail_table} d
+                    ON p.id = d.post_id
+                WHERE d.slug = :slug
+                  AND p.is_deleted = 0;";
+
+        $stmt = $this->db->runSql($sql, [
+            'slug' => [$slug, \PDO::PARAM_STR],
+        ]);
+
+        return $stmt ? $stmt->fetch() : false;
+    }
+
+    /**
      * 슬러그 중복 검사
      */
-    public function isSlugExists(string $slug): bool 
+    public function isSlugExists(string $slug, ?int $post_id = null): bool 
     {
-        $sql = "SELECT COUNT(*)
-                FROM boardgame_detail
-                WHERE slug = :slug;";
+        // 게시글 수정인 경우
+        if ($post_id !== null) {
+            $sql = "SELECT COUNT(*)
+                    FROM boardgame_detail
+                    WHERE slug = :slug
+                      AND post_id != :post_id;";
+            
+            $params = [
+                'slug' => $slug,
+                'post_id' => $post_id,
+            ];
+        }
+        // 게시글 입력인 경우
+        else {
+            $sql = "SELECT COUNT(*)
+                    FROM boardgame_detail
+                    WHERE slug = :slug;";
+
+            $params = [
+                'slug' => $slug,
+            ];
+        }
         
-        $stmt = $this->db->runSql($sql, [
-            'slug' => $slug,
-        ]);
+        $stmt = $this->db->runSql($sql, $params);
 
         return $stmt->fetchColumn() > 0;
     }

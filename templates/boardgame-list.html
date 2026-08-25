@@ -215,11 +215,7 @@
                                     <!-- 난이도 -->
                                     <span class="level badge bg-body-secondary text-dark">
                                         난이도
-                                        {% if item.level_name is defined and item.level_name %}
-                                            {{ item.level_name }}
-                                        {% else %}
-                                            미정
-                                        {% endif %}
+                                        {{ item.level_name }}
                                     </span>
 
                                     <!-- 플레이 타임 -->
@@ -245,7 +241,12 @@
                         <!-- 해시태그 -->
                         {% if item.hashtag is defined and item.hashtag %}
                             <div class="hashtag mt-3">
-                                <span class="text-muted small">{{ item.hashtag }}</span>
+                                <span class="text-muted small">
+                                    {% set tagList = item.hashtag|split(',') %}
+                                    {% for tag in tagList %}
+                                        #{{ tag|trim }}
+                                    {% endfor %}
+                                </span>
                             </div>
                         {% endif %}
                     </div>

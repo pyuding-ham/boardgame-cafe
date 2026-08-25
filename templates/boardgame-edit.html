@@ -1,0 +1,623 @@
+{% extends 'layout.html' %}
+
+{% block styles %}
+<link href="/css/vendor/quill/quill.snow.css" rel="stylesheet" />
+{% endblock %}
+
+{% block content %}
+<div class="container write-container mt-5 mb-5">
+
+    <!-- 게시판 타이틀 영역 -->
+    <div class="board-write__board mb-4">
+        <h3 class="title mb-0">{{ board_title }}</h3>
+    </div>
+
+    <!-- 글수정 상단 영역 -->
+    <div class="board-write__header mb-5">
+        <div class="top">
+            <h2 class="title mb-0">글수정</h2>
+        </div>
+    </div>
+
+    <!-- 글수정 영역 -->
+    <form method="POST" id="editForm" enctype="multipart/form-data">
+        {% if errors.system is defined and errors.system %}
+            <div class="mb-4">
+                <div class="text-danger small fw-bold d-flex align-items-center justify-content-center p-2 mb-3 bg-danger bg-opacity-10 rounded">
+                    <i class="bi bi-exclamation-circle-fill me-2"></i>
+                    <span>{{ errors.system }}</span>
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- 제목 영역 -->
+        <div class="mb-4">
+            <label for="title" class="form-label fw-bold required">제목</label>
+            <input type="text" class="form-control {{ (errors.title is defined and errors.title) ? 'is-invalid' : '' }}" id="title" name="title" value="{{ post.title is defined ? post.title : '' }}" maxlength="100" required>
+            {% if errors.title is defined and errors.title %}
+                <div class="invalid-feedback fw-bold">
+                    <i class="bi bi-exclamation-circle me-1"></i> {{ errors.title }}
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- 페이지 주소 영역 -->
+        <div class="mb-4">
+            <label for="title" class="form-label fw-bold required">페이지 주소</label>
+            <input type="text" class="form-control {{ (errors.slug is defined and errors.slug) ? 'is-invalid' : '' }}" id="slug" name="slug" value="{{ post.slug is defined ? post.slug : '' }}" maxlength="255" required>
+            {% if errors.slug is defined and errors.slug %}
+                <div class="invalid-feedback fw-bold">
+                    <i class="bi bi-exclamation-circle me-1"></i> {{ errors.slug }}
+                </div>
+            {% endif %}
+            <div class="form-text">페이지 주소는 1~255자의 영문, 숫자, 하이픈(-)만 가능하며 시작 또는 끝에 하이픈(-)을 입력할 수 없습니다.</div>
+        </div> 
+
+        <!-- 게임정보 영역 -->
+        <div class="mb-4">
+            <div class="form-input-row row g-3 justify-content-center">
+                
+                <!-- 카테고리 -->
+                <div class="col-12 col-md-6 col-lg-3">
+                    <div class="form-group">
+                        <label class="form-label fw-bold required" for="categorySelect">카테고리</label>
+                        <select class="form-select {{ (errors.category is defined and errors.category) ? 'is-invalid' : '' }}" id="categorySelect" name="category_id" required>
+                            <option value="" disabled {% if post.category_id is empty %}selected{% endif %}>선택</option>
+                            {% for category in post.category %}
+                                <option value="{{ category.id }}" {% if post.category_id and category.id == post.category_id %}selected{% endif %}>{{ category.name }}</option>
+                            {% endfor %}
+                        </select>
+                        {% if errors.category is defined and errors.category %}
+                            <div class="invalid-feedback fw-bold">
+                                <i class="bi bi-exclamation-circle me-1"></i> {{ errors.category }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- 난이도 -->
+                <div class="col-12 col-md-6 col-lg-3">
+                    <div class="form-group">
+                        <label class="form-label fw-bold" for="levelSelect">난이도</label>
+                        <select class="form-select {{ (errors.level is defined and errors.level) ? 'is-invalid' : '' }}" id="levelSelect" name="level_id">
+                            <option value="">선택</option>
+                            {% for level in post.level %}
+                                <option value="{{ level.id }}" {% if post.level_id and level.id == post.level_id %}selected{% endif %}>{{ level.name }}</option>
+                            {% endfor %}
+                        </select>
+                        {% if errors.level is defined and errors.level %}
+                            <div class="invalid-feedback fw-bold">
+                                <i class="bi bi-exclamation-circle me-1"></i> {{ errors.level }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- 플레이 타임 -->
+                <div class="col-12 col-md-6 col-lg-3">
+                    <div class="form-group">
+                        <label for="title" class="form-label fw-bold">플레이 타임</label>
+                        <input type="text" class="form-control {{ (errors.play_time is defined and errors.play_time) ? 'is-invalid' : '' }}" id="playTime" name="play_time" value="{{ post.play_time is defined ? post.play_time : '' }}" maxlength="20" placeholder="예) 30분">
+                        {% if errors.play_time is defined and errors.play_time %}
+                            <div class="invalid-feedback fw-bold">
+                                <i class="bi bi-exclamation-circle me-1"></i> {{ errors.play_time }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- 플레이 인원 -->
+                <div class="col-12 col-md-6 col-lg-3">
+                    <div class="form-group">
+                        <label for="title" class="form-label fw-bold">플레이 인원</label>
+                        <input type="text" class="form-control {{ (errors.player_count is defined and errors.player_count) ? 'is-invalid' : '' }}" id="playerCount" name="player_count" value="{{ post.player_count is defined ? post.player_count : '' }}" maxlength="20" placeholder="예) 2-4명">
+                        {% if errors.player_count is defined and errors.player_count %}
+                            <div class="invalid-feedback fw-bold">
+                                <i class="bi bi-exclamation-circle me-1"></i> {{ errors.player_count }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- 대표 이미지 영역 -->
+        <div class="mb-4">
+            <label for="title" class="form-label fw-bold">대표 이미지 <span class="text-muted small fw-normal">(파일 당 5MB 제한)</span></label><br>
+            <div class="upload-box {{ (errors.thumbnail is defined and errors.thumbnail) ? 'is-invalid' : '' }}" id="thumbnailUploadBox">
+                {% set hasThumbnail = post.thumbnail is defined and post.thumbnail %}
+
+                <input type="file" id="thumbnail" name="thumbnail" accept="image/*" hidden>
+
+                <label for="thumbnail" id="thumbnailAddBox" {% if hasThumbnail %}style="display: none;"{% endif %}>
+                    <i class="bi bi-plus-lg"></i>
+                </label>
+
+                <!-- 썸네일 삭제 여부 -->
+                <input type="hidden" name="delete_thumbnail" id="deleteThumbnail" value="N">
+
+                <div id="thumbnailPreview">
+                    {% if hasThumbnail %}
+                        <img src="{{ post.thumbnail|replace({'public': ''}) }}">
+                        <button class="delete-btn"><i class="bi bi-x-lg"></i></button>
+                    {% endif %}
+                </div>
+
+            </div>
+
+            {% if errors.thumbnail is defined and errors.thumbnail %}
+                <div class="invalid-feedback fw-bold">
+                    <i class="bi bi-exclamation-circle me-1"></i> {{ errors.thumbnail }}
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- 본문 에디터 영역 -->
+        <div class="mb-4">
+            <label class="form-label fw-bold required">내용</label>
+            <div class="editor-wrapper {{ (errors.content is defined and errors.content) ? 'border border-danger rounded' : '' }}">
+                <div id="editor">
+                    {{ (post.content is defined) ? post.content|raw : '' }}
+                </div>
+            </div>
+            <input type="hidden" name="content" id="contentInput">
+            
+            {% if errors.content is defined and errors.content %}
+                <div class="text-danger small fw-bold mt-2">
+                    <i class="bi bi-exclamation-circle me-1"></i> {{ errors.content }}
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- 상세 이미지 영역 -->
+        <div class="mb-4">
+            <label for="title" class="form-label fw-bold">상세 이미지 <span class="text-muted small fw-normal">(최대 10개, 파일 당 5MB 제한)</span></label>
+            <span class="image-count">
+                <span id="imageCount">0</span> / 10
+            </span>
+
+            <input
+                type="file"
+                id="detailImages"
+                name="detailImages[]"
+                accept="image/*"
+                multiple
+                hidden
+            >
+
+            <div class="detail-container {{ (errors.detail_images is defined and errors.detail_images) ? 'is-invalid' : '' }}">
+                <div id="detailPreview"></div>
+
+                <label for="detailImages" id="detailAddBox" class="detail-add-box">
+                    <i class="bi bi-plus-lg"></i>
+                </label>
+            </div>
+
+            <input type="hidden" name="image_orders" id="imageOrders">
+            <input type="hidden" name="deleted_images" id="deletedImages">
+
+            {% if errors.detail_images is defined and errors.detail_images %}
+                <div class="invalid-feedback fw-bold">
+                    <i class="bi bi-exclamation-circle me-1"></i> {{ errors.detail_images }}
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- 해시태그 영역 -->
+        <div class="mb-4">
+            <label for="title" class="form-label fw-bold">해시태그</label>
+            <input type="text" class="form-control {{ (errors.hashtag is defined and errors.hashtag) ? 'is-invalid' : '' }}" id="hashtag" name="hashtag" value="{{ post.hashtag is defined ? post.hashtag : '' }}" placeholder="예) 카드게임, 가족게임" maxlength="255">
+            {% if errors.hashtag is defined and errors.hashtag %}
+                <div class="invalid-feedback fw-bold">
+                    <i class="bi bi-exclamation-circle me-1"></i> {{ errors.hashtag }}
+                </div>
+            {% else %}
+                <div class="form-text">해시태그는 쉼표(,)로 구분되며 최대 255자까지 입력할 수 있습니다.</div>
+            {% endif %}
+        </div>
+
+        <!-- 하단 버튼 -->
+        <div class="board-write__footer d-flex justify-content-center gap-2">
+            <a href="{{ doc_root }}board/{{ board_name }}" class="btn btn-outline-secondary px-4">취소하기</a>
+            <button class="btn btn-primary px-4" type="submit" id="btnSubmit">수정하기</button>
+        </div>
+    </form>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/js/vendor/quill/quill.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (typeof Quill === 'undefined') return;
+
+    // 1. Quill 에디터 초기화
+    const quill = new Quill('#editor', {
+        theme: 'snow',
+        placeholder: '',
+        modules: {
+            toolbar: [
+                [{ 'header': [1, 2, 3, false] }],
+                ['bold', 'italic', 'underline', 'strike'],
+                ['blockquote', 'code-block'],
+                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                ['clean']
+            ]
+        }
+    });
+
+    // 2. 대표 이미지 관련 변수
+    const thumbnailUploadBox = document.getElementById('thumbnailUploadBox');
+    // INPUT
+    const thumbnail = document.getElementById('thumbnail');
+    const thumbnailPreview = document.getElementById('thumbnailPreview');
+    const thumbnailAddBox = document.getElementById('thumbnailAddBox');
+    const deleteThumbnail = document.querySelector('#deleteThumbnail');
+
+    thumbnailUploadBox.addEventListener('click', function (e) {
+        if (e.target.closest('.delete-btn')) {
+            return;
+        }
+
+        document.getElementById('thumbnail').click();
+    });
+
+    // 대표 이미지 업로드 시 실행
+    thumbnail.addEventListener('change', function(){
+        const file = this.files[0];
+        if(!file) return;
+
+        // 이미지 파일 유효성 검사
+        if (!validateImageUpload(file)) {
+            this.value = "";
+            return;
+        }
+
+        thumbnailAddBox.style.display = 'none';
+        thumbnailPreview.innerHTML = '';
+        
+        document.querySelector('#deleteThumbnail').value = 'N';
+
+        const img = document.createElement('img');
+        // 임시 URL 생성
+        img.src = URL.createObjectURL(file);
+
+        const del = document.createElement('button');
+        del.innerHTML = '<i class="bi bi-x-lg"></i>';
+        del.className = 'delete-btn';
+
+        del.onclick = function(e) {
+            deleteThumbnailImage(e);
+        };
+
+        thumbnailPreview.appendChild(img);
+        thumbnailPreview.appendChild(del);
+    });
+
+    document.addEventListener('click', function(e) {
+        const btn = e.target.closest('.delete-btn');
+
+        if (!btn) return;
+
+        deleteThumbnailImage(e);
+    });
+
+    // 대표 이미지 삭제
+    function deleteThumbnailImage(e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        thumbnail.value = '';
+        thumbnailAddBox.style.display = 'block';
+        thumbnailPreview.innerHTML = '';
+
+        deleteThumbnail.value = 'Y';
+    }
+
+    // 3. 상세 이미지 업로드 관련 변수
+    // INPUT
+    const detailImages = document.getElementById("detailImages");
+    const detailPreview = document.getElementById("detailPreview");
+    const detailAddBox = document.getElementById("detailAddBox");
+    // 업로드된 이미지 개수
+    const imageCount = document.getElementById("imageCount");
+
+    let imageList = [];
+    let deletedImages = [];
+
+    // 기존 이미지 초기화
+    {% if post.images is defined and post.images %}
+        {% for image in post.images %}
+            imageList.push({
+                type: "OLD",
+                imageId: "{{ image.id }}",
+                url: "{{ image.image_path|replace({'public': ''}) }}"
+            });
+        {% endfor %}
+    {% endif %}
+
+    render();
+
+    // 상세 이미지 업로드 시 실행
+    detailImages.addEventListener("change", function () {
+        let limitExceeded = false;
+
+        [...this.files].forEach(file => {
+            // 이미지 파일 유효성 검사
+            if (!validateImageUpload(file)) {
+                return;
+            }
+
+            if (imageList.length >= 10) {
+                limitExceeded = true;
+                return;
+            }
+
+            imageList.push({
+                type: "NEW",
+                file: file,
+                fileIndex: detailImages.files.length - 1,
+                url: URL.createObjectURL(file)
+            });
+        });
+
+        this.value = "";
+
+        if (limitExceeded) {
+            alert("이미지는 최대 10장까지 업로드할 수 있습니다.");
+            return;
+        }
+
+        render();
+    });
+
+    function render() {
+        detailPreview.innerHTML = "";
+
+        imageList.forEach((image, index) => {
+            const item = document.createElement("div");
+            item.className = "detail-item";
+
+            item.dataset.index = index;
+            item.dataset.type = image.type;
+
+            if (image.type === "OLD") {
+                item.dataset.imageId = image.imageId;
+            }
+
+            item.innerHTML = `
+                <img src="${image.url}">
+                <button type="button" class="detail-remove">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            `;
+
+            item.querySelector(".detail-remove").onclick = function(e){
+                deleteDetail(index, e);
+            };
+
+            detailPreview.appendChild(item);
+        });
+
+        updateFiles();
+
+        detailAddBox.style.display = imageList.length >= 10 ? "none" : "flex";
+        imageCount.textContent = imageList.length;
+    }
+
+    function updateFiles() {
+        const dt = new DataTransfer();
+
+        imageList.forEach(image => {
+            if(image.type === "NEW"){
+                dt.items.add(image.file);
+            }
+        });
+
+        detailImages.files = dt.files;
+    }
+
+    new Sortable(detailPreview, {
+        animation: 150,
+        onEnd(evt) {
+            const moved = imageList.splice(evt.oldIndex, 1)[0];
+            imageList.splice(evt.newIndex, 0, moved);
+
+            render();
+        }
+    });
+
+    // 상세 이미지 삭제
+    function deleteDetail(index, e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const image = imageList[index];
+
+        if(image.type === "OLD") {
+            deletedImages.push(image.imageId);
+        }
+
+        imageList.splice(index, 1);
+
+        render();
+    }
+
+    // 이미지 파일 유효성 검사
+    function validateImageUpload(file) {
+        // 파일 용량 검사
+        const maxSize = 5 * 1024 * 1024;
+        if (file.size > maxSize) {
+            alert('이미지 당 최대 5MB까지 업로드 가능합니다.');
+            return false;
+        }
+
+        // 확장자 검사
+        const allowed = [
+            "jpg",
+            "jpeg",
+            "png",
+            "gif",
+            "webp"
+        ];
+
+        const ext = file.name.split(".").pop().toLowerCase();
+        if (!allowed.includes(ext)) {
+            alert("지원하지 않는 이미지 확장자입니다.");
+            return false;
+        }
+
+        // MIME 타입 검사
+        if (!file.type.startsWith("image/")) {
+            alert("지원하지 않는 이미지 형식입니다.");
+            return false;
+        }
+
+        return true;
+    }
+
+    // 4. 수정하기 버튼 클릭 시
+    // 페이지 주소 유효성 검사 정규식 (1~255자 영문, 숫자, 하이픈(-))
+    const slugRegex = /^(?!-)(?!.*-$)[a-z0-9-]{1,255}$/i;
+
+    const form = document.getElementById('editForm');
+    const titleInput = document.getElementById('title');
+    const slugInput = document.getElementById('slug');
+    const categorySelect = document.getElementById('categorySelect');
+    const playTimeInput = document.getElementById('playTime');
+    const playerCountInput = document.getElementById('playerCount');
+    const contentInput = document.getElementById('contentInput');
+    const hashtagInput = document.getElementById('hashtag');
+    
+    form.addEventListener('submit', function(e) {
+        const title = titleInput.value.trim();
+        const slug = slugInput.value.trim();
+        const category = categorySelect.value;
+        const playTime = playTimeInput.value.trim();
+        const playerCount = playerCountInput.value.trim();
+        const htmlContent = quill.getSemanticHTML();
+        const pureText = document.querySelector('.ql-editor').textContent.trim();
+        const cleanText = pureText.replace(/[\s\u00A0\u200B]+/g, '');
+        const realLength = cleanText.length;
+        const hashtag = hashtagInput.value.trim();
+
+        // 1. 제목 필수 입력 값 검사
+        if (!title) {
+            e.preventDefault();
+            alert('제목을 입력해 주세요.');
+            titleInput.focus();
+            return;
+        }
+
+        // 2. 제목 글자 수 검사 (최대 100자)
+        if (title.length > 100) {
+            e.preventDefault();
+            alert('제목은 최대 100자까지 입력할 수 있습니다. (현재: ' + title.length + '자)');
+            titleInput.focus();
+            return;
+        }
+
+        // 3. 페이지 주소 검사
+        if (!slug) {
+            e.preventDefault();
+            alert('페이지 주소를 입력해 주세요.');
+            slugInput.focus();
+            return;
+        }
+
+        // 4. 페이지 주소 글자 수 검사 (최대 255자)
+        if (slug.length > 255) {
+            e.preventDefault();
+            alert('페이지 주소는 최대 255자까지 입력할 수 있습니다. (현재: ' + slug.length + '자)');
+            slugInput.focus();
+            return;
+        }
+
+        // 5. 페이지 주소 유효성 검사
+        if (!slugRegex.test(slug)) {
+            e.preventDefault();
+            alert('페이지 주소는 1~255자의 영문, 숫자, 하이픈(-)만 가능하며 시작 또는 끝에 하이픈(-)을 입력할 수 없습니다.');
+            slugInput.focus();
+            return;
+        }
+
+        // 6. 카테고리 필수 선택 값 검사
+        if (category === '') {
+            e.preventDefault();
+            alert('카테고리를 선택해 주세요.');
+            categorySelect.focus();
+            return;
+        }
+
+        // 7. 플레이 타임 글자 수 검사 (최대 20자)
+        if (playTime.length > 20) {
+            e.preventDefault();
+            alert('플레이 타임은 최대 20자까지 입력할 수 있습니다. (현재: ' + playTime.length + '자)');
+            playTimeInput.focus();
+            return;
+        }
+        
+        // 8. 플레이 인원 글자 수 검사 (최대 20자)
+        if (playerCount.length > 20) {
+            e.preventDefault();
+            alert('플레이 인원은 최대 20자까지 입력할 수 있습니다. (현재: ' + playerCount.length + '자)');
+            playerCountInput.focus();
+            return;
+        }
+        
+        // 9. 내용 필수 입력 값 검사
+        if (realLength === 0) {
+            e.preventDefault();
+            contentInput.value = '';
+            alert('내용을 입력해 주세요.');
+            quill.focus();
+            return;
+        }
+
+        // 10. 내용 글자 수 검사 (최대 5,000자)
+        if (realLength > 5000) { 
+            e.preventDefault();
+            contentInput.value = '';
+            alert('본문 내용은 5,000자를 초과할 수 없습니다. (현재: ' + realLength + '자)');
+            quill.focus();
+            return;
+        }
+        
+        // 11. 해시태그 글자 수 검사 (최대 255자)
+        if (hashtag.length > 255) {
+            e.preventDefault();
+            alert('해시태그는 최대 255자까지 입력할 수 있습니다. (현재: ' + slug.length + '자)');
+            hashtagInput.focus();
+            return;
+        }
+
+        const imageOrders = imageList.map((image, index) => {
+            if(image.type === "OLD") {
+                return {
+                    type: "OLD",
+                    image_id: image.imageId,
+                    sort_order: index
+                };
+            }
+
+            return {
+                type: "NEW",
+                file_index: imageList
+                    .filter(img => img.type === "NEW")
+                    .indexOf(image),
+                sort_order: index
+            };
+        });
+
+        document.getElementById('imageOrders').value = JSON.stringify(imageOrders);
+        document.getElementById('deletedImages').value = JSON.stringify(deletedImages);
+
+        contentInput.value = htmlContent;
+        updateFileRows();
+    });
+});
+</script>
+{% endblock %}
