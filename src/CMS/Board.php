@@ -1055,27 +1055,75 @@ class Board
      */
     public function isSlugExists(string $slug, ?int $post_id = null): bool 
     {
+        // 1. 슬러그가 순수 숫자(integer)인지 확인
+        $is_numeric_slug = ctype_digit($slug);
+        $slug_as_int = $is_numeric_slug ? (int)$slug : null;
+
         // 게시글 수정인 경우
         if ($post_id !== null) {
-            $sql = "SELECT COUNT(*)
-                    FROM boardgame_detail
-                    WHERE slug = :slug
-                      AND post_id != :post_id;";
-            
-            $params = [
-                'slug' => $slug,
-                'post_id' => $post_id,
-            ];
+            if ($is_numeric_slug) {
+                $sql = "SELECT COUNT(*)
+                        FROM (
+                          SELECT 1
+                          FROM boardgame_detail
+                          WHERE slug = :slug
+                            AND post_id != :post_id_1
+
+                          UNION ALL
+
+                          SELECT 1
+                          FROM post
+                          WHERE id = :slug_int
+                            AND id != :post_id_2
+                        ) AS combined_check;";
+                
+                $params = [
+                    'slug' => $slug,
+                    'slug_int' => $slug_as_int,
+                    'post_id_1' => $post_id,
+                    'post_id_2' => $post_id,
+                ];
+            } else {
+                $sql = "SELECT COUNT(*)
+                        FROM boardgame_detail
+                        WHERE slug = :slug
+                          AND post_id != :post_id;";
+                
+                $params = [
+                    'slug' => $slug,
+                    'post_id' => $post_id,
+                ];
+            }
         }
         // 게시글 입력인 경우
         else {
-            $sql = "SELECT COUNT(*)
-                    FROM boardgame_detail
-                    WHERE slug = :slug;";
+            if ($is_numeric_slug) {
+                $sql = "SELECT COUNT(*)
+                        FROM (
+                          SELECT 1
+                          FROM boardgame_detail
+                            WHERE slug = :slug
 
-            $params = [
-                'slug' => $slug,
-            ];
+                          UNION ALL
+                          
+                          SELECT 1
+                          FROM post
+                            WHERE id = :slug_int
+                        ) AS combined_check;";
+            
+                $params = [
+                    'slug' => $slug,
+                    'slug_int' => $slug_as_int,
+                ];
+            } else {
+                $sql = "SELECT COUNT(*)
+                        FROM boardgame_detail
+                        WHERE slug = :slug;";
+    
+                $params = [
+                    'slug' => $slug,
+                ];
+            }
         }
         
         $stmt = $this->db->runSql($sql, $params);
