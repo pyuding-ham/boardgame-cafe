@@ -16,8 +16,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // 1. 입력값 받기
     $user['username'] = trim($_POST['username'] ?? '');
     $user['email'] = trim($_POST['email'] ?? '');
-    $user['password'] = $_POST['password'] ?? '';
-    $user['confirm'] = $_POST['confirm'] ?? '';
+    $user['password'] = trim($_POST['password'] ?? '');
+    $user['confirm'] = trim($_POST['confirm'] ?? '');
 
     // 2. 필수 입력 값 검사 및 유효성 검사 및 중복 검사
     if (empty($user['username'])) {

@@ -20,7 +20,7 @@
                     </div>
                 </div>
             {% endif %}
-            <form action="#" method="POST" id="registerForm">
+            <form method="POST" id="registerForm">
                 <div class="mb-4">
                     <label for="username" class="form-label fw-bold required">아이디</label>
                     <div class="input-group {{ errors.username ? 'is-invalid' : '' }}">
@@ -49,8 +49,8 @@
                 </div>
                 <div class="mb-4">
                     <label for="password" class="form-label fw-bold required">비밀번호</label>
-                    <div class="input-group {{ errors.email ? 'is-invalid' : '' }}">
-                        <input type="password" class="form-control" id="password" name="password" required>
+                    <div class="input-group {{ errors.password ? 'is-invalid' : '' }}">
+                        <input type="password" class="form-control" id="password" name="password" value="{{ user.password }}" required>
                         <button type="button" class="btn position-absolute end-0 top-50 translate-middle-y me-3 toggle-password">
                             <i class="bi bi-eye-fill text-muted"></i>
                         </button>
@@ -65,8 +65,8 @@
                 </div>
                 <div class="mb-5">
                     <label for="confirm" class="form-label fw-bold required">비밀번호 확인</label>
-                    <div class="input-group {{ errors.email ? 'is-invalid' : '' }}">
-                        <input type="password" class="form-control" id="confirm" name="confirm" required>
+                    <div class="input-group {{ errors.confirm ? 'is-invalid' : '' }}">
+                        <input type="password" class="form-control" id="confirm" name="confirm" value="{{ user.confirm }}" required>
                         <button type="button" class="btn position-absolute end-0 top-50 translate-middle-y me-3 toggle-password">
                             <i class="bi bi-eye-fill text-muted"></i>
                         </button>
