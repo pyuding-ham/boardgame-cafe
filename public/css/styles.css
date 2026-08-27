@@ -1,4 +1,49 @@
 /* 공통 스타일 */
+:root {
+  --primary-color: #FF007F;
+  --primary-color-dark: #D10068;
+  --primary-color-darker: #B5005A;
+  --secondary-color: #00F5D4;
+  --secondary-color-hover: #00C4AA;
+}
+
+.mb-6 {
+  margin-bottom: 4.5rem !important;
+}
+.mb-7 {
+  margin-bottom: 6rem !important;
+}
+
+.btn {
+    border-radius: 0;
+}
+
+.btn:hover {
+    color: #fff;
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.btn-primary {
+    color: var(--primary-color);
+    background-color: #fff;
+    border-color: var(--primary-color);
+    --bs-btn-padding-y: 0.6rem; 
+    --bs-btn-padding-x: 1.2rem; 
+}
+
+.btn-duplicate-check:hover {
+    background-color: #16161A;
+    border-color: #16161A;
+}
+
+.btn-duplicate-check {
+    font-size: .875em;
+}
+
+.form-control {
+    border-radius: 0;
+}
 
 body {
     letter-spacing: -0.04rem;
