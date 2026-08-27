@@ -122,10 +122,34 @@ if (str_contains($raw_uri, 'password-reset')) {
 
                 $identifier = $parts[3] ?? null;
 
+                // 게시글 식별자가 숫자인 경우
                 if (is_numeric($identifier)) {
-                    $postId = (int)$identifier;
-                } else {
-                    $postSlug = $identifier;
+                    // 실제 게시글 존재 여부 확인
+                    $isRealPostId = $boardController->isPostExists($identifier);
+
+                    // 게시글 있는 경우
+                    if ($isRealPostId) {
+                        // 슬러그가 아닌 ID로 저장
+                        $postId = (int)$identifier;
+                    }
+                    // 게시글 없는 경우
+                    else {
+                        if ($boardName === 'boardgame') {
+                            // 영문 슬러그로 저장
+                            $postSlug = (string)$identifier;
+                            // 게시글 아이디 조회 후 저장
+                            $postId = $boardController->getPostId($boardName, $identifier, 'delete');
+                        }
+                    }
+                }
+                // 게시글 식별자가 문자인 경우
+                else {
+                    if ($boardName === 'boardgame') {
+                        // 영문 슬러그로 저장
+                        $postSlug = (string)$identifier;
+                        // 게시글 아이디 조회 후 저장
+                        $postId = $boardController->getPostId($boardName, $identifier, 'delete');
+                    }
                 }
             }
         }

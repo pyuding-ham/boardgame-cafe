@@ -1032,8 +1032,8 @@ class Board
      */
     public function canModifyPost(int $user_id, array $post_owner, string $board_name): bool
     {
-        // 지점소개 공지사항은 관리자만 수정/삭제 가능
-        if ($board_name === 'branch' || $board_name === 'notice') {
+        // 게임소개, 지점소개 공지사항은 관리자만 수정/삭제 가능
+        if ($board_name === 'boardgame' || $board_name === 'branch' || $board_name === 'notice') {
             return $this->user->isAdmin($user_id);
         }
 

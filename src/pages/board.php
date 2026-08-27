@@ -208,7 +208,7 @@ if (in_array($boardName, $allowed_boards)) {
             throw new AuthenticationException();
         }
 
-        $boardController->delete($identifier, $boardName, (int)$currentUserId);
+        $boardController->delete($postId, $boardName, (int)$currentUserId);
 
         redirect("board/{$boardName}", [
             'status' => 'delete_success',

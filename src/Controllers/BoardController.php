@@ -1275,13 +1275,13 @@ class BoardController {
     /**
      * 게시글 삭제
      */
-    public function delete(int $identifier, string $boardName, int $userId): void
+    public function delete(int $postId, string $boardName, int $userId): void
     {
         // 1. DB 서비스 호출
         $board_service = $this->cms->getBoard();
 
         // 2. 게시글 존재 여부 확인
-        $post_owner = $board_service->findPostOwnerById($identifier);
+        $post_owner = $board_service->findPostOwnerById($postId);
 
         if (!$post_owner) {
             throw new PostNotFoundException(ErrorCode::POST_NOT_FOUND_DELETE->value);
@@ -1292,7 +1292,7 @@ class BoardController {
            throw new AuthorizationException(ErrorCode::ACCESS_DENIED->value);
         }
         
-        $board_service->deleteBoardPost($boardName, $identifier, $userId);
+        $board_service->deleteBoardPost($boardName, $postId, $userId);
     }
 
     /**
