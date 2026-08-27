@@ -602,6 +602,33 @@ class Board
                 'hashtag'          => $data['hashtag'] ?? '',
             ]);
         }
+        // 지점소개
+        elseif ($board_name === 'branch') {
+            $address = $data['address'] ?? '';
+
+            $result = $this->getCoordinate($address);
+
+            if (!empty($result['documents'])) {
+                $data['latitude'] = $result['documents'][0]['y'];
+                $data['longitude'] = $result['documents'][0]['x'];
+            } else {
+                $data['latitude'] = null;
+                $data['longitude'] = null;
+            }
+
+            $branch_sql = "UPDATE branch_detail
+                           SET address = :address,
+                               latitude = :latitude,
+                               longitude = :longitude
+                           WHERE post_id = :post_id;";
+            
+            $this->db->runSql($branch_sql, [
+                'address' => $address,
+                'latitude' => $data['latitude'] ?? 0,
+                'longitude' => $data['longitude'] ?? 0,
+                'post_id'   => $post_id,
+            ]);
+        }
         // 공지사항
         elseif ($board_name === 'notice') {
             $notice_sql = "UPDATE notice_detail 
