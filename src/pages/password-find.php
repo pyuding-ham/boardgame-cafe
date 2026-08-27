@@ -21,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         if ($id) {
             $token   = $cms->getToken()->create($id, 'password_reset');
-            $link    = DOMAIN . DOC_ROOT . 'password-reset.php?token=' . $token;
+            $link    = DOMAIN . DOC_ROOT . 'password-reset?token=' . $token;
             $subject = '[보드트립] 비밀번호 재설정 링크 안내';
             $body    = '안녕하세요. 보드게임카페 보드트립입니다.<br><br>' .
                        '아래 링크를 클릭하시면 비밀번호 재설정 페이지로 이동합니다.<br>' .
