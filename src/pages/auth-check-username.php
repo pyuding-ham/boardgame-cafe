@@ -4,7 +4,10 @@ declare(strict_types = 1);
 header('Content-Type: application/json');
 
 $username = trim($_GET['username'] ?? '');
-$sql = "SELECT id FROM user WHERE username = :username;";
+$sql = "SELECT id
+        FROM user
+        WHERE username = :username
+          AND is_deleted = 0;";
 $stmt = $cms->getDb()->runSql($sql, ['username' => $username]);
 
 if ($stmt && $stmt->fetch()) {

@@ -4,7 +4,10 @@ declare(strict_types = 1);
 header('Content-Type: application/json');
 
 $email = trim($_GET['email'] ?? '');
-$sql = "SELECT id FROM user WHERE email = :email;";
+$sql = "SELECT id
+        FROM user
+        WHERE email = :email
+          AND is_deleted = 0;";
 $stmt = $cms->getDb()->runSql($sql, ['email' => $email]);
 
 if ($stmt && $stmt->fetch()) {
