@@ -43,7 +43,7 @@ if (empty($errors['invalid_token']) && $_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($password['new'])) {
         $errors['password'] = '변경 비밀번호를 입력해 주세요.';
     } elseif (!Validate::isPassword($password['new'])) {
-        $errors['password'] = '변경 비밀번호는 최소 10자 이상이어야 하며 영문과 숫자를 모두 포함해야 합니다.';
+        $errors['password'] = '변경 비밀번호는 최소 10자 이상이어야 하며 영문과 숫자를 모두 포함해야 합니다.<br>(영문/숫자/특수문자 사용 가능)';
     }
 
     // 변경할 비밀번호 확인 유효성 검사 및 비밀번호 확인 일치 여부 체크

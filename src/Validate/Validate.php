@@ -30,6 +30,7 @@ class Validate
         if (mb_strlen($password) >= 10
             and preg_match('/[a-z]/i', $password)
             and preg_match('/[0-9]/', $password)
+            and preg_match('/^[a-z0-9!@#$%^&*()_+\-=\[\]{};\':"\\|,.<>\/?]+$/i', $password) 
         ) {
             return true;
         }

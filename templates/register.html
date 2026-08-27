@@ -1,67 +1,70 @@
 {% extends 'layout.html' %}
 
 {% block content %}
-<div class="container user-edit-container mt-5 mb-5">
+<div class="container register-container mt-5 mb-5">
+
+    <!-- 게시판 타이틀 영역 -->
+     <div class="board-write__header mb-5">
+        <div class="top text-center">
+            <h2 class="title mb-0">회원가입</h2>
+        </div>
+    </div>
+
     <div class="row justify-content-center">
         <div class="col-12 col-sm-9 col-md-7">
-            {% if errors.system %}
-            <div class="alert alert-danger">
-                <strong>오류 발생:</strong> {{ errors.system }}
-            </div>
+            {% if errors.system is defined and errors.system %}
+                <div class="mb-4">
+                    <div class="text-danger small fw-bold d-flex align-items-center justify-content-center p-2 mb-3 bg-danger bg-opacity-10 rounded">
+                        <i class="bi bi-exclamation-circle-fill me-2"></i>
+                        <span>{{ errors.system }}</span>
+                    </div>
+                </div>
             {% endif %}
             <form action="#" method="POST" id="registerForm">
                 <div class="mb-4">
                     <label for="username" class="form-label fw-bold">아이디</label>
-                    <div class="input-group">
-                        <input type="text" class="form-control {{ errors.username ? 'is-invalid' : '' }}" id="username" name="username" value="{{ user.username }}" required>
+                    <div class="input-group {{ errors.username ? 'is-invalid' : '' }}">
+                        <input type="text" class="form-control" id="username" name="username" value="{{ user.username }}" required>
                         <button type="button" class="btn btn-outline-secondary" type="button" id="btnCheckUsername">아이디 중복체크</button>
                     </div>
                     {% if errors.username %}
                         <div class="invalid-feedback fw-bold">
                             <i class="bi bi-exclamation-circle me-1"></i> {{ errors.username }}
                         </div>
-                        <div class="form-text is-danger">{{ errors.username }}</div>
                     {% else %}
                         <div class="form-text">아이디는 4~20자의 영문, 숫자, 언더바(_)만 가능합니다.</div>
                     {% endif %}
                 </div>
                 <div class="mb-4">
                     <label for="email" class="form-label fw-bold">이메일</label>
-                    <div class="input-group">
-                        <input type="email" class="form-control {{ errors.email ? 'is-invalid' : '' }}" id="email" name="email" value="{{ user.email }}" required>
+                    <div class="input-group {{ errors.email ? 'is-invalid' : '' }}">
+                        <input type="email" class="form-control" id="email" name="email" value="{{ user.email }}" required>
                         <button type="button" class="btn btn-outline-secondary" type="button" id="btnCheckEmail">이메일 중복체크</button>
                     </div>
                     {% if errors.email %}
                         <div class="invalid-feedback fw-bold">
                             <i class="bi bi-exclamation-circle me-1"></i> {{ errors.email }}
                         </div>
-                        <div class="form-text is-danger">{{ errors.email }}</div>
                     {% endif %}
                 </div>
                 <div class="mb-4">
                     <label for="password" class="form-label fw-bold">비밀번호</label>
-                    <div class="input-group">
-                        <input type="password" class="form-control {{ errors.password ? 'is-invalid' : '' }}" id="password" name="password" required>
-                    </div>
+                    <input type="password" class="form-control {{ errors.password ? 'is-invalid' : '' }}" id="password" name="password" required>
                     {% if errors.password %}
                         <div class="invalid-feedback fw-bold">
-                            <i class="bi bi-exclamation-circle me-1"></i> {{ errors.password }}
+                            <i class="bi bi-exclamation-circle me-1"></i> {{ errors.password|raw }}
                         </div>
-                        <div class="form-text is-danger">{{ errors.password }}</div>
                     {% else %}
-                        <div class="form-text">비밀번호는 최소 10자 이상이어야 하며 영문과 숫자를 모두 포함해야 합니다.</div>
+                        <div class="form-text">비밀번호는 최소 10자 이상이어야 하며 영문과 숫자를 모두 포함해야 합니다.<br>(영문/숫자/특수문자 사용 가능)</div>
                     {% endif %}
                 </div>
                 <div class="mb-5">
                     <label for="confirm" class="form-label fw-bold">비밀번호 확인</label>
-                    <div class="input-group">
-                        <input type="password" class="form-control {{ errors.confirm ? 'is-invalid' : '' }}" id="confirm" name="confirm" required>
-                    </div>
+                    <input type="password" class="form-control {{ errors.confirm ? 'is-invalid' : '' }}" id="confirm" name="confirm" required>
                     {% if errors.confirm %}
                         <div class="invalid-feedback fw-bold">
                             <i class="bi bi-exclamation-circle me-1"></i> {{ errors.confirm }}
                         </div>
-                        <div class="form-text is-danger">{{ errors.confirm }}</div>
                     {% endif %}
                 </div>
                 <div class="d-flex justify-content-center gap-2 mt-5">
@@ -70,6 +73,7 @@
             </form>
         </div>
     </div>
+
 </div>
 {% endblock %}
 
@@ -77,8 +81,8 @@
 <script>
 // 아이디 유효성 검사 정규식 (4~20자의 영문, 숫자, 언더바(_))
 const usernameRegex = /^[a-z0-9_]{4,20}$/i;
-// 비밀번호 유효성 검사 정규식 (영문과 숫자가 모두 포함된 10자 이상)
-const passwordRegex = /^(?=.*[a-z])(?=.*\d)[a-z\d]{10,}$/i;
+// 비밀번호 유효성 검사 정규식 (영문과 숫자가 모두 포함된 10자 이상이며 특수문자 입력 가능)
+const passwordRegex = /^(?=.*[a-z])(?=.*\d)[a-z\d!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]{10,}$/i;
 // 이메일 유효성 검사 정규식
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -242,7 +246,7 @@ document.getElementById('registerForm').addEventListener('submit', function(e) {
     }
 
     if (!passwordRegex.test(password)) {
-        alert('비밀번호는 최소 10자 이상이어야 하며 영문과 숫자를 모두 포함해야 합니다.');
+        alert('비밀번호는 최소 10자 이상이어야 하며 영문과 숫자를 모두 포함해야 합니다. (영문/숫자/특수문자 사용 가능)');
         passwordInput.focus();
         return;
     }

@@ -39,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($user['password'])) {
         $errors['password'] = '비밀번호를 입력해 주세요.';
     } elseif (!Validate::isPassword($user['password'])) {
-        $errors['password'] = '비밀번호는 최소 10자 이상이어야 하며 영문과 숫자를 모두 포함해야 합니다.';
+        $errors['password'] = '비밀번호는 최소 10자 이상이어야 하며 영문과 숫자를 모두 포함해야 합니다.<br>(영문/숫자/특수문자 사용 가능)';
     }
 
     if (empty($user['confirm'])) {
