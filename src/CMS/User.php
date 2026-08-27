@@ -120,6 +120,23 @@ class User
     }
 
     /**
+     * ID로 닉네임 정보 조회
+     */
+    public function getNicknameById(int $id): string|false
+    {
+        $sql = "SELECT nickname 
+                  FROM user 
+                WHERE id = :id
+                  AND is_deleted = 0;";
+
+        $stmt = $this->db->runSql($sql, [
+            'id' => $id,
+        ]);
+
+        return $stmt ? $stmt->fetchColumn() : false;
+    }
+
+    /**
      * ID로 회원 비밀번호 조회
      */
     public function getPassword(int $id): bool|string
