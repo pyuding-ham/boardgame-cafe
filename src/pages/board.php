@@ -30,6 +30,7 @@ $allowed_boards = [
     'boardgame',
     'branch',
     'notice',
+    'review',
 ];
 
 if (in_array($boardName, $allowed_boards)) {

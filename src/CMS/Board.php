@@ -102,10 +102,29 @@ class Board
                             ON p.id = nd.post_id";
                 break;
 
+            // 이용후기
+            case 'review':
+                $sql = "SELECT
+                          p.id,
+                          p.thumbnail,
+                          p.title,
+                          p.content,
+                          p.writer_nickname AS nickname,
+                          p.created_at,
+                          COUNT(c.id) AS comment_count,
+                          hit,
+                          (SELECT COUNT(*) FROM post_like pl WHERE pl.post_id = p.id) AS like_count,
+                          0 AS is_pinned
+                        FROM post p
+                          INNER JOIN site_menu m
+                            ON p.site_menu_id = m.id
+                          LEFT JOIN post_comment c
+                            ON p.id = c.post_id";
+                break;
+
             // 기본 게시판
             default:
-                $sql = "SELECT p.id, p.thumbnail, p.title, p.writer_nickname AS nickname, p.created_at,
-                            0 AS is_pinned
+                $sql = "SELECT p.id, p.thumbnail, p.title, p.writer_nickname AS nickname, p.created_at, hit, 0 AS is_pinned
                         FROM post p
                           INNER JOIN site_menu m
                             ON p.site_menu_id = m.id";
@@ -135,7 +154,16 @@ class Board
             }
         }
 
-        // 5. 공통 정렬 및 페이징
+        // 5. 게시판별 분기 처리
+        switch ($board_name) {
+            // 게임소개
+            case 'review':
+                $sql .= " GROUP BY p.id";
+                
+            break;
+        }
+
+        // 6. 공통 정렬 및 페이징        
         $sql .= " ORDER BY is_pinned DESC, p.id DESC";
         $sql .= " LIMIT " . (int)$limit . " OFFSET " . (int)$offset . ";";
 
