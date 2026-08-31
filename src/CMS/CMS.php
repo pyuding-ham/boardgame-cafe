@@ -8,6 +8,7 @@ class CMS
     protected $session = null;
     protected $token = null;
     protected $board = null;
+    protected $comment = null;
     protected $siteMenu = null;
 
     public function __construct($dsn, $username, $password)
@@ -48,6 +49,16 @@ class CMS
             );
         }
         return $this->board;
+    }
+    
+    public function getComment() {
+        if ($this->comment === null) {
+            $this->comment = new Comment(
+                $this->db,
+                $this->getBoard()
+            );
+        }
+        return $this->comment;
     }
 
     public function getSiteMenu() {

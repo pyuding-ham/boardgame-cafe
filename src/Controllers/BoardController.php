@@ -131,6 +131,7 @@ class BoardController {
      */
     public function view(string|int $identifier, ?string $boardName, ?int $userId = null): array|false {
         $board_service = $this->cms->getBoard();
+        $comment_service = $this->cms->getComment();
 
         // 게시판 이름에 따라 다른 상세 보기 데이터 호출
         // 게임소개
@@ -140,7 +141,7 @@ class BoardController {
         // 이용후기
         elseif ($boardName === 'review') {
             $post = $board_service->getBoardPost($boardName, (int)$identifier, $userId);
-            $comment = $board_service->getPostComment((int)$identifier, $userId);
+            $comment = $comment_service->getPostComment((int)$identifier, $userId);
         }
         // 그 외의 게시판
         else {
