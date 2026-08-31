@@ -244,7 +244,7 @@ body {
     cursor: default;
 }
 
-/* 블로그형 게시판 */
+/* 블로그형 게시판 목록 */
 .board-blog-container .card > .row > .col {
     min-width: 0;
 }
@@ -294,9 +294,25 @@ body {
 .board-view__header .title,
 .board-write__header .title {
     font-size: 2rem;
+    line-height: 1.5;
 }
 .board-view__header .bottom {
     color: #6c757d;
+}
+
+/* 블로그형 게시글 상세 */
+.board-blog-view-container .board-view__header .title {
+    font-size: 1.6rem;
+}
+
+
+/* 게시글 댓글 */
+.board-view__comment_list .profile_image {
+    width: 48px;
+    height: 48px;
+}
+.board-view__comment_list .regdate {
+    font-size: 0.75rem;
 }
 
 /* 카카오맵 */

@@ -137,9 +137,14 @@ class BoardController {
         if ($boardName === 'boardgame') {
             $post = $board_service->getBoardPostBySlug($boardName, $identifier, $userId);
         }
+        // 이용후기
+        elseif ($boardName === 'review') {
+            $post = $board_service->getBoardPost($boardName, (int)$identifier, $userId);
+            $comment = $board_service->getPostComment((int)$identifier, $userId);
+        }
         // 그 외의 게시판
         else {
-            $post = $board_service->getBoardPost($boardName, (int)$identifier);
+            $post = $board_service->getBoardPost($boardName, (int)$identifier, $userId);
         }
 
         // 게시글이 존재하지 않거나 삭제된 경우 예외 처리
@@ -147,9 +152,20 @@ class BoardController {
             throw new PostNotFoundException(ErrorCode::POST_NOT_FOUND_READ->value);
         }
 
-        return [
-            'post' => $post,
-        ];
+        // 게시판 이름에 따라 다른 반환 데이터
+        // 이용후기
+        if ($boardName === 'review') {
+            return [
+                'post' => $post,
+                'comment' => $comment,
+            ];
+        }
+        // 그 외의 게시판
+        else {
+            return [
+                'post' => $post,
+            ];
+        }
     }
 
     /**

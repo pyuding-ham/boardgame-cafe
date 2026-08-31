@@ -302,7 +302,7 @@ class Board
     /**
      * 단일 게시글 상세 조회
      */
-    public function getBoardPost(string $page_code, int $id): array|bool
+    public function getBoardPost(string $page_code, int $id, ?int $user_id = null): array|bool
     {
         // 1. 게시판별 게시글 조회 분기 처리
         switch ($page_code) {
@@ -327,6 +327,36 @@ class Board
                         WHERE p.id = :id
                          AND p.is_deleted = 0;";
                 break;
+            
+            // 이용후기
+            case 'review':
+                $sql = "SELECT
+                          p.id,
+                          p.user_id,
+                          p.writer_nickname AS nickname,
+                          p.title,
+                          p.content,
+                          p.thumbnail,
+                          p.created_at,
+                          COUNT(c.id) AS comment_count,
+                          hit,
+                          0 AS is_pinned,
+                          (SELECT COUNT(*) FROM post_like pl WHERE pl.post_id = p.id) AS like_count,
+                          IF(EXISTS(
+                            SELECT 1
+                            FROM post_like pl 
+                            WHERE pl.post_id = p.id
+                              AND pl.user_id = :user_id
+                          ), 1, 0) AS is_liked
+                        FROM post p
+                          INNER JOIN site_menu m
+                            ON p.site_menu_id = m.id
+                          LEFT JOIN post_comment c
+                            ON p.id = c.post_id
+                        WHERE p.id = :id
+                          AND p.is_deleted = 0
+                        GROUP BY p.id;";
+                break;
 
             // 기본 게시판
             default:
@@ -338,7 +368,15 @@ class Board
                 break;
         }
 
-        $stmt = $this->db->runSql($sql, ['id' => $id]);
+        // 이용후기
+        if ($page_code == 'review') {
+            $stmt = $this->db->runSql($sql, [
+                'user_id' => $user_id,
+                'id' => $id,
+            ]);
+        } else {
+            $stmt = $this->db->runSql($sql, ['id' => $id]);
+        }
         $post = $stmt ? $stmt->fetch() : false;
 
         // 게시글이 존재하지 않거나 삭제된 경우 예외 처리
@@ -368,6 +406,44 @@ class Board
         $post['images'] = $image_stmt ? $image_stmt->fetchAll() : [];
 
         return $post;
+    }
+    
+    /**
+     * 댓글 상세 조회
+     */
+    public function getPostComment(int $post_id, ?int $user_id = null): array|false
+    {
+        $post = $this->isPostExists($post_id);
+        
+        // 게시글이 존재하지 않거나 삭제된 경우 예외 처리
+        if (!$post) {
+            throw new PostNotFoundException(ErrorCode::POST_NOT_FOUND_READ->value);
+        }
+
+        $sql = "SELECT
+                  c.id,
+                  c.post_id,
+                  c.user_id,
+                  c.writer_nickname AS nickname,
+                  c.content,
+                  c.created_at,
+                  u.profile_image,
+                  IF(c.user_id = :user_id, 1, 0) AS is_inserted
+                FROM post_comment c
+                INNER JOIN post p
+                  ON c.post_id = p.id
+                LEFT JOIN user u
+                  ON c.user_id = u.id
+                WHERE c.post_id = :post_id
+                  AND c.is_deleted = 0
+                ORDER BY c.created_at;";
+
+        $params = [
+            'post_id' => $post_id,
+            'user_id' => $user_id,
+        ];
+
+        return $this->db->runSql($sql, $params)->fetchAll();
     }
 
     /**
@@ -1028,7 +1104,7 @@ class Board
     /**
      * 게시글 존재 여부 확인
      */
-    public function isPostExists(string $post_id): bool 
+    public function isPostExists(int|string $post_id): bool 
     {
         $sql = "SELECT COUNT(*)
                 FROM post

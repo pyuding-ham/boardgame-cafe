@@ -1,0 +1,117 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="container board-view-container board-blog-view-container my-5">
+    <!-- 게시판 타이틀 영역 -->
+    <div class="board-view__board mb-4">
+        <h3 class="title mb-0">{{ board_title }}</h3>
+    </div>
+
+    <!-- 게시글 상단 영역 -->
+    <div class="board-view__header mb-4 p-4 border rounded-0 bg-light">
+        <div class="top">
+            <h2 class="title mb-0">{{ post.title }}</h2>
+        </div>
+        
+        <div class="row mt-3 pt-3 g-0 border-top text-secondary small">
+
+            <div class="col-12 col-sm-4">
+                <!-- 작성자 -->
+                <span class="me-3"><strong class="text-dark">작성자</strong> {{ post.nickname }}</span>
+            </div>
+
+            <div class="col-12 col-sm-8 d-flex justify-content-end align-items-center gap-2">
+                <!-- 작성일시 -->
+                <span class="regdate">
+                    <strong class="text-dark">작성일</strong> {{ post.created_at|date('Y-m-d H:i') }}
+                </span>
+
+                <!-- 조회수 -->
+                <span class="hit d-inline-flex align-items-center gap-1">
+                    <i class="bi bi-eye"></i> 조회 {{ post.hit }}
+                </span>
+
+                <!-- 댓글수 -->
+                <span class="comment d-inline-flex align-items-center gap-1">
+                    <i class="bi bi-chat-dots"></i> 댓글 {{ post.comment_count }}
+                </span>
+
+                <!-- 좋아요 -->
+                <span class="like">
+                    <button type="button" id="btnPostLike" class="btn btn-link p-0 text-decoration-none d-flex align-items-center gap-1 text-danger" data-post-id="{{ post.id }}">
+                        {% if post.is_liked == 1 %}
+                            <i id="likeIcon" class="bi bi-heart-fill small"></i>
+                        {% else %}
+                            <i id="likeIcon" class="bi bi-heart small"></i>
+                        {% endif %}
+                        <span id="likeCount">{{ post.like_count }}</span>
+                    </button>
+                </span>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- 게시글 본문 영역 -->
+    <div class="board-view__content mb-4 p-4 border bg-white">{{ post.content|striptags }}</div>
+
+    <!-- 댓글 목록 영역 -->
+    <div class="board-view__comment_list">
+        {% for item in comment %}
+            <div class="p-3 d-flex border-bottom">
+        
+                <!-- 1. 좌측: 프로필 이미지 -->
+                <div class="flex-shrink-0 me-3">
+                    <!-- 업로드된 이미지가 있을 때 -->
+                    {% if item.profile_image %}
+                        <img src="/uploads/profiles/{{ item.profile_image }}" class="profile_image rounded-circle" alt="{{ item.nickname }}님의 프로필 이미지">
+                    <!-- 이미지가 없을 때 기본 임시 이미지 -->
+                    {% else %}
+                        <img src="/img/defaults/user_blank.svg" class="profile_image rounded-circle" alt="기본 프로필 이미지">
+                    {% endif %}
+                </div>
+        
+                <!-- 2. 우측: 댓글 본문 영역 -->
+                <div class="flex-grow-1">
+                    <!-- 상단: 닉네임 -->
+                    <div class="nickname mb-1 fw-bold small">{{ item.nickname }}</div>
+        
+                    <!-- 중단: 댓글 내용 -->
+                    <div class="content mb-2">{{ item.content }}</div>
+        
+                    <!-- 하단: 작성일시 -->
+                    <div class="regdate text-body-tertiary">{{ item.created_at|date('Y-m-d H:i') }}</div>
+                </div>
+        
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- 게시글 하단 버튼 구역 -->
+    <div class="board-view__footer mt-5 d-flex justify-content-between gap-2">
+
+        <a href="{{ doc_root }}board/{{ board_name }}" class="btn btn-secondary px-4 small">목록으로</a>
+        
+        {% if post.user_id == session.id or session.role == 'ADMIN' %}
+            <div class="d-flex justify-content-center gap-2">
+
+                <!-- 작성한 회원만 수정 버튼 노출 -->
+                {% if post.user_id == session.id %}
+                    <a href="{{ doc_root }}board/{{ board_name }}/edit/{{ post.id }}" class="btn btn-outline-primary rounded-0">수정</a>
+                {% endif %}
+
+                <!-- 작성한 회원 또는 관리자만 삭제 버튼 노출 -->
+                {% if post.user_id == session.id or session.role == 'ADMIN' %}
+                    <a href="{{ doc_root }}board/{{ board_name }}/delete/{{ post.id }}" class="btn btn-outline-danger rounded-0" onclick="return confirm('이 글을 정말 삭제하시겠습니까?');">삭제</a>
+                {% endif %}
+
+            </div>
+        {% endif %}
+
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/js/like.js"></script>
+{% endblock %}
