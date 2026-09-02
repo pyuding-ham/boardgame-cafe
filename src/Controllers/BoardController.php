@@ -88,6 +88,12 @@ class BoardController {
             }
             unset($post);
         }
+        // 이용후기
+        elseif ($boardName === 'review') {
+            $category = $board_service->getCategory($boardId);
+
+            $list = $board_service->getBoardList($boardName, $per_page, $offset, $filters);
+        }
         // 기본 게시판
         else {
             $list = $board_service->getBoardList($boardName, $per_page, $offset, $filters);
@@ -117,6 +123,10 @@ class BoardController {
         if ($boardName === 'boardgame') {
             $data['category'] = $category;
             $data['level']    = $level;
+        }
+        // 이용후기
+        elseif ($boardName === 'review') {
+            $data['category'] = $category;
         }
 
         return $data;

@@ -9,6 +9,12 @@
 
     <!-- 게시글 상단 영역 -->
     <div class="board-view__header mb-4 p-4 border rounded-0 bg-light">
+        <!-- 카테고리 -->
+        <span class="badge mb-2 px-3 py-2 bg-primary rounded-0">
+            {{ post.category_name }}
+        </span>
+
+        <!-- 제목 -->
         <div class="top">
             <h2 class="title mb-0">{{ post.title }}</h2>
         </div>

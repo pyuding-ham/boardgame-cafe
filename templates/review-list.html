@@ -12,84 +12,98 @@
 {% endif %}
 <div class="container board-container board-blog-container my-5">
     <!-- 타이틀 영역 -->
-    <div class="d-flex justify-content-between align-items-center mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-3">
         <h2 class="fw-bold mb-0">{{ board_title }}</h2>
     </div>
     
-    <p class="pb-3 mb-3 border-bottom text-muted small">총 <strong class="text-primary">{{ total_count }}</strong>개의 글</p>
+    <div class="d-flex justify-content-between align-items-center pb-3 border-bottom">
+        <p class="mb-0 text-nowrap text-muted small">총 <strong class="text-primary">{{ total_count }}</strong>개의 글</p>
+
+        <!-- 지점 셀렉트 박스 -->
+        <select class="form-select form-select-sm text-secondary small" id="categorySelect">
+            <option value="all">지점선택</option>
+            {% for cat in category %}
+                <option value="{{ cat.id }}">{{ cat.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
 
     <!-- 게시글 영역 -->
-    {% if list is empty %}
-        <!-- 게시글이 없거나 검색 결과가 없는 경우 -->
+
+    <!-- 게시글이 없거나 검색 결과가 없는 경우 -->
+    <div id="no-items-message" class="fade {% if list is empty %}d-block show{% else %}d-none{% endif %} border-bottom">
         <div class="text-center text-muted py-5">
             <i class="bi bi-exclamation-circle d-block fs-4 mb-2"></i>
             검색 결과가 없거나 등록된 게시글이 없습니다.
         </div>
-    {% else %}
-        {% for item in list %}
-            <div class="card mb-3 border-0 border-bottom rounded-0 pb-3">
-                <div class="row g-0 align-items-center flex-nowrap">
+    </div>
 
-                    <!-- 좌측 영역 -->
-                    <div class="col">
-                        <div class="card-body p-0 pe-5">
+    {% for item in list %}
+        <div class="card fade show py-3 border-0 border-bottom rounded-0" data-category="{{ item.category_id }}">
+            <div class="row g-0 flex-nowrap">
+                <!-- 좌측 영역 -->
+                <div class="col">
+                    <div class="card-body p-0 pe-5">
+                        <!-- 카테고리 -->
+                        <span class="badge mb-2 bg-primary rounded-0 category-{{ item.category_id }}">
+                            {{ item.category_name }}
+                        </span>
 
-                            <!-- 제목 및 내용 -->
-                            <a href="{{ doc_root }}board/{{ board_name }}/view/{{ item.id }}" class="text-decoration-none text-dark text-truncate">
+                        <!-- 제목 및 내용 -->
+                        <a href="{{ doc_root }}board/{{ board_name }}/view/{{ item.id }}" class="text-decoration-none text-dark text-truncate">
 
-                                <!-- 제목 -->
-                                <h3 class="card-title text-truncate mb-2">
-                                    {{ item.title }}
-                                </h3>
+                            <!-- 제목 -->
+                            <h3 class="card-title text-truncate mb-2">
+                                {{ item.title }}
+                            </h3>
 
-                                <!-- 내용 -->
-                                <p class="card-text text-secondary small text-start mb-4 overflow-hidden">{{ item.content|striptags|slice(0, 250) }}</p>
-                                
-                            </a>
+                            <!-- 내용 -->
+                            <p class="card-text text-secondary small text-start mb-4 overflow-hidden">{{ item.content|striptags|slice(0, 250) }}</p>
+                            
+                        </a>
 
-                            <!-- 메타 정보 -->
-                            <div class="card-text d-flex flex-wrap align-items-center gap-3 text-secondary small">
+                        <!-- 메타 정보 -->
+                        <div class="card-text d-flex flex-wrap align-items-center gap-3 text-secondary small">
 
-                                <!-- 작성자 -->
-                                <span class="nickname text-dark">{{ item.nickname }}</span>
+                            <!-- 작성자 -->
+                            <span class="nickname text-dark">{{ item.nickname }}</span>
 
-                                <!-- 작성일 -->
-                                <span class="regdate">{{ item.created_at|date('Y-m-d') }}</span>
+                            <!-- 작성일 -->
+                            <span class="regdate">{{ item.created_at|date('Y-m-d') }}</span>
 
-                                <!-- 조회수 -->
-                                <span class="hit d-inline-flex align-items-center gap-1">
-                                    <i class="bi bi-eye"></i> {{ item.hit }}
-                                </span>
+                            <!-- 조회수 -->
+                            <span class="hit d-inline-flex align-items-center gap-1">
+                                <i class="bi bi-eye"></i> {{ item.hit }}
+                            </span>
 
-                                <!-- 댓글수 -->
-                                <span class="comment d-inline-flex align-items-center gap-1">
-                                    <i class="bi bi-chat-dots"></i> {{ item.comment_count }}
-                                </span>
+                            <!-- 댓글수 -->
+                            <span class="comment d-inline-flex align-items-center gap-1">
+                                <i class="bi bi-chat-dots"></i> {{ item.comment_count }}
+                            </span>
 
-                                <!-- 좋아요 -->
-                                <span class="like d-inline-flex align-items-center gap-1">
-                                    <i class="bi bi-heart small"></i> {{ item.like_count }}
-                                </span>
+                            <!-- 좋아요 -->
+                            <span class="like d-inline-flex align-items-center gap-1">
+                                <i class="bi bi-heart small"></i> {{ item.like_count }}
+                            </span>
 
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 우측 영역 -->
-                    <div class="col-auto">
-                        <!-- 썸네일 -->
-                        <div id="thumb" class="ratio ratio-1x1">
-                            {% if item.thumbnail ?? null is not empty %}
-                                <img src="{{ item.thumbnail|replace({'public': ''}) }}" alt="{{ item.title }}" class="object-fit-cover">
-                            {% else %}
-                                <img src="/img/defaults/post_1x1.svg" class="object-fit-cover" alt="게시글 기본 이미지">
-                            {% endif %}
                         </div>
                     </div>
                 </div>
+
+                <!-- 우측 영역 -->
+                <div class="col-auto">
+                    <!-- 썸네일 -->
+                    <div id="thumb" class="ratio ratio-1x1">
+                        {% if item.thumbnail ?? null is not empty %}
+                            <img src="{{ item.thumbnail|replace({'public': ''}) }}" alt="{{ item.title }}" class="object-fit-cover">
+                        {% else %}
+                            <img src="/img/defaults/post_1x1.svg" class="object-fit-cover" alt="게시글 기본 이미지">
+                        {% endif %}
+                    </div>
+                </div>
             </div>
-        {% endfor %}
-    {% endif %}
+        </div>
+    {% endfor %}
 
     <!-- 페이지네이션 -->
     {% if total_pages > 1 %}
@@ -180,6 +194,42 @@
         setTimeout(() => {
             toast.remove();
         }, 2800);
+    }
+
+    // 지점 셀렉트 박스 값 전환 시 실행
+    document.getElementById('categorySelect').addEventListener('change', filterReviews);
+
+    function filterReviews() {
+        const categorySelect = document.getElementById('categorySelect');
+        const selectedCategory = categorySelect.value;
+        const noMessage = document.getElementById('no-items-message');
+        let visibleCount = 0;
+
+        const cards = document.querySelectorAll('.card');
+
+        cards.forEach(card => card.classList.remove('show'));
+        noMessage.classList.remove('show');
+
+        setTimeout(() => {
+            cards.forEach(card => {
+                const cardCategory = card.getAttribute('data-category').trim();
+
+                if (selectedCategory === 'all' || cardCategory === selectedCategory) {
+                    card.classList.remove('d-none');
+                    setTimeout(() => card.classList.add('show'), 50);
+                    visibleCount++;
+                } else {
+                    card.classList.add('d-none');
+                }
+            });
+
+            if (visibleCount === 0) {
+                noMessage.classList.remove('d-none');
+                setTimeout(() => noMessage.classList.add('show'), 50);
+            } else {
+                noMessage.classList.add('d-none');
+            }
+        }, 150);
     }
 </script>
 {% endblock %}

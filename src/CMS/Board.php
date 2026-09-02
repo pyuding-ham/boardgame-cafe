@@ -114,10 +114,22 @@ class Board
                           COUNT(c.id) AS comment_count,
                           hit,
                           (SELECT COUNT(*) FROM post_like pl WHERE pl.post_id = p.id) AS like_count,
-                          0 AS is_pinned
+                          0 AS is_pinned,
+                          pc.id AS category_id,
+
+                          CASE 
+                            WHEN pc.id IS NULL
+                              OR pc.is_deleted = 1 THEN '미분류'
+                            ELSE pc.name
+                          END AS category_name
+                          
                         FROM post p
                           INNER JOIN site_menu m
                             ON p.site_menu_id = m.id
+                          INNER JOIN review_detail rd
+                            ON p.id = rd.post_id
+                          LEFT JOIN post_category pc
+                            ON rd.post_category_id = pc.id
                           LEFT JOIN post_comment c
                             ON p.id = c.post_id";
                 break;
@@ -347,10 +359,21 @@ class Board
                             FROM post_like pl 
                             WHERE pl.post_id = p.id
                               AND pl.user_id = :user_id
-                          ), 1, 0) AS is_liked
+                          ), 1, 0) AS is_liked,
+
+                          CASE 
+                            WHEN pc.id IS NULL
+                              OR pc.is_deleted = 1 THEN '미분류'
+                            ELSE pc.name
+                          END AS category_name
+
                         FROM post p
                           INNER JOIN site_menu m
                             ON p.site_menu_id = m.id
+                          INNER JOIN review_detail rd
+                            ON p.id = rd.post_id
+                          LEFT JOIN post_category pc
+                            ON rd.post_category_id = pc.id
                           LEFT JOIN post_comment c
                             ON p.id = c.post_id
                         WHERE p.id = :id
