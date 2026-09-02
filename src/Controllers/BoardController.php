@@ -23,8 +23,20 @@ class BoardController {
      * @param string $boardName 게시판 식별자 이름
      * @return array 템플릿 렌더링용 연관 배열
      */
-    public function index(int $page = 1, ?string $boardName = 'notice', ?string $boardId = '3'): array {
-        // 1. PRG 패턴 적용 (검색 처리)
+    public function index(int $page = 1, ?string $boardName = 'notice', ?string $boardId = '3'): array
+    {
+        // 1. 목록 진입 시 검색 상태 초기화
+        if (isset($_COOKIE['clear_session']) && $_COOKIE['clear_session'] === 'Y') {
+            // 세션 리셋
+            unset($_SESSION[$boardName . '_search_kw']);
+            unset($_SESSION[$boardName . '_search_type']);
+            unset($_SESSION[$boardName . '_search_cat']);
+            
+            // 세션 만료
+            setcookie('clear_session', '', time() - 3600, '/');
+        }
+
+        // 2. PRG 패턴 적용 (검색 처리)
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // 게시판 이름 별로 세션 키를 분리
             $_SESSION[$boardName . '_search_kw'] = trim($_POST['keyword'] ?? '');
@@ -35,7 +47,7 @@ class BoardController {
             exit;
         }
         
-        // 2. 세션에서 해당 게시판의 검색어 가져오기
+        // 3. 세션에서 해당 게시판의 검색어 가져오기
         $keyword = $_SESSION[$boardName . '_search_kw'] ?? '';
         $search_type = $_SESSION[$boardName . '_search_type'] ?? 'all';
         
@@ -44,19 +56,19 @@ class BoardController {
             'type' => $search_type,
         ];
 
-        // 3. 페이징 설정
+        // 4. 페이징 설정
         $per_page = match ($boardName) {
             'boardgame', 'branch' => 9,
             default => 10,
         };
         $offset = ($page - 1) * $per_page;
 
-        // 4. 총 게시글 개수
+        // 5. 총 게시글 개수
         // DB 서비스 호출
         $board_service = $this->cms->getBoard();
         $total_count = $board_service->getBoardTotalCount($boardName, $filters);
 
-        // 5. 게시판 이름에 따라 다른 서비스 메서드 호출
+        // 6. 게시판 이름에 따라 다른 서비스 메서드 호출
         // 게임소개
         if ($boardName === 'boardgame') {
             $category = $board_service->getCategory($boardId);

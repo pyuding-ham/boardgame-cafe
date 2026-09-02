@@ -71,6 +71,26 @@
         </div>
     </footer>
 
+    <script>
+        // 목록 진입 시 검색 상태 초기화하기 위해 쿠키 생성
+        const navbar = document.querySelector('nav #menu');
+
+        if (navbar) {
+            navbar.addEventListener('click', function(e) {
+                const anchor = e.target.closest('a');
+                
+                if (anchor) {
+                    const href = anchor.getAttribute('href');
+                    
+                    if (href && href.startsWith('/board')) {
+                        // 임시 쿠키 생성 (10초 유지)
+                        document.cookie = "clear_session=Y; path=/; max-age=10";
+                    }
+                }
+            });
+        }
+    </script>
+
     {% block scripts %}{% endblock %}
 </body>
 </html>
