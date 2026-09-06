@@ -14,7 +14,10 @@ document.getElementById('btnPostLike').addEventListener('click', function() {
             post_id: postId
         })
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) throw new Error('서버 응답 오류: ' + response.status);
+        return response.json();
+    })
     .then(data => {
         if (data.status === 'success') {
             const icon = document.getElementById('likeIcon');
@@ -35,6 +38,6 @@ document.getElementById('btnPostLike').addEventListener('click', function() {
     })
     .catch(error => {
         console.error('Error:', error);
-        alert('오류가 발생했습니다. 다시 시도해 주세요.');
+        showToast('오류가 발생했습니다. 다시 시도해 주세요.');
     });
 });
