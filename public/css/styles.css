@@ -252,6 +252,18 @@ body {
 .board-blog-container .form-select {
     max-width: 140px;
 }
+
+.board-blog-container .card {
+    /* opacity: 0; */
+    transition: opacity 0.4s ease-out, transform 0.4s ease-out; /* 0.4초 동안 부드럽게 */
+}
+
+/* show 클래스가 붙으면 부드럽게 나타남 */
+.board-blog-container .card.show {
+    opacity: 1;
+}
+
+
 .board-blog-container .card > .row > .col {
     min-width: 0;
 }

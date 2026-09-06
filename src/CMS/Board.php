@@ -146,7 +146,19 @@ class Board
         // 3. 공통 조건 (삭제되지 않은 요청한 page_code에 해당하는 게시글만)
         $sql .= " WHERE m.page_code = :page_code AND p.is_deleted = 0";
 
-        // 4. 공통 검색 필터 처리
+        // 4. 카테고리 필터 처리
+        if (isset($filters['category_id']) && $filters['category_id'] !== 'all' && trim($filters['category_id']) !== '') {
+            $sql .= " AND pc.id = :category_id";
+            $params['category_id'] = (int)$filters['category_id'];
+        }
+
+        // 5. 게임소개-난이도 필터 처리
+        if (isset($filters['difficulty_id']) && $filters['difficulty_id'] !== 'all' && trim($filters['difficulty_id']) !== '') {
+            $sql .= " AND bl.id = :difficulty_id";
+            $params['difficulty_id'] = (int)$filters['difficulty_id'];
+        }
+
+        // 6. 공통 검색 필터 처리
         if (isset($filters['keyword']) && trim($filters['keyword']) !== '') {
             $keyword_value = '%' . trim($filters['keyword']) . '%';
 
@@ -166,7 +178,7 @@ class Board
             }
         }
 
-        // 5. 게시판별 분기 처리
+        // 7. 게시판별 분기 처리
         switch ($board_name) {
             // 게임소개
             case 'review':
@@ -175,7 +187,7 @@ class Board
             break;
         }
 
-        // 6. 공통 정렬 및 페이징        
+        // 8. 공통 정렬 및 페이징        
         $sql .= " ORDER BY is_pinned DESC, p.id DESC";
         $sql .= " LIMIT " . (int)$limit . " OFFSET " . (int)$offset . ";";
 
@@ -187,15 +199,66 @@ class Board
      */
     public function getBoardTotalCount(string $page_code, array $filters = []): int
     {
-        // 1. site_menu와 post 테이블을 조인하여 해당 게시판의 삭제되지 않은 글 개수 조회
-        $sql = "SELECT COUNT(p.id)
-                FROM post p
-                INNER JOIN site_menu m ON p.site_menu_id = m.id
-                WHERE m.page_code = :page_code AND p.is_deleted = 0";
+        // 1. 게시판별 분기 처리
+        switch ($page_code) {
+            // 게임소개
+            case 'boardgame':
+                $sql = "SELECT COUNT(p.id)
+                        FROM post p
+                          INNER JOIN site_menu m
+                            ON p.site_menu_id = m.id
+                          INNER JOIN boardgame_detail bd
+                            ON p.id = bd.post_id
+                          LEFT JOIN post_category pc
+                            ON bd.post_category_id = pc.id
+                          LEFT JOIN boardgame_level bl
+                            ON bd.level = bl.id
+                        WHERE m.page_code = :page_code
+                          AND p.is_deleted = 0";
+                
+                break;
+            
+            // 이용후기
+            case 'review':
+                $sql = "SELECT COUNT(p.id)
+                        FROM post p
+                          INNER JOIN site_menu m
+                            ON p.site_menu_id = m.id
+                          INNER JOIN review_detail rd
+                            ON p.id = rd.post_id
+                          LEFT JOIN post_category pc
+                            ON rd.post_category_id = pc.id
+                        WHERE m.page_code = :page_code
+                          AND p.is_deleted = 0";
+
+                break;
+            
+            default:
+                $sql = "SELECT COUNT(p.id)
+                        FROM post p
+                          INNER JOIN site_menu m
+                            ON p.site_menu_id = m.id
+                        WHERE m.page_code = :page_code
+                          AND p.is_deleted = 0";
+
+                break;
+        }
                 
         $params = ['page_code' => $page_code];
-        
-        // 2. 공통 검색 필터 처리
+
+        // 2. 카테고리 필터 처리
+        if (isset($filters['category_id']) && $filters['category_id'] !== 'all' && trim($filters['category_id']) !== '') {
+            $sql .= " AND pc.id = :category_id";
+            $params['category_id'] = (int)$filters['category_id'];
+        }
+
+        // 3. 게임소개-난이도 필터 처리
+        if (isset($filters['difficulty_id']) && $filters['difficulty_id'] !== 'all' && trim($filters['difficulty_id']) !== '') {
+            $sql .= " AND bl.id = :difficulty_id";
+            $params['difficulty_id'] = (int)$filters['difficulty_id'];
+        }
+
+        // 4. 공통 검색 필터 처리
         if (isset($filters['keyword']) && trim($filters['keyword']) !== '') {
             $keyword_value = '%' . trim($filters['keyword']) . '%';
 

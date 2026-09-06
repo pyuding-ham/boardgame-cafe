@@ -17,139 +17,40 @@
     </div>
     
     <div class="d-flex justify-content-between align-items-center pb-3 border-bottom">
-        <p class="mb-0 text-nowrap text-muted small">총 <strong class="text-primary">{{ total_count }}</strong>개의 글</p>
+        <p class="text-muted small mb-3">총 <strong id="totalCountContainer" class="text-primary">{{ total_count }}</strong>개의 글</p>
 
         <!-- 지점 셀렉트 박스 -->
-        <select class="form-select form-select-sm text-secondary small" id="categorySelect">
-            <option value="all">지점선택</option>
-            {% for cat in category %}
-                <option value="{{ cat.id }}">{{ cat.name }}</option>
-            {% endfor %}
-        </select>
+        <div class="d-flex justify-content-between align-items-center">
+            <label class="input-group-text bg-transparent border-0 fw-bold" for="categorySelect">지점</label>
+            <select class="form-select form-select-sm text-secondary small" id="categorySelect" name="search_category" form="searchForm">
+                <option value="all" {% if selected_category == 'all' or selected_category is empty %}selected{% endif %}>전체</option>
+                {% for cat in category %}
+                    <option value="{{ cat.id }}" {% if selected_category == cat.id %}selected{% endif %}>
+                        {{ cat.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
     </div>
 
     <!-- 게시글 영역 -->
-
-    <!-- 게시글이 없거나 검색 결과가 없는 경우 -->
-    <div id="no-items-message" class="fade {% if list is empty %}d-block show{% else %}d-none{% endif %} border-bottom">
-        <div class="text-center text-muted py-5">
-            <i class="bi bi-exclamation-circle d-block fs-4 mb-2"></i>
-            검색 결과가 없거나 등록된 게시글이 없습니다.
-        </div>
+    <div id="boardContainer">
+        {% include board_name ~ '-items.html' %}
     </div>
 
-    {% for item in list %}
-        <div class="card fade show py-3 border-0 border-bottom rounded-0" data-category="{{ item.category_id }}">
-            <div class="row g-0 flex-nowrap">
-                <!-- 좌측 영역 -->
-                <div class="col">
-                    <div class="card-body p-0 pe-5">
-                        <!-- 카테고리 -->
-                        <span class="badge mb-2 bg-primary rounded-0 category-{{ item.category_id }}">
-                            {{ item.category_name }}
-                        </span>
-
-                        <!-- 제목 및 내용 -->
-                        <a href="{{ doc_root }}board/{{ board_name }}/view/{{ item.id }}" class="text-decoration-none text-dark text-truncate">
-
-                            <!-- 제목 -->
-                            <h3 class="card-title text-truncate mb-2">
-                                {{ item.title }}
-                            </h3>
-
-                            <!-- 내용 -->
-                            <p class="card-text text-secondary small text-start mb-4 overflow-hidden">{{ item.content|striptags|slice(0, 250) }}</p>
-                            
-                        </a>
-
-                        <!-- 메타 정보 -->
-                        <div class="card-text d-flex flex-wrap align-items-center gap-3 text-secondary small">
-
-                            <!-- 작성자 -->
-                            <span class="nickname text-dark">{{ item.nickname }}</span>
-
-                            <!-- 작성일 -->
-                            <span class="regdate">{{ item.created_at|date('Y-m-d') }}</span>
-
-                            <!-- 조회수 -->
-                            <span class="hit d-inline-flex align-items-center gap-1">
-                                <i class="bi bi-eye"></i> {{ item.hit }}
-                            </span>
-
-                            <!-- 댓글수 -->
-                            <span class="comment d-inline-flex align-items-center gap-1">
-                                <i class="bi bi-chat-dots"></i> {{ item.comment_count }}
-                            </span>
-
-                            <!-- 좋아요 -->
-                            <span class="like d-inline-flex align-items-center gap-1">
-                                <i class="bi bi-heart small"></i> {{ item.like_count }}
-                            </span>
-
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 우측 영역 -->
-                <div class="col-auto">
-                    <!-- 썸네일 -->
-                    <div id="thumb" class="ratio ratio-1x1">
-                        {% if item.thumbnail ?? null is not empty %}
-                            <img src="{{ item.thumbnail|replace({'public': ''}) }}" alt="{{ item.title }}" class="object-fit-cover">
-                        {% else %}
-                            <img src="/img/defaults/post_1x1.svg" class="object-fit-cover" alt="게시글 기본 이미지">
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-        </div>
-    {% endfor %}
-
     <!-- 페이지네이션 -->
-    {% if total_pages > 1 %}
-        <nav class="d-flex justify-content-center gap-1 mt-4 mb-4">
-
-            {# 1. 처음 화살표 #}
-            {% if current_page > 1 %}
-                <a class="page-num-link" href="{{ doc_root }}board/{{ board_name }}/page/1" title="처음 페이지">
-                    <i class="bi bi-chevron-double-left"></i>
-                </a>
-                {# 2. 이전 화살표 #}
-                <a class="page-num-link" href="{{ doc_root }}board/{{ board_name }}/page/{{ current_page - 1 }}" title="이전 페이지">
-                    <i class="bi bi-chevron-left"></i>
-                </a>
-            {% endif %}
-
-            {# 3. 1부터 마지막 페이지까지 번호 출력 #}
-            {% for p in 1..total_pages %}
-                <a class="page-num-link {% if p == current_page %}active{% endif %}" 
-                href="{{ doc_root }}board/{{ board_name }}/page/{{ p }}">
-                    {{ p }}
-                </a>
-            {% endfor %}
-
-            {# 4. 다음 화살표  #}
-            {% if current_page < total_pages %}
-                <a class="page-num-link" href="{{ doc_root }}board/{{ board_name }}/page/{{ current_page + 1 }}" title="다음 페이지">
-                    <i class="bi bi-chevron-right"></i>
-                </a>
-                {# 5. 마지막 화살표 #}
-                <a class="page-num-link" href="{{ doc_root }}board/{{ board_name }}/page/{{ total_pages }}" title="마지막 페이지">
-                    <i class="bi bi-chevron-double-right"></i>
-                </a>
-            {% endif %}
-
-        </nav>
-    {% endif %}
+    <div id="paginationContainer">
+        {% include 'board-pagination.html' %}
+    </div>
 
     <!-- 검색 및 글쓰기 버튼 영역 -->
     <div class="board-search d-flex justify-content-center align-items-center position-relative mt-5">
 
         <!-- 1. 검색 폼 -->
-        <form action="{{ doc_root }}board/{{ board_name }}" method="post" class="row g-1 justify-content-center">
+        <form action="{{ doc_root }}board/{{ board_name }}" method="POST" id="searchForm" class="row g-1 justify-content-center">
             <!-- 검색 조건 선택 -->
             <div class="col-auto">
-                <select name="search_type" class="form-select form-select-sm border-secondary-subtle">
+                <select name="search_type" id="searchType" class="form-select form-select-sm border-secondary-subtle">
                     <option value="all" {% if search_type == 'all' %}selected{% endif %}>전체</option>
                     <option value="title" {% if search_type == 'title' %}selected{% endif %}>제목</option>
                     <option value="content" {% if search_type == 'content' %}selected{% endif %}>내용</option>
@@ -157,7 +58,7 @@
             </div>
             <!-- 검색 키워드 인풋 -->
             <div class="col">
-                <input type="text" name="keyword" value="{{ keyword }}" class="form-control form-control-sm border-secondary-subtle" placeholder="검색어를 입력해 주세요.">
+                <input type="text" name="keyword" id="keyword" value="{{ keyword }}" class="form-control form-control-sm border-secondary-subtle" placeholder="검색어를 입력해 주세요.">
             </div>
             <!-- 검색 버튼 -->
             <div class="col-auto">
@@ -178,6 +79,7 @@
 {% endblock %}
 
 {% block scripts %}
+<script src="/js/board.js"></script>
 <script>
     // 토스트 팝업
     function showToast(message) {
@@ -194,42 +96,6 @@
         setTimeout(() => {
             toast.remove();
         }, 2800);
-    }
-
-    // 지점 셀렉트 박스 값 전환 시 실행
-    document.getElementById('categorySelect').addEventListener('change', filterReviews);
-
-    function filterReviews() {
-        const categorySelect = document.getElementById('categorySelect');
-        const selectedCategory = categorySelect.value;
-        const noMessage = document.getElementById('no-items-message');
-        let visibleCount = 0;
-
-        const cards = document.querySelectorAll('.card');
-
-        cards.forEach(card => card.classList.remove('show'));
-        noMessage.classList.remove('show');
-
-        setTimeout(() => {
-            cards.forEach(card => {
-                const cardCategory = card.getAttribute('data-category').trim();
-
-                if (selectedCategory === 'all' || cardCategory === selectedCategory) {
-                    card.classList.remove('d-none');
-                    setTimeout(() => card.classList.add('show'), 50);
-                    visibleCount++;
-                } else {
-                    card.classList.add('d-none');
-                }
-            });
-
-            if (visibleCount === 0) {
-                noMessage.classList.remove('d-none');
-                setTimeout(() => noMessage.classList.add('show'), 50);
-            } else {
-                noMessage.classList.add('d-none');
-            }
-        }, 150);
     }
 </script>
 {% endblock %}

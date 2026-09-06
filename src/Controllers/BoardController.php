@@ -23,38 +23,83 @@ class BoardController {
      * @param string $boardName 게시판 식별자 이름
      * @return array 템플릿 렌더링용 연관 배열
      */
-    public function index(int $page = 1, ?string $boardName = 'notice', ?string $boardId = '3'): array
+    public function index(?string $boardName, ?string $boardId, int $page = 1): array
     {
         // 1. 목록 진입 시 검색 상태 초기화
         if (isset($_COOKIE['clear_session']) && $_COOKIE['clear_session'] === 'Y') {
-            // 세션 리셋
-            unset($_SESSION[$boardName . '_search_kw']);
-            unset($_SESSION[$boardName . '_search_type']);
-            unset($_SESSION[$boardName . '_search_cat']);
+            // 삭제할 검색 세션 키 목록
+            $clearKeys = [
+                $boardName . '_search_kw',
+                $boardName . '_search_type',
+                $boardName . '_search_tab',
+                $boardName . '_search_diff',
+                $boardName . '_search_cat',
+            ];
+
+            foreach ($clearKeys as $key) {
+                unset($_SESSION[$key]);
+            }
             
-            // 세션 만료
+            // 쿠키 만료
             setcookie('clear_session', '', time() - 3600, '/');
         }
 
-        // 2. PRG 패턴 적용 (검색 처리)
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        // 2. 비동기 요청인지 확인하는 식별자 체크
+        $isAjax = (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest');
+
+        // 3. PRG 패턴 적용 (검색 및 카테고리 처리)
+        // 게임소개
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && $boardName === 'boardgame') {
             // 게시판 이름 별로 세션 키를 분리
-            $_SESSION[$boardName . '_search_kw'] = trim($_POST['keyword'] ?? '');
+            $_SESSION[$boardName . '_search_tab']  = trim($_POST['search_tab'] ?? 'all');
+            $_SESSION[$boardName . '_search_diff'] = trim($_POST['search_difficulty'] ?? 'all');
+            $_SESSION[$boardName . '_search_type'] = trim($_POST['search_type'] ?? 'all');
+            $_SESSION[$boardName . '_search_kw']   = trim($_POST['keyword'] ?? '');
+            
+            if (!$isAjax) {
+                header('Location: ' . DOC_ROOT . 'board/' . $boardName);
+                exit;
+            }
+        }
+        // 그 외의 게시판
+        elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            // 게시판 이름 별로 세션 키를 분리 (카테고리 추가 💡)
+            $_SESSION[$boardName . '_search_cat']  = trim($_POST['search_category'] ?? 'all');
+            $_SESSION[$boardName . '_search_kw']   = trim($_POST['keyword'] ?? '');
             $_SESSION[$boardName . '_search_type'] = trim($_POST['search_type'] ?? 'all');
             
-            // 리다이렉트
-            header('Location: ' . DOC_ROOT . 'board/' . $boardName);
-            exit;
+            if (!$isAjax) {
+                header('Location: ' . DOC_ROOT . 'board/' . $boardName);
+                exit;
+            }
         }
-        
-        // 3. 세션에서 해당 게시판의 검색어 가져오기
-        $keyword = $_SESSION[$boardName . '_search_kw'] ?? '';
-        $search_type = $_SESSION[$boardName . '_search_type'] ?? 'all';
-        
-        $filters = [
-            'keyword' => $keyword,
-            'type' => $search_type,
-        ];
+
+        // 게임소개
+        if ($boardName === 'boardgame') {
+            $selected_tab  = $_SESSION[$boardName . '_search_tab'] ?? 'all';
+            $selected_diff = $_SESSION[$boardName . '_search_diff'] ?? 'all';
+            $search_type   = $_SESSION[$boardName . '_search_type'] ?? 'all';
+            $keyword       = $_SESSION[$boardName . '_search_kw'] ?? '';
+
+            $filters = [
+                'category_id'   => $selected_tab,
+                'difficulty_id' => $selected_diff,
+                'type'          => $search_type,
+                'keyword'       => $keyword,
+            ];
+        }
+        // 그 외의 게시판
+        else {
+            $selected_category = $_SESSION[$boardName . '_search_cat'] ?? 'all';
+            $search_type       = $_SESSION[$boardName . '_search_type'] ?? 'all';
+            $keyword           = $_SESSION[$boardName . '_search_kw'] ?? '';
+
+            $filters = [
+                'category_id' => $selected_category,
+                'type'        => $search_type,
+                'keyword'     => $keyword,
+            ];
+        }
 
         // 4. 페이징 설정
         $per_page = match ($boardName) {
@@ -126,6 +171,7 @@ class BoardController {
             'current_page' => $page,
             'total_pages' => $total_pages,
             'total_count' => $total_count,
+            'selected_category' => $selected_category ?? '',
             'keyword' => $keyword,
             'search_type' => $search_type,
             'session' => $_SESSION,
@@ -135,6 +181,8 @@ class BoardController {
         if ($boardName === 'boardgame') {
             $data['category'] = $category;
             $data['level']    = $level;
+            $data['selected_tab'] = $selected_tab;
+            $data['selected_diff'] = $selected_diff;
         }
         // 이용후기
         elseif ($boardName === 'review') {

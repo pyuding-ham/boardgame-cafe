@@ -1,0 +1,93 @@
+<!-- 게시글이 없거나 검색 결과가 없는 경우 -->
+<div id="no-items-message" class="fade {% if list is empty %}d-block show{% else %}d-none{% endif %}">
+    <div class="text-center text-muted py-5">
+        <i class="bi bi-exclamation-circle d-block fs-4 mb-2"></i>
+        검색 결과가 없거나 등록된 보드게임이 없습니다.
+    </div>
+</div>
+
+<!-- 게시글이나 검색 결과가 있는 경우 -->
+<div class="row row-cols-1 row-cols-md-3 g-4">
+    {% for item in list %}
+        {{ _self.render_card(item, doc_root, board_name) }}
+    {% endfor %}
+</div>
+
+<!-- 매크로 내용 -->
+{% macro render_card(item, doc_root, board_name) %}
+    <div class="col game-card-item fade show" data-category="{{ item.post_category_id }}" data-level="{{ item.level }}">
+
+        <div class="card position-relative h-100 border-0 rounded-0">
+
+            <span class="badge bg-primary position-absolute top-0 end-0 rounded-0 z-3">{{ item.category_name }}</span>
+
+            <a href="{{ doc_root }}board/{{ board_name }}/view/{{ item.slug }}" class="text-decoration-none text-dark">
+
+                <div class="ratio ratio-4x3">
+                    {% if item.thumbnail ?? null is not empty %}
+                        <img src="{{ item.thumbnail|replace({'public': ''}) }}" class="card-img-top object-fit-cover rounded-0" alt="{{ item.title }}">
+                    {% else %}
+                        <img src="/img/defaults/post_4x3.svg" class="card-img-top object-fit-cover rounded-0" alt="게시글 기본 이미지">
+                    {% endif %}
+                </div>
+
+                <div class="card-body px-0 pt-4 pb-0">
+
+                    <div class="d-flex justify-content-between align-items-center gap-2">
+                        <!-- 제목 -->
+                        <h3 class="card-title text-truncate mb-0 flex-grow-1">
+                            {{ item.title }}
+                        </h3>
+                        
+                        <!-- 좋아요 -->
+                        <div class="d-flex flex-column align-items-center text-center lh-1">
+                            <i class="bi bi-heart-fill text-danger small"></i> 
+                            <span class="like-count text-muted mt-1">
+                                {{ item.like_count }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="info">
+                        <!-- 난이도 -->
+                        <span class="level badge bg-body-secondary text-dark">
+                            난이도
+                            {{ item.level_name }}
+                        </span>
+
+                        <!-- 플레이 타임 -->
+                        {% if item.play_time ?? null is not empty %}
+                            <span class="play_time badge bg-body-secondary text-dark">
+                                <i class="bi bi-clock-fill"></i>
+                                {{ item.play_time }}
+                            </span>
+                        {% endif %}
+
+                        <!-- 플레이 인원 -->
+                        {% if item.player_count ?? null is not empty %}
+                            <span class="player_count badge bg-body-secondary text-dark">
+                                <i class="bi bi-people-fill"></i>
+                                {{ item.player_count }}
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+
+            </a>
+
+            <!-- 해시태그 -->
+            {% if item.hashtag ?? null is not empty %}
+                <div class="hashtag mt-3">
+                    <span class="text-muted small">
+                        {% set tagList = item.hashtag|split(',') %}
+                        {% for tag in tagList %}
+                            #{{ tag|trim }}
+                        {% endfor %}
+                    </span>
+                </div>
+            {% endif %}
+
+        </div>
+
+    </div>
+{% endmacro %}

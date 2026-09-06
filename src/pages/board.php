@@ -218,10 +218,37 @@ if (in_array($boardName, $allowed_boards)) {
     }
     // 5. 게시판 목록
     else {
-        $data = array_merge($data, $boardController->index($currentPage, $boardName, $data['board_id']));
+        $data = array_merge($data, $boardController->index($boardName, $data['board_id'], $currentPage));
         $data['status'] = $status;
-        
-        // 템플릿 렌더링
+
+        // 비동기 요청인지 검사
+        $isAjax = (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest');
+
+        // 비동기 요청인 경우
+        if ($isAjax) {
+            header('Content-Type: application/json; charset=utf-8');
+            
+            // 게시글 목록 데이터
+            $listHtml = $twig->render($boardName . '-items.html', $data);
+            
+            // 페이지네이션 데이터
+            $paginationHtml = $twig->render('board-pagination.html', $data);
+            
+            $response = [
+                'listHtml' => $listHtml,
+                'paginationHtml' => $paginationHtml,
+                // 총 게시글 개수
+                'totalCount' => $data['total_count'],
+                // 현재 페이지
+                'currentUrl' => "/board/{$boardName}/page/{$data['current_page']}",
+            ];
+
+            echo json_encode($response);
+
+            exit;
+        }
+
+        // 일반 요청인 경우
         echo $twig->render($boardName . '-list.html', $data);
     }
 } else {
