@@ -249,21 +249,6 @@ body {
 }
 
 /* 블로그형 게시판 목록 */
-.board-blog-container .form-select {
-    max-width: 140px;
-}
-
-.board-blog-container .card {
-    /* opacity: 0; */
-    transition: opacity 0.4s ease-out, transform 0.4s ease-out; /* 0.4초 동안 부드럽게 */
-}
-
-/* show 클래스가 붙으면 부드럽게 나타남 */
-.board-blog-container .card.show {
-    opacity: 1;
-}
-
-
 .board-blog-container .card > .row > .col {
     min-width: 0;
 }
@@ -335,6 +320,44 @@ body {
 .board-view__comment_list .regdate {
     font-size: 0.75rem;
 }
+
+/* 댓글 입력 */
+.board-view__comment_insert .comment-inbox {
+    position: relative;
+    padding: 35px 55px 15px 15px;
+    border: var(--bs-border-width) solid var(--bs-border-color);
+    border-width: 2px;
+}
+.board-view__comment_insert .nickname {
+    top: 12px;
+    left: 15px;
+    position: absolute;
+    font-weight: 600;
+}
+.board-view__comment_insert #commentCount {
+    top: 12px;
+    right: 20px;
+    position: absolute;
+    display: none;
+}
+.board-view__comment_insert textarea {
+    height: 63px;
+    padding: 0;
+    font-size: 0.875rem;
+    border: none;
+}
+.board-view__comment_insert textarea:focus {
+    box-shadow: none;
+}
+.board-view__comment_insert #btnWriteComment {
+    right: 20px;
+    bottom: 15px;
+    position: absolute;
+    padding: 0;
+    font-size: .875em;
+    font-weight: 600;
+}
+
 
 /* 카카오맵 */
 .board-view__map #map {

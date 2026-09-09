@@ -52,6 +52,20 @@ if (!function_exists('handle_exception')) {
 
         // 로그인 필요
         if ($exception instanceof AuthenticationException) {
+            // 비동기 요청인지 검사 (댓글 기능에서 사용)
+            $isAjax = (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest');
+
+            // 비동기 요청인 경우
+            if ($isAjax) {
+                http_response_code(401);
+                header('Content-Type: application/json; charset=utf-8');
+                
+                echo json_encode([
+                    'message' => '로그인이 필요한 서비스입니다.',
+                ], JSON_UNESCAPED_UNICODE);
+                exit;
+            }
+
             redirect("login", [
                 'status' => 'login_required'
             ]);

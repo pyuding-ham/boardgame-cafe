@@ -65,36 +65,27 @@
     <div class="board-view__content mb-4 p-4 border bg-white">{{ post.content|striptags }}</div>
 
     <!-- 댓글 목록 영역 -->
-    <div class="board-view__comment_list">
-        {% for item in comment %}
-            <div class="p-3 d-flex border-bottom">
-        
-                <!-- 1. 좌측: 프로필 이미지 -->
-                <div class="flex-shrink-0 me-3">
-                    <!-- 업로드된 이미지가 있을 때 -->
-                    {% if item.profile_image %}
-                        <img src="/uploads/profiles/{{ item.profile_image }}" class="profile_image rounded-circle" alt="{{ item.nickname }}님의 프로필 이미지">
-                    <!-- 이미지가 없을 때 기본 임시 이미지 -->
-                    {% else %}
-                        <img src="/img/defaults/user_blank.svg" class="profile_image rounded-circle" alt="기본 프로필 이미지">
-                    {% endif %}
-                </div>
-        
-                <!-- 2. 우측: 댓글 본문 영역 -->
-                <div class="flex-grow-1">
-                    <!-- 상단: 닉네임 -->
-                    <div class="nickname mb-1 fw-bold small">{{ item.nickname }}</div>
-        
-                    <!-- 중단: 댓글 내용 -->
-                    <div class="content mb-2">{{ item.content }}</div>
-        
-                    <!-- 하단: 작성일시 -->
-                    <div class="regdate text-body-tertiary">{{ item.created_at|date('Y-m-d H:i') }}</div>
-                </div>
-        
-            </div>
-        {% endfor %}
+    <div id="commentContainer">
+        {% include 'board-comment-list.html' %}
     </div>
+
+    <!-- 댓글 입력 영역 -->
+    <!-- 회원만 댓글 입력 버튼 노출 -->
+    {% if is_logged_in %}
+        <div class="board-view__comment_insert mt-4 mb-4">
+            <div class="comment-inbox">
+                <form method="POST" id="writeCommentForm" data-post-id="{{ post.id }}">
+
+                    <div class="nickname small">{{ session.nickname }}</div>
+                    <div id="commentCount" class="text-body-tertiary small">
+                        <span>0</span> / 3000
+                    </div>
+                    <textarea class="form-control" id="comment" name="comment" maxlength="3000" placeholder="댓글을 입력하세요"></textarea>
+                    <button class="btn text-body-tertiary small" type="submit" id="btnWriteComment">등록</button>
+                </form>
+            </div>
+        </div>
+    {% endif %}
 
     <!-- 게시글 하단 버튼 구역 -->
     <div class="board-view__footer mt-5 d-flex justify-content-between gap-2">
@@ -123,6 +114,7 @@
 
 {% block scripts %}
 <script src="/js/like.js"></script>
+<script src="/js/board.js"></script>
 <script>
     // 토스트 팝업
     function showToast(message) {
@@ -139,6 +131,19 @@
         setTimeout(() => {
             toast.remove();
         }, 2800);
+    }
+
+    // 댓글 글자수
+    const comment = document.getElementById('comment');
+    const commentCount = document.getElementById('commentCount');
+
+    if (comment && commentCount) {
+        comment.addEventListener('input', function() {
+            const count = this.value.length;
+
+            commentCount.querySelector('span').textContent = count;
+            commentCount.style.display = count > 0 ? 'block' : 'none';
+        });
     }
 </script>
 {% endblock %}

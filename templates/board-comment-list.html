@@ -1,0 +1,30 @@
+<div class="board-view__comment_list">
+    {% for item in comment %}
+        <div class="p-3 d-flex border-bottom">
+    
+            <!-- 1. 좌측: 프로필 이미지 -->
+            <div class="flex-shrink-0 me-3">
+                <!-- 업로드된 이미지가 있을 때 -->
+                {% if item.profile_image %}
+                    <img src="/uploads/profiles/{{ item.profile_image }}" class="profile_image rounded-circle" alt="{{ item.nickname }}님의 프로필 이미지">
+                <!-- 이미지가 없을 때 기본 임시 이미지 -->
+                {% else %}
+                    <img src="/img/defaults/user_blank.svg" class="profile_image rounded-circle" alt="기본 프로필 이미지">
+                {% endif %}
+            </div>
+    
+            <!-- 2. 우측: 댓글 본문 영역 -->
+            <div class="flex-grow-1">
+                <!-- 상단: 닉네임 -->
+                <div class="nickname mb-1 fw-bold small">{{ item.nickname }}</div>
+    
+                <!-- 중단: 댓글 내용 -->
+                <div class="content mb-2">{{ item.content }}</div>
+    
+                <!-- 하단: 작성일시 -->
+                <div class="regdate text-body-tertiary">{{ item.created_at|date('Y-m-d H:i') }}</div>
+            </div>
+    
+        </div>
+    {% endfor %}
+</div>

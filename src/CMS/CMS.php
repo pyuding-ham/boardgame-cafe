@@ -55,7 +55,8 @@ class CMS
         if ($this->comment === null) {
             $this->comment = new Comment(
                 $this->db,
-                $this->getBoard()
+                $this->getBoard(),
+                $this->getUser()
             );
         }
         return $this->comment;

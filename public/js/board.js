@@ -88,4 +88,73 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
     }
+
+    // 댓글 입력
+    const writeCommentForm = document.getElementById('writeCommentForm');
+    
+    if (writeCommentForm) {
+        writeCommentForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            // 태그에서 post_id 값 추출
+            const postId = this.dataset.postId;
+
+            const formData = new FormData(this);
+            formData.append('post_id', postId);
+
+            // POST 비동기 요청 주소
+            const url = '/comment-insert';
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showToast('댓글 작성이 완료되었습니다.');
+
+                    document.getElementById('comment').value = '';
+                    document.getElementById('commentCount').style.display = 'none';
+
+                    loadComments();
+                } else {
+                    showToast(data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showToast('댓글 작성 중 오류가 발생했습니다.');
+            });
+        });
+    }
+
+    function loadComments() {
+        // 태그에서 post_id 값 추출
+        const postId = writeCommentForm.dataset.postId;
+
+        // POST 비동기 요청 주소
+        const url = `/comment-list/${postId}`;
+        
+        fetch(url, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            const commentContainer = document.getElementById('commentContainer');
+
+            if (commentContainer && data.commentListHtml) {
+                commentContainer.innerHTML = data.commentListHtml;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('댓글 목록을 불러오는 중 오류가 발생했습니다.');
+        });
+    }
 });

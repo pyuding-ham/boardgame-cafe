@@ -24,6 +24,9 @@ $twig->addGlobal('menus', (new \BoardgameCafe\Controllers\SiteMenuController($cm
 
 if (str_contains($raw_uri, 'password-reset')) {
     $page = 'password-reset';
+} elseif (str_contains($raw_uri, 'comment-list')) {
+    $postId = $parts[1] ?? null;
+    $page = 'comment-list';
 } else {
     if ($parts[0] != 'admin') {
         $page = $parts[0] ? str_replace('.php', '', $parts[0]) : 'index';

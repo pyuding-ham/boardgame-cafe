@@ -4,19 +4,23 @@ declare(strict_types = 1);
 namespace BoardgameCafe\CMS;
 
 use BoardgameCafe\Exceptions\PostNotFoundException;
+use BoardgameCafe\Exceptions\AuthenticationException;
 use BoardgameCafe\Exceptions\ErrorCode;
 
 class Comment
 {
     protected $db;
     private Board $board;
+    private User $user;
     
     public function __construct(
         Database $db,
-        Board $board
+        Board $board,
+        User $user
     ) {
         $this->db = $db;
         $this->board = $board;
+        $this->user = $user;
     }
 
     /**
@@ -55,5 +59,52 @@ class Comment
         ];
 
         return $this->db->runSql($sql, $params)->fetchAll();
+    }
+
+    /**
+     * 댓글 작성
+     */
+    public function insertPostComment(string $post_id, string $comment, int $user_id): int
+    {
+        // 1. 회원 존재 여부 확인
+        $user = $this->user->get($user_id);
+        
+        if (!$user) {
+            throw new AuthenticationException();
+        }
+
+        // 닉네임 저장
+        $writer_nickname = $user['nickname'];
+
+        // 2. 댓글 삽입
+        $post_sql = "INSERT INTO post_comment (
+                       post_id,
+                       user_id,
+                       writer_nickname,
+                       content,
+                       is_deleted,
+                       created_at,
+                       updated_at
+                    )
+                    VALUES (
+                      :post_id,
+                      :user_id,
+                      :writer_nickname,
+                      :content,
+                      0,
+                      NOW(),
+                      NOW()
+                    );";
+
+        $this->db->runSql($post_sql, [
+            'post_id'         => $post_id,
+            'user_id'         => $user_id,
+            'writer_nickname' => $writer_nickname,
+            'content'         => $comment,
+        ]);
+
+        $comment_id = $this->db->lastInsertId();
+
+        return (int)$comment_id;
     }
 }
