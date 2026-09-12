@@ -320,6 +320,40 @@ body {
 .board-view__comment_list .regdate {
     font-size: 0.75rem;
 }
+.board-view__comment_list .comment-edited {
+    margin-left: 0.35rem;
+}
+.board-view__comment_list button {
+    font-size: 0.75rem;
+    text-decoration: none;
+}
+.board-view__comment_list .comment-item.is-editing .btn-group {
+    display: none;
+}
+.board-view__comment_list .edit-comment-form {
+    width: 100%;
+}
+.board-view__comment_list .edit-comment-count {
+    margin-bottom: 6px;
+    text-align: right;
+}
+.board-view__comment_list .edit-comment-form textarea {
+    width: 100%;
+    padding: 10px;
+    font-size: 0.875rem;
+    border: var(--bs-border-width) solid var(--bs-border-color);
+    border-width: 2px;
+    outline: none;
+}
+.board-view__comment_list .edit-comment-form textarea:focus {
+    border-color: var(--bs-border-color);
+    outline: none;
+    box-shadow: none;
+}
+.board-view__comment_list .edit-comment-form__actions {
+    margin-top: 5px;
+    text-align: right;
+}
 
 /* 댓글 입력 */
 .board-view__comment_insert .comment-inbox {

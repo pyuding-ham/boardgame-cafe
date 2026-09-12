@@ -1,6 +1,6 @@
 <div class="board-view__comment_list">
     {% for item in comment %}
-        <div class="p-3 d-flex border-bottom">
+        <div class="comment-item p-3 d-flex border-bottom" data-comment-id="{{ item.id }}">
     
             <!-- 1. 좌측: 프로필 이미지 -->
             <div class="flex-shrink-0 me-3">
@@ -19,10 +19,33 @@
                 <div class="nickname mb-1 fw-bold small">{{ item.nickname }}</div>
     
                 <!-- 중단: 댓글 내용 -->
-                <div class="content mb-2">{{ item.content }}</div>
+                <div class="comment-content mb-2">{{ item.content }}</div>
     
-                <!-- 하단: 작성일시 -->
-                <div class="regdate text-body-tertiary">{{ item.created_at|date('Y-m-d H:i') }}</div>
+                <!-- 하단 -->
+                <div class="d-flex justify-content-between">
+                    <!-- 작성일시 -->
+                    <div class="regdate text-body-tertiary">
+                        {{ item.created_at|date('Y-m-d H:i') }}
+                        {% if item.updated_at > item.created_at %}
+                            <span class="comment-edited">수정됨</span>
+                        {% endif %}
+                    </div>
+    
+                    <!-- 댓글 수정/삭제 버튼 -->
+                    {% if is_logged_in %}
+                        <div class="btn-group" role="group">
+                            <!-- 작성한 회원만 수정 버튼 노출 -->
+                            {% if item.user_id == session.id %}
+                                <button type="button" class="btn-comment-edit btn btn-link text-secondary p-0 me-2">수정</button>
+                            {% endif %}
+    
+                            <!-- 작성한 회원 또는 관리자만 삭제 버튼 노출 -->
+                            {% if item.user_id == session.id or session.role == 'ADMIN' %}
+                                <button type="button" class="btn-comment-delete btn btn-link text-danger p-0" >삭제</button>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
             </div>
     
         </div>

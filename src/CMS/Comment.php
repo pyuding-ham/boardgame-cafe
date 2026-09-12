@@ -42,6 +42,7 @@ class Comment
                   c.writer_nickname AS nickname,
                   c.content,
                   c.created_at,
+                  c.updated_at,
                   u.profile_image,
                   IF(c.user_id = :user_id, 1, 0) AS is_inserted
                 FROM post_comment c
@@ -106,5 +107,53 @@ class Comment
         $comment_id = $this->db->lastInsertId();
 
         return (int)$comment_id;
+    }
+
+    /**
+     * 댓글 수정
+     */
+    public function updatePostComment(string $comment_id, string $post_id, string $comment, int $user_id): bool
+    {
+        // 1. 회원 존재 여부 확인
+        $user = $this->user->get($user_id);
+        
+        if (!$user) {
+            throw new AuthenticationException();
+        }
+
+        // 2. 작성자 본인 댓글인지 확인
+        $owner_sql = "SELECT id
+                      FROM post_comment
+                      WHERE id = :id
+                        AND post_id = :post_id
+                        AND user_id = :user_id
+                        AND is_deleted = 0;";
+
+        $owner = $this->db->runSql($owner_sql, [
+            'id'      => $comment_id,
+            'post_id' => $post_id,
+            'user_id' => $user_id,
+        ])->fetch();
+
+        if (!$owner) {
+            return false;
+        }
+
+        // 3. 댓글 수정 (updated_at은 ON UPDATE CURRENT_TIMESTAMP)
+        $post_sql = "UPDATE post_comment
+                     SET content = :content
+                     WHERE id = :id
+                       AND post_id = :post_id
+                       AND user_id = :user_id
+                       AND is_deleted = 0;";
+        
+        $this->db->runSql($post_sql, [
+            'content' => $comment,
+            'id'      => $comment_id,
+            'post_id' => $post_id,
+            'user_id' => $user_id,
+        ]);
+
+        return true;
     }
 }

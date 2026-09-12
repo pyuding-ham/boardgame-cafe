@@ -131,7 +131,120 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
+    
+    // 댓글 수정
+    const commentContainer = document.getElementById('commentContainer');
+    
+    if (commentContainer) {
+        commentContainer.addEventListener('click', function(e) {
+            const editButton = e.target.closest('.btn-comment-edit');
+            if (!editButton) {
+                return;
+            }
 
+            const commentItem = editButton.closest('.comment-item');
+            const writeForm = document.getElementById('writeCommentForm');
+            const contentDiv = commentItem.querySelector('.comment-content');
+
+            // 댓글 수정 입력 폼은 한 개만 보이도록 함
+            const openedItem = commentContainer.querySelector('.comment-item.is-editing');
+            if (openedItem && openedItem !== commentItem) {
+                const openedCancel = openedItem.querySelector('.btn-edit-cancel');
+                if (openedCancel) {
+                    openedCancel.click();
+                }
+            }
+
+            if (commentItem.querySelector('.edit-comment-form')) {
+                return;
+            }
+
+            const originalText = contentDiv.textContent.trim();
+
+            const editForm = document.createElement('form');
+            editForm.className = 'edit-comment-form';
+
+            const textarea = document.createElement('textarea');
+            textarea.name = 'comment';
+            textarea.rows = 3;
+            textarea.maxLength = 3000;
+            textarea.value = originalText;
+
+            // 댓글 글자수
+            const countBox = document.createElement('div');
+            countBox.className = 'edit-comment-count text-body-tertiary small';
+            countBox.innerHTML = '<span></span> / 3000';
+
+            const updateEditCount = () => {
+                countBox.querySelector('span').textContent = textarea.value.length;
+            };
+            updateEditCount();
+            textarea.addEventListener('input', updateEditCount);
+
+            const buttonWrap = document.createElement('div');
+            buttonWrap.className = 'edit-comment-form__actions';
+
+            const submitBtn = document.createElement('button');
+            submitBtn.type = 'submit';
+            submitBtn.className = 'btn-edit-submit btn btn-link text-secondary p-0 me-2';
+            submitBtn.textContent = '저장';
+
+            const cancelBtn = document.createElement('button');
+            cancelBtn.type = 'button';
+            cancelBtn.className = 'btn-edit-cancel btn btn-link text-secondary p-0';
+            cancelBtn.textContent = '취소';
+
+            buttonWrap.append(submitBtn, cancelBtn);
+            editForm.append(countBox, textarea, buttonWrap);
+            commentItem.classList.add('is-editing');
+            contentDiv.replaceChildren(editForm);
+            textarea.focus();
+
+            cancelBtn.addEventListener('click', () => {
+                commentItem.classList.remove('is-editing');
+                contentDiv.textContent = originalText;
+            });
+
+            editForm.addEventListener('submit', (event) => {
+                event.preventDefault();
+
+                const currentCommentId = commentItem.dataset.commentId;
+                const currentPostId = writeForm ? writeForm.dataset.postId : '';
+
+                if (!currentCommentId || !currentPostId) {
+                    showToast('댓글 수정 중 오류가 발생했습니다.');
+                    return;
+                }
+
+                const formData = new FormData(editForm);
+                formData.append('post_id', currentPostId);
+                formData.append('comment_id', currentCommentId);
+
+                fetch('/comment-edit', {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        showToast('댓글이 수정되었습니다.');
+                        loadComments();
+                    } else {
+                        showToast(data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showToast('댓글 수정 중 오류가 발생했습니다.');
+                });
+            });
+        });
+    }
+
+    // 댓글 목록 재요청
     function loadComments() {
         // 태그에서 post_id 값 추출
         const postId = writeCommentForm.dataset.postId;
