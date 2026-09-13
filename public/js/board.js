@@ -132,11 +132,56 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // 댓글 수정
+    // 댓글 수정 및 삭제
     const commentContainer = document.getElementById('commentContainer');
     
     if (commentContainer) {
         commentContainer.addEventListener('click', function(e) {
+            // 삭제
+            const deleteButton = e.target.closest('.btn-comment-delete');
+            if (deleteButton) {
+                const commentItem = deleteButton.closest('.comment-item');
+                const writeForm = document.getElementById('writeCommentForm');
+                const commentId = commentItem ? commentItem.dataset.commentId : '';
+                const postId = writeForm ? writeForm.dataset.postId : '';
+
+                if (!commentId || !postId) {
+                    showToast('댓글을 삭제 중 오류가 발생했습니다.');
+                    return;
+                }
+
+                if (!confirm('이 댓글을 정말 삭제하시겠습니까?')) {
+                    return;
+                }
+
+                fetch('/comment-delete', {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: new URLSearchParams({
+                        post_id: postId,
+                        comment_id: commentId
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        showToast('댓글이 삭제되었습니다.');
+                        loadComments();
+                    } else {
+                        showToast(data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showToast('댓글 삭제 중 오류가 발생했습니다.');
+                });
+                return;
+            }
+
+            // 수정
             const editButton = e.target.closest('.btn-comment-edit');
             if (!editButton) {
                 return;

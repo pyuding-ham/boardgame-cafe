@@ -156,4 +156,54 @@ class Comment
 
         return true;
     }
+
+    /**
+     * 댓글 삭제
+     */
+    public function deletePostComment(string $comment_id, string $post_id, int $user_id): bool
+    {
+        // 1. 회원 존재 여부 확인
+        $user = $this->user->get($user_id);
+        
+        if (!$user) {
+            throw new AuthenticationException();
+        }
+
+        // 2. 작성자 본인 또는 관리자인지 확인
+        $comment_sql = "SELECT user_id
+                        FROM post_comment
+                        WHERE id = :id
+                          AND post_id = :post_id
+                          AND is_deleted = 0;";
+
+        $comment = $this->db->runSql($comment_sql, [
+            'id'      => $comment_id,
+            'post_id' => $post_id,
+        ])->fetch();
+
+        if (!$comment) {
+            return false;
+        }
+
+        $isAdmin = ($user['role'] === 'ADMIN');
+        $isOwner = ((int)$comment['user_id'] === $user_id);
+        if (!$isAdmin && !$isOwner) {
+            return false;
+        }
+
+        // 3. 댓글 상태 값 변경
+        $sql = "UPDATE post_comment
+                SET is_deleted = 1,
+                    deleted_at = NOW()
+                WHERE id = :id
+                  AND post_id = :post_id
+                  AND is_deleted = 0;";
+        
+        $this->db->runSql($sql, [
+            'id'      => $comment_id,
+            'post_id' => $post_id,
+        ]);
+
+        return true;
+    }
 }

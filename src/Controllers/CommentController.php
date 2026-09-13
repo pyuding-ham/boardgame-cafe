@@ -98,4 +98,32 @@ class CommentController
             'success' => true,
         ];
     }
+    
+    /**
+     * 댓글 삭제
+     */
+    public function deleteComment(string $comment_id, string $post_id, int $user_id): array
+    {
+        // DB 서비스 호출
+        $comment_service = $this->cms->getComment();
+        
+        $updated = $comment_service->deletePostComment(
+            $comment_id,
+            $post_id,
+            $user_id,
+        );
+
+        if (!$updated) {
+            return [
+                'success' => false,
+                'errors'  => [
+                    'comment' => '댓글을 삭제할 수 없습니다.',
+                ],
+            ];
+        }
+
+        return [
+            'success' => true,
+        ];
+    }
 }
