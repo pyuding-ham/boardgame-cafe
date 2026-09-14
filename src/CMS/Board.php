@@ -617,6 +617,16 @@ class Board
                 'is_pinned' => $data['is_pinned'] ?? 0,
             ]);
         }
+        // 이용후기
+        elseif ($board_name === 'review') {
+            $review_sql = "INSERT INTO review_detail (post_id, post_category_id) 
+                           VALUES (:post_id, :post_category_id);";
+            
+            $this->db->runSql($review_sql, [
+                'post_id'          => $post_id,
+                'post_category_id' => $data['category'] ?: null,
+            ]);
+        }
 
         return (int)$post_id;
     }

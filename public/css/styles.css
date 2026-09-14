@@ -409,6 +409,11 @@ body {
     line-height: 1.8;
     white-space: pre-wrap;
 }
+.board-view-container .board-view__content img,
+.ql-editor img {
+    max-width: 100%;
+    height: auto;
+}
 
 /* 이미지 슬라이드 */
 .board-view__image .carousel-item img {

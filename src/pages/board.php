@@ -87,8 +87,8 @@ if (in_array($boardName, $allowed_boards)) {
                 ]);
                 exit;
             } else {
-                // 게임소개
-                if (($boardName === 'boardgame')) {
+                // 게임소개, 이용후기
+                if (($boardName === 'boardgame' || $boardName === 'review')) {
                     $result['post'] = array_merge(
                         $result['post'] ?? [],
                         $boardController->getWriteForm($data['board_id'])
@@ -107,13 +107,23 @@ if (in_array($boardName, $allowed_boards)) {
             }
 
             // 게임소개
-            if (($boardName === 'boardgame')) {
+            if ($boardName === 'boardgame') {
                 $result = $boardController->getWriteForm($data['board_id']);
 
                 $data['post'] = [
                     'title' => '',
                     'category' => $result['category'] ?? null,
                     'level' => $result['level'] ?? null,
+                    'content' => '',
+                ];
+            }
+            // 이용후기
+            elseif ($boardName === 'review') {
+                $result = $boardController->getWriteForm($data['board_id']);
+
+                $data['post'] = [
+                    'title' => '',
+                    'category' => $result['category'] ?? null,
                     'content' => '',
                 ];
             }

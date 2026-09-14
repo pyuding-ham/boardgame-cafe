@@ -62,7 +62,7 @@
     </div>
 
     <!-- 게시글 본문 영역 -->
-    <div class="board-view__content mb-4 p-4 border bg-white">{{ post.content|striptags }}</div>
+    <div class="board-view__content mb-4 p-4 border bg-white">{{ post.content|raw }}</div>
 
     <!-- 댓글 목록 영역 -->
     <div id="commentContainer">

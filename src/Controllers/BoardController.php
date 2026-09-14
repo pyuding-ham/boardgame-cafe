@@ -256,6 +256,7 @@ class BoardController {
         $content   = trim($postData['content'] ?? '');
         $address   = trim($postData['address'] ?? '');
         $is_pinned = isset($postData['is_pinned']) ? 1 : 0;
+        $category  = trim($postData['category_id'] ?? '');
         $errors    = [];
 
         // 게시글 내용 글자 수 카운트 변수
@@ -277,7 +278,8 @@ class BoardController {
         }
        
         // 3. 내용 필수 입력 값 검사
-        if ($real_text_length === 0 || empty($clean_content_for_length)) {
+        $has_image = (bool)preg_match('/<img\b/i', $content);
+        if (($real_text_length === 0 || empty($clean_content_for_length)) && !($boardName === 'review' && $has_image)) {
             $errors['content'] = '내용을 입력해주세요.';
         }
 
@@ -304,12 +306,24 @@ class BoardController {
             }
         }
 
+        // 이용후기
+        if ($boardName === 'review') {
+            $board_service = $this->cms->getBoard();
+
+            if (empty($category)) {
+                $errors['category'] = '카테고리를 선택해 주세요.';
+            } elseif (!$board_service->hasCategory($category)) {
+                $errors['category'] = '올바르지 않은 카테고리 선택입니다.';
+            }
+        }
+
         if (!empty($errors)) {
             return [
                 'success' => false,
                 'errors'  => $errors,
                 'post' => [
                     'title' => $title,
+                    'category_selected' => $category,
                     'content' => $content,
                     'address' => $address,
                     'is_pinned' => $is_pinned,
@@ -361,6 +375,7 @@ class BoardController {
                 'errors'  => $errors,
                 'post' => [
                     'title' => $title,
+                    'category_selected' => $category,
                     'content' => $content,
                     'address' => $address,
                     'is_pinned' => $is_pinned,
@@ -428,6 +443,7 @@ class BoardController {
                 'errors'  => $errors,
                 'post' => [
                     'title' => $title,
+                    'category_selected' => $category,
                     'content' => $content,
                     'address' => $address,
                     'is_pinned' => $is_pinned,
@@ -482,6 +498,7 @@ class BoardController {
                 'errors'  => $errors,
                 'post' => [
                     'title' => $title,
+                    'category_selected' => $category,
                     'content' => $content,
                     'address' => $address,
                     'is_pinned' => $is_pinned,
@@ -564,6 +581,31 @@ class BoardController {
                 );
 
                 $board_service->insertBoardFile($post_id, $uploaded_files);
+
+                $db->commit();
+            
+            } catch (\Throwable $e) {
+                $db->rollBack();
+                throw $e; 
+            }
+        }
+        // 이용후기
+        elseif ($boardName === 'review') {
+            $db->beginTransaction();
+
+            try {
+                $post_id = $board_service->insertBoardPost(
+                    'review',
+                    $userId,
+                    [
+                        'title'     => $title,
+                        'category'  => $postData['category_id'],
+                        'content'   => $content,
+                        'thumbnail' => $thumbnail_file['file_path'] ?? null,
+                    ]
+                );
+
+                $board_service->insertBoardImage($post_id, $thumbnail_file, $images_files);
 
                 $db->commit();
             
