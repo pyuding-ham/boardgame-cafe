@@ -426,6 +426,12 @@ class Board
 
                           CASE 
                             WHEN pc.id IS NULL
+                              OR pc.is_deleted = 1 THEN NULL
+                            ELSE pc.id
+                          END AS category_id,
+
+                          CASE 
+                            WHEN pc.id IS NULL
                               OR pc.is_deleted = 1 THEN '미분류'
                             ELSE pc.name
                           END AS category_name
@@ -800,6 +806,17 @@ class Board
             $this->db->runSql($notice_sql, [
                 'post_id'   => $post_id,
                 'is_pinned' => $data['is_pinned'] ?? 0,
+            ]);
+        }
+        // 이용후기
+        elseif ($board_name === 'review') {
+            $boardgame_sql = "UPDATE review_detail
+                              SET post_category_id = :post_category_id
+                              WHERE post_id = :post_id;";
+                        
+            $this->db->runSql($boardgame_sql, [
+                'post_category_id' => $data['category'],
+                'post_id'          => $post_id,
             ]);
         }
     }
@@ -1405,5 +1422,72 @@ class Board
         $result = curl_exec($ch);
 
         return json_decode($result, true);
+    }
+
+    /**
+     * 본문에서 제거된 에디터 이미지 파일 삭제
+     */
+    public function deleteRemovedEditorImages(string $old_html, string $new_html): void
+    {
+        $removed = array_diff(
+            $this->extractEditorImagePaths($old_html),
+            $this->extractEditorImagePaths($new_html)
+        );
+
+        foreach ($removed as $url_path) {
+            $this->deleteEditorImageFile($url_path);
+        }
+    }
+
+    /**
+     * 본문 HTML에서 에디터 업로드 이미지 경로 추출
+     */
+    private function extractEditorImagePaths(string $html): array
+    {
+        if ($html === '') {
+            return [];
+        }
+
+        // src 속성 값만 꺼내서 저장
+        preg_match_all('/<img[^>]+src=["\']([^"\']+)["\']/i', $html, $matches);
+
+        $paths = [];
+        foreach ($matches[1] as $src) {
+            $src = html_entity_decode($src, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+            $path = parse_url($src, PHP_URL_PATH);
+
+            if (!is_string($path) || !str_starts_with($path, '/uploads/editor/')) {
+                continue;
+            }
+
+            $paths[] = $path;
+        }
+
+        return array_values(array_unique($paths));
+    }
+
+    /**
+     * 에디터 업로드 폴더 안의 이미지 파일만 삭제
+     */
+    private function deleteEditorImageFile(string $url_path): void
+    {
+        $base_dir = realpath(APP_ROOT . '/public/uploads/editor');
+        if ($base_dir === false) {
+            return;
+        }
+
+        $full_path = realpath(APP_ROOT . '/public' . $url_path);
+        if ($full_path === false || !is_file($full_path)) {
+            return;
+        }
+
+        $normalized_full = strtolower(str_replace('\\', '/', $full_path));
+        $normalized_base = strtolower(str_replace('\\', '/', $base_dir));
+
+        if (!str_starts_with($normalized_full, $normalized_base . '/')) {
+            return;
+        }
+
+        unlink($full_path);
     }
 }

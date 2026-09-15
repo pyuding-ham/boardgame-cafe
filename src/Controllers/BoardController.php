@@ -896,9 +896,10 @@ class BoardController {
         
         if (empty($errors['content'])) {
             // 3. 내용 필수 입력 값 검사
-            if ($realTextLength === 0 || empty($cleanContentForLength)) {
+            $has_image = (bool)preg_match('/<img\b/i', $content);
+            if (($realTextLength === 0 || empty($cleanContentForLength)) && !($boardName === 'review' && $has_image)) {
                 $errors['content'] = '내용을 입력해주세요.';
-            } 
+            }
             // 4. 내용 글자 수 검사
             elseif ($realTextLength > 5000) {
                 $errors['content'] = '본문 내용은 최대 5,000자까지 입력 가능합니다. (현재 ' . number_format($realTextLength) . '자)';
@@ -1201,6 +1202,37 @@ class BoardController {
                 $db->rollBack();
                 throw $e; 
             }
+        }
+        // 이용후기
+        elseif ($boardName === 'review') {
+            $old_post = $board_service->getBoardPost('review', $postId, $userId);
+            $old_content = is_array($old_post) ? ($old_post['content'] ?? '') : '';
+
+            $db->beginTransaction();
+
+            try {
+                $board_service->updateBoardPost(
+                    'review',
+                    $postId,
+                    $userId,
+                    [
+                        'title'        => $title,
+                        'category'     => $postData['category_id'],
+                        'content'      => $content,
+                        'thumbnail'    => $thumbnail_file['file_path'] ?? null,
+                    ],
+                );
+
+                $board_service->updateBoardImage($postId, $thumbnail_file, $images_files, $delete_image_ids, $image_orders, $delete_thumbnail);
+
+                $db->commit();
+            
+            } catch (\Throwable $e) {
+                $db->rollBack();
+                throw $e; 
+            }
+
+            $board_service->deleteRemovedEditorImages($old_content, $content);
         }
         // 기본 게시판
         else {

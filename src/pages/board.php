@@ -175,8 +175,8 @@ if (in_array($boardName, $allowed_boards)) {
                     ]
                 );
 
-                // 게임소개
-                if (($boardName === 'boardgame')) {
+                // 게임소개, 이용후기
+                if ($boardName === 'boardgame' || $boardName === 'review') {
                     $data['post'] = array_merge(
                         $data['post'] ?? [],
                         $boardController->getEditForm($data['board_id'])
@@ -186,8 +186,8 @@ if (in_array($boardName, $allowed_boards)) {
         } 
         // 최초 수정 페이지 진입 (GET)
         else {
-            // 게임소개
-            if (($boardName === 'boardgame')) {
+            // 게임소개, 이용후기
+            if ($boardName === 'boardgame' || $boardName === 'review') {
                 $editForm = $boardController->getEditForm($data['board_id']);
                 $editResult = $boardController->edit($identifier, $boardName, (int)$currentUserId);
 
@@ -209,6 +209,7 @@ if (in_array($boardName, $allowed_boards)) {
         }
 
         // 템플릿 렌더링
+        
         echo $twig->render($boardName . '-edit.html', $data);
         exit;
     }
