@@ -1147,7 +1147,19 @@ class Board
             throw new AuthorizationException(ErrorCode::ACCESS_DENIED->value);
         }
 
-        // 4. 게시글 상태 값 변경
+        // 4. 이용후기 게시글 내용 저장
+        $content = '';
+        if ($board_name === 'review') {
+            $content_sql = "SELECT content
+                            FROM post
+                            WHERE id = :id
+                              AND is_deleted = 0;";
+            $content = (string)$this->db->runSql($content_sql, [
+                'id' => $post_id,
+            ])->fetchColumn();
+        }
+
+        // 5. 게시글 상태 값 변경
         $sql = "UPDATE post
                 SET is_deleted = 1,
                     deleted_at = NOW()
@@ -1155,6 +1167,22 @@ class Board
                   AND is_deleted = 0;";
         
         $this->db->runSql($sql, ['id' => $post_id]);
+
+        // 6. 해당 게시글 댓글 상태 값 변경
+        $comment_sql = "UPDATE post_comment
+                        SET is_deleted = 1,
+                            deleted_at = NOW()
+                        WHERE post_id = :post_id
+                          AND is_deleted = 0;";
+
+        $this->db->runSql($comment_sql, [
+            'post_id' => $post_id,
+        ]);
+
+        // 7. 이용후기 게시글에 포함된 이미지 삭제
+        if ($board_name === 'review' && $content !== '') {
+            $this->deleteRemovedEditorImages($content, '');
+        }
     }
 
     /**
