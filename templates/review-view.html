@@ -42,7 +42,7 @@
 
                 <!-- 댓글수 -->
                 <span class="comment d-inline-flex align-items-center gap-1">
-                    <i class="bi bi-chat-dots"></i> 댓글 {{ post.comment_count }}
+                    <i class="bi bi-chat-dots"></i> 댓글 <span id="postCommentCount">{{ post.comment_count }}</span>
                 </span>
 
                 <!-- 좋아요 -->
@@ -65,7 +65,7 @@
     <div class="board-view__content mb-4 p-4 border bg-white">{{ post.content|raw }}</div>
 
     <!-- 댓글 목록 영역 -->
-    <div id="commentContainer">
+    <div id="commentContainer" data-post-id="{{ post.id }}">
         {% include 'board-comment-list.html' %}
     </div>
 

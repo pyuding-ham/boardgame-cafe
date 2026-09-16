@@ -291,10 +291,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 댓글 목록 재요청
     function loadComments() {
-        // 태그에서 post_id 값 추출
-        const postId = writeCommentForm.dataset.postId;
+        const postId = (writeCommentForm && writeCommentForm.dataset.postId)
+            || (commentContainer && commentContainer.dataset.postId);
 
-        // POST 비동기 요청 주소
+        if (!postId) {
+            return;
+        }
+
         const url = `/comment-list/${postId}`;
         
         fetch(url, {
@@ -304,10 +307,13 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(response => response.json())
         .then(data => {
-            const commentContainer = document.getElementById('commentContainer');
-
             if (commentContainer && data.commentListHtml) {
                 commentContainer.innerHTML = data.commentListHtml;
+            }
+
+            const postCommentCount = document.getElementById('postCommentCount');
+            if (postCommentCount && data.commentCount != null) {
+                postCommentCount.textContent = data.commentCount;
             }
         })
         .catch(error => {

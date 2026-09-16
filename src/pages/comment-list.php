@@ -16,6 +16,7 @@ $commentListHtml = $twig->render('board-comment-list.html', [
 
 echo json_encode([
     'commentListHtml' => $commentListHtml,
+    'commentCount' => is_array($comment) ? count($comment) : 0,
 ], JSON_UNESCAPED_UNICODE);
 
 exit;
