@@ -197,9 +197,10 @@ class BoardController {
      * 
      * @param string|int $identifier 숫자 ID 또는 영문 슬러그
      * @param string $boardName 게시판 식별자 이름
+     * @param bool $increaseHit 상세 화면 진입 시에만 조회수 증가
      * @return array|false 게시글 데이터 배열 또는 실패 시 false
      */
-    public function view(string|int $identifier, ?string $boardName, ?int $userId = null): array|false {
+    public function view(string|int $identifier, ?string $boardName, ?int $userId = null, bool $increaseHit = false): array|false {
         $board_service = $this->cms->getBoard();
         $comment_service = $this->cms->getComment();
 
@@ -221,6 +222,11 @@ class BoardController {
         // 게시글이 존재하지 않거나 삭제된 경우 예외 처리
         if (!$post) {
             throw new PostNotFoundException(ErrorCode::POST_NOT_FOUND_READ->value);
+        }
+
+        if ($increaseHit) {
+            $board_service->increasePostHit((int)$post['id']);
+            $post['hit'] = (int)$post['hit'] + 1;
         }
 
         // 게시판 이름에 따라 다른 반환 데이터

@@ -1222,6 +1222,21 @@ class Board
     }
 
     /**
+     * 조회수 증가
+     */
+    public function increasePostHit(int $post_id): void
+    {
+        $sql = "UPDATE post
+                SET hit = hit + 1
+                WHERE id = :id
+                  AND is_deleted = 0;";
+
+        $this->db->runSql($sql, [
+            'id' => $post_id,
+        ]);
+    }
+
+    /**
      * 게시글 작성 가능 여부 확인
      */
     public function canWritePost(int $user_id, string $board_name): bool

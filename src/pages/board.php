@@ -57,7 +57,7 @@ if (in_array($boardName, $allowed_boards)) {
             throw new PostNotFoundException(ErrorCode::POST_NOT_FOUND_READ->value);
         }
 
-        $data = array_merge($data, $boardController->view($identifier, $boardName, (int)$currentUserId));
+        $data = array_merge($data, $boardController->view($identifier, $boardName, (int)$currentUserId, true));
         
         if (!$data) {
             throw new PostNotFoundException(ErrorCode::POST_NOT_FOUND_READ->value);
