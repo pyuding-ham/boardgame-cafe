@@ -104,7 +104,8 @@ document.getElementById('profile-file-input').addEventListener('change', functio
 // 이미지 삭제 버튼 클릭 시 
 document.getElementById('btn-mock-delete')?.addEventListener('click', function() {
     // 1. 이미지 태그를 기본 이미지 주소로 강제 변경
-    document.getElementById('profile-img').src = '/uploads/profiles/user-blank.png';
+    document.getElementById('profile-img').src = '/img/defaults/user_blank.svg';
+    document.getElementById('profile-img').alt = '기본 프로필 이미지';
     
     // 2. 백엔드에 보낼 삭제 플래그를 1로 변경
     document.getElementById('delete-image-flag').value = '1';
