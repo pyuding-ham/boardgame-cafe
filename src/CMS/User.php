@@ -375,6 +375,20 @@ class User
         return (bool)$stmt;
     }
 
+    public function updateCommentNickname(int $userId, string $newNickname): bool
+    {
+        $sql = "UPDATE post_comment
+                SET writer_nickname = :nickname
+                WHERE user_id = :user_id;";
+
+        $stmt = $this->db->runSql($sql, [
+            'nickname' => $newNickname,
+            'user_id'  => $userId,
+        ]);
+
+        return (bool)$stmt;
+    }
+
     public function passwordUpdate(int $id, string $password): bool
     {
         $hash = password_hash($password, PASSWORD_DEFAULT);
