@@ -224,7 +224,7 @@ class BoardController {
             throw new PostNotFoundException(ErrorCode::POST_NOT_FOUND_READ->value);
         }
 
-        if ($increaseHit) {
+        if ($increaseHit && array_key_exists('hit', $post)) {
             $board_service->increasePostHit((int)$post['id']);
             $post['hit'] = (int)$post['hit'] + 1;
         }
