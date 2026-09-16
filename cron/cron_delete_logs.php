@@ -8,7 +8,7 @@ if (php_sapi_name() !== 'cli') {
 // 2. 프로젝트의 공통 파일 호출
 require_once __DIR__ . '/../src/bootstrap.php'; 
 
-// 3. $cms 객체로부터 Database.php 인스턴스를 꺼내옵니다.
+// 3. $cms 객체로부터 Database.php 인스턴스를 꺼냄
 $pdo = $cms->getDb(); 
 
 try {
@@ -20,7 +20,7 @@ try {
     $sql2 = "DELETE FROM user_password_change_log WHERE changed_at < NOW() - INTERVAL 365 DAY";
     $pdo->runSql($sql2);
 
-    //6. 1년 지난 비밀번호 변경 로그 삭제
+    // 6. 1년 지난 회원정보 변경 로그 삭제
     $sql3 = "DELETE FROM user_profile_change_log WHERE changed_at < NOW() - INTERVAL 365 DAY";
     $pdo->runSql($sql3);
     
