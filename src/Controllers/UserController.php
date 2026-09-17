@@ -103,7 +103,7 @@ class UserController
 
             // 기존 이미지가 임시 기본 이미지가 아닐 때만 서버에서 삭제
             $oldImage = $currentUser['profile_image'] ?? '';
-            if (!empty($oldImage) && $oldImage !== 'user-blank.png' && file_exists($uploadDir . $oldImage)) {
+            if (!empty($oldImage) && file_exists($uploadDir . $oldImage)) {
                 unlink($uploadDir . $oldImage);
             }
 
