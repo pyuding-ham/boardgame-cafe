@@ -15,8 +15,9 @@
     color: var(--primary-color) !important;
 }
 
+.link-primary:hover,
 .link-primary:focus,
-.link-primary:hover {
+.link-primary:active {
     color: var(--primary-color) !important;
     -webkit-text-decoration-color: var(--primary-color) !important;
     text-decoration-color: var(--primary-color) !important;
@@ -45,10 +46,12 @@
     border-color: var(--primary-color);
 }
 
-.btn-primary:hover {
-    color: #fff;
-    background-color: var(--primary-color);
-    border-color: var(--primary-color);
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:active {
+    color: #fff !important;
+    background-color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
 }
 
 .btn-duplicate-check:hover {

@@ -1,0 +1,218 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="container contact-us-container mt-5 mb-5">
+
+    <!-- 타이틀 영역 -->
+    <div class="contact-us__header mb-5">
+        <h2 class="fw-bold mb-0">메일문의</h2>
+    </div>
+
+    {% if errors.system %}
+        <div class="mb-4">
+            <div class="text-danger small fw-bold d-flex align-items-center justify-content-center p-2 bg-danger bg-opacity-10 rounded">
+                <i class="bi bi-exclamation-circle-fill me-2"></i>
+                <span>{{ errors.system }}</span>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- 메일문의 작성 영역 -->
+    <form method="POST" id="contactUsForm">
+        <div class="mb-4">
+            <div class="form-input-row row g-3 justify-content-center">
+                <!-- 이름 영역 -->
+                <div class="col-12 col-md-4">
+                    <div class="form-group">
+                        <label for="name" class="form-label fw-bold required">이름</label>
+                        <input type="text" class="form-control {{ errors.name ? 'is-invalid' : '' }}" id="name" name="name" value="{{ form.name }}" maxlength="20" placeholder="이름을 입력하세요" required>
+                        {% if errors.name %}
+                            <div class="invalid-feedback fw-bold">
+                                <i class="bi bi-exclamation-circle me-1"></i> {{ errors.name }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <!-- 이메일 영역 -->
+                <div class="col-12 col-md-4">
+                    <div class="form-group">
+                        <label for="email" class="form-label fw-bold required">이메일</label>
+                        <input type="email" class="form-control {{ errors.email ? 'is-invalid' : '' }}" id="email" name="email" value="{{ form.email }}" maxlength="100" placeholder="example@example.com" required>
+                        {% if errors.email %}
+                            <div class="invalid-feedback fw-bold">
+                                <i class="bi bi-exclamation-circle me-1"></i> {{ errors.email }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <!-- 연락처 영역 -->
+                <div class="col-12 col-md-4">
+                    <div class="form-group">
+                        <label for="phone" class="form-label fw-bold">연락처</label>
+                        <input type="tel" class="form-control {{ errors.phone ? 'is-invalid' : '' }}" id="phone" name="phone" value="{{ form.phone }}" maxlength="20" placeholder="010-0000-0000">
+                        {% if errors.phone %}
+                            <div class="invalid-feedback fw-bold">
+                                <i class="bi bi-exclamation-circle me-1"></i> {{ errors.phone }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 문의내용 영역 -->
+        <div class="mb-4">
+            <label for="contactUsContent" class="form-label fw-bold required">문의내용</label>
+            <textarea class="form-control {{ errors.content ? 'is-invalid' : '' }}" rows="10" id="contactUsContent" name="content" maxlength="1000" placeholder="내용을 입력하세요" required>{{ form.content }}</textarea>
+            {% if errors.content %}
+                <div class="invalid-feedback fw-bold">
+                    <i class="bi bi-exclamation-circle me-1"></i> {{ errors.content }}
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- 개인정보 수집 동의 영역 -->
+        <div class="mb-5">
+            <div class="form-check">
+                <input class="form-check-input rounded-0" type="checkbox" value="1" id="privacyAgree" name="privacy_agree" {{ form.privacy_agree ? 'checked' : '' }}>
+                <label class="form-check-label {{ errors.privacy_agree ? 'is-invalid' : '' }}" for="privacyAgree">
+                    <a href="#privacyModal" data-bs-toggle="modal" data-bs-target="#privacyModal">개인정보 수집 및 이용</a>에 동의합니다.
+                </label>
+                {% if errors.privacy_agree %}
+                    <div class="invalid-feedback fw-bold d-block">
+                        <i class="bi bi-exclamation-circle me-1"></i> {{ errors.privacy_agree }}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- 하단 버튼 -->
+        <div class="board-write__footer d-flex justify-content-center gap-2">
+            <button class="btn btn-primary px-4" type="submit" id="btnSubmit">문의하기</button>
+        </div>
+    </form>
+
+    <!-- 개인정보 수집 및 이용 안내 -->
+    <div class="modal fade" id="privacyModal" tabindex="-1" aria-labelledby="privacyModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-0 border-0 shadow-lg">
+                <div class="modal-header border-bottom-0 pt-4 px-4">
+                    <h5 class="modal-title fw-bold text-dark" id="privacyModalLabel">개인정보 수집 및 이용 안내</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="닫기"></button>
+                </div>
+                <div class="modal-body px-4 py-2">
+                    <ul class="list-unstyled mb-0 lh-lg d-flex flex-column gap-2 fs-6">
+                        <li>- <span class="fw-bold">수집 항목:</span> 이름, 이메일, 연락처(선택), 문의 내용</li>
+                        <li>- <span class="fw-bold">이용 목적:</span> 문의 확인 및 회신</li>
+                        <li>- <span class="fw-bold">보유 기간:</span> 답변 완료 후 파기</li>
+                    </ul>
+                </div>
+                <div class="modal-footer border-top-0 pb-4 px-4">
+                    <button type="button" class="btn btn-primary px-4 py-2 fw-bold" data-bs-dismiss="modal">확인</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// 이메일 유효성 검사 정규식
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+// 연락처 유효성 검사 정규식
+const phoneRegex = /^(01[016789][-\s]?\d{3,4}[-\s]?\d{4}|0[2-6]\d?[-\s]?\d{3,4}[-\s]?\d{4})$/;
+
+document.addEventListener('DOMContentLoaded', function() {
+    // 문의하기 버튼 클릭 시
+    const form = document.getElementById('contactUsForm');
+    const nameInput = document.getElementById('name');
+    const emailInput = document.getElementById('email');
+    const phoneInput = document.getElementById('phone');
+    const contentInput = document.getElementById('contactUsContent');
+    const privacyAgree = document.getElementById('privacyAgree');
+    const privacyLink = document.querySelector('[data-bs-target="#privacyModal"]');
+
+    // 개인정보 수집 모달
+    if (privacyLink) {
+        privacyLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const modalEl = document.getElementById('privacyModal');
+            if (window.bootstrap && modalEl) {
+                bootstrap.Modal.getOrCreateInstance(modalEl).show();
+            }
+        });
+    }
+    
+    form.addEventListener('submit', function(e) {
+        const name = nameInput.value.trim();
+        const email = emailInput.value.trim();
+        const phone = phoneInput.value.trim();
+        const content = contentInput.value.trim();
+        
+        // 1. 이름 검사
+        if (!name) {
+            e.preventDefault();
+            alert('이름을 입력해 주세요.');
+            nameInput.focus();
+            return;
+        }
+
+        if (name.length > 20) {
+            e.preventDefault();
+            alert('이름은 최대 20자까지 입력할 수 있습니다. (현재: ' + name.length + '자)');
+            nameInput.focus();
+            return;
+        }
+
+        // 2. 이메일 검사
+        if (!email) {
+            e.preventDefault();
+            alert('이메일을 입력해 주세요.');
+            emailInput.focus();
+            return;
+        }
+
+        if (!emailRegex.test(email)) {
+            e.preventDefault();
+            alert('올바른 이메일 주소를 입력해 주세요.');
+            emailInput.focus();
+            return;
+        }
+
+        // 3. 연락처 검사
+        if (phone && !phoneRegex.test(phone)) {
+            e.preventDefault();
+            alert('올바른 연락처를 입력해 주세요.');
+            phoneInput.focus();
+            return;
+        }
+
+        // 4. 문의내용 검사
+        if (!content) {
+            e.preventDefault();
+            alert('문의내용을 입력해 주세요.');
+            contentInput.focus();
+            return;
+        }
+
+        if (content.length > 1000) {
+            e.preventDefault();
+            alert('문의내용은 최대 1000자까지 입력할 수 있습니다. (현재: ' + content.length + '자)');
+            contentInput.focus();
+            return;
+        }
+
+        // 5. 개인정보 수집 동의
+        if (!privacyAgree.checked) {
+            e.preventDefault();
+            alert('개인정보 수집 및 이용에 동의해 주세요.');
+            privacyAgree.focus();
+        }
+    });
+});
+</script>
+{% endblock %}
