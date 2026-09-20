@@ -3,19 +3,22 @@ use BoardgameCafe\Exceptions\AuthorizationException;
 use BoardgameCafe\Exceptions\AuthenticationException;
 use BoardgameCafe\Exceptions\NotFoundException;
 
-// 1. 세션이 시작되지 않았다면 세션 시작
+// 1. 애플리케이션 루트 경로 정의
+define('APP_ROOT', dirname(__FILE__, 2));
+
+require APP_ROOT . '/config/config.php';
+
+// 2. 세션이 시작되지 않았다면 세션 시작
 if (session_status() === PHP_SESSION_NONE) {
+    ini_set('session.gc_maxlifetime', (string) SESSION_LIFETIME);
+    ini_set('session.cookie_lifetime', (string) SESSION_LIFETIME);
     session_start();
 }
 // 로그인한 상태면 회원 ID 저장
 $currentUserId = $_SESSION['id'] ?? null;
 
-// 2. 애플리케이션 루트 경로 정의
-define('APP_ROOT', dirname(__FILE__, 2));
-
 // 3. 핵심 파일 및 라이브러리 로드
 require APP_ROOT . '/src/functions.php';
-require APP_ROOT . '/config/config.php';
 require APP_ROOT . '/vendor/autoload.php';
 
 // 4. 타임존 및 인코딩 기본 설정

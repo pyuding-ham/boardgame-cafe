@@ -85,7 +85,6 @@ if (in_array($boardName, $allowed_boards)) {
                 redirect("board/{$boardName}", [
                     'status' => 'write_success'
                 ]);
-                exit;
             } else {
                 // 게임소개, 이용후기
                 if (($boardName === 'boardgame' || $boardName === 'review')) {
@@ -140,7 +139,6 @@ if (in_array($boardName, $allowed_boards)) {
 
         // 템플릿 렌더링
         echo $twig->render($boardName . '-write.html', $data);
-        exit;
     }
     // 3. 게시글 수정
     elseif ($boardAction === 'edit') {
@@ -161,7 +159,6 @@ if (in_array($boardName, $allowed_boards)) {
                 redirect("board/{$boardName}", [
                     'status' => 'update_success'
                 ]);
-                exit;
             } else {
                 $data['errors']  = $result['errors'];
 
@@ -211,7 +208,6 @@ if (in_array($boardName, $allowed_boards)) {
         // 템플릿 렌더링
         
         echo $twig->render($boardName . '-edit.html', $data);
-        exit;
     }
     // 4. 게시글 삭제
     elseif ($boardAction === 'delete') {
@@ -225,7 +221,6 @@ if (in_array($boardName, $allowed_boards)) {
         redirect("board/{$boardName}", [
             'status' => 'delete_success',
         ]);
-        exit;
     }
     // 5. 게시판 목록
     else {

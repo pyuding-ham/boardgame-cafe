@@ -172,68 +172,88 @@ include $php_page;
 
 // 장시간 미사용 시 자동 로그아웃
 if (isset($_SESSION['id']) && file_exists($php_page)) {
-    // /board/notice와 같은 경로의 경우 결과 값 1
-    // /board/notice/view/1과 같은 경로의 경우 결과 값 3
-    $depth = count(array_filter($parts)) - 1;
-
-    // /board/notice와 같은 경로의 경우 "../" 로 자동 변환
-    // board/notice/view/1과 같은 경로의 경우 "../../../" 로 자동 변환
-    $path_prefix = $depth > 0 ? str_repeat('../', $depth) : '';
-    
-    // 상대 경로 주소를 생성
-    $login_target_url = $path_prefix . 'login';
-    $keep_alive_url = $path_prefix . 'keep_alive.php';
+    $login_target_url = rtrim(DOC_ROOT, '/') . '/login';
+    $keep_alive_url = rtrim(DOC_ROOT, '/') . '/keep_alive.php';
     ?>
     <script>
     (function() {
-        // 24분
-        const SESSION_TIMEOUT = 24 * 60 * 1000;
-        // 5분
-        const EXTEND_INTERVAL = 5 * 60 * 1000;  
+        const SESSION_TIMEOUT = <?php echo (int) SESSION_LIFETIME * 1000; ?>;
+        const EXTEND_INTERVAL = 5 * 60 * 1000;
 
         let lastActivityTime = Date.now();
-        let logoutTimer;
+        let lastKeepAliveTime = Date.now();
+        let lastMouseX = null;
+        let lastMouseY = null;
+        let isLoggingOut = false;
 
-        function startLogoutTimer() {
-            // 유저의 새로운 활동을 감지할 때마다 기존 타이머 삭제
-            clearTimeout(logoutTimer);
-            
-            logoutTimer = setTimeout(() => {
-                // 1. 메모리 상에 가짜 <form> 태그 생성
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = '<?php echo $login_target_url; ?>';
+        // 자동 로그아웃
+        function logoutByTimeout() {
+            if (isLoggingOut) {
+                return;
+            }
+            isLoggingOut = true;
 
-                // 2. 메모리 상에 가짜 <input> 태그 생성
-                const hiddenInput = document.createElement('input');
-                hiddenInput.type = 'hidden';
-                hiddenInput.name = 'status';
-                hiddenInput.value = 'session_expired';
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '<?php echo $login_target_url; ?>';
 
-                // 3. 폼에 인풋을 넣고, <body>에 붙여서 전송
-                form.appendChild(hiddenInput);
-                document.body.appendChild(form);
-                form.submit();
+            const hiddenInput = document.createElement('input');
+            hiddenInput.type = 'hidden';
+            hiddenInput.name = 'status';
+            hiddenInput.value = 'session_expired';
 
-            }, SESSION_TIMEOUT);
+            form.appendChild(hiddenInput);
+            document.body.appendChild(form);
+            form.submit();
         }
 
-        // 유저 활동 감지 시 동작
-        function handleUserActivity() {
-            const now = Date.now();
-            startLogoutTimer();
+        // 로그인 상태 연장
+        function markActivity() {
+            // 마지막 활동 시간 저장
+            lastActivityTime = Date.now();
 
-            // 마지막 활동 시간으로부터 5분이 지나면 실행
-            if (now - lastActivityTime > EXTEND_INTERVAL) {
-                lastActivityTime = now;
-                fetch('<?php echo $keep_alive_url; ?>').catch(err => {});
+            // 이벤트 발생 때마다가 아닌 정해진 시간마다 쿠키 수명을 늘려주는 파일 실행
+            if (lastActivityTime - lastKeepAliveTime > EXTEND_INTERVAL) {
+                // 마지막으로 언제 실행했는지 시간 저장
+                lastKeepAliveTime = lastActivityTime;
+                fetch('<?php echo $keep_alive_url; ?>').catch(function() {});
             }
         }
-        window.addEventListener('mousemove', handleUserActivity);
-        window.addEventListener('click', handleUserActivity);
-        window.addEventListener('keydown', handleUserActivity);
-        window.addEventListener('scroll', handleUserActivity);
-        window.addEventListener('DOMContentLoaded', startLogoutTimer);
+
+        window.addEventListener('mousemove', function(e) {
+            // 실제 사람이 발생시킨 이벤트인지 확인
+            if (!e.isTrusted) {
+                return;
+            }
+            // 첫 마우스 이벤트인지 확인
+            if (lastMouseX === null) {
+                lastMouseX = e.clientX;
+                lastMouseY = e.clientY;
+                return;
+            }
+            // 가로/세로 이동량을 합쳐서 10px이 넘는지 확인
+            if (Math.abs(e.clientX - lastMouseX) + Math.abs(e.clientY - lastMouseY) < 10) {
+                return;
+            }
+            lastMouseX = e.clientX;
+            lastMouseY = e.clientY;
+            markActivity();
+        });
+
+        document.addEventListener('keydown', function(e) {
+            // 실제 사람이 발생시킨 이벤트인지 확인
+            if (!e.isTrusted) {
+                return;
+            }
+            markActivity();
+        }, true);
+
+        // 자동 로그아웃 여부 1초마다 확인
+        setInterval(function() {
+            if (Date.now() - lastActivityTime >= SESSION_TIMEOUT) {
+                logoutByTimeout();
+            }
+        }, 1000);
     })();
     </script>
     <?php

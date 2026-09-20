@@ -29,6 +29,10 @@ $isDev = filter_var($_ENV['DEV'] ?? false, FILTER_VALIDATE_BOOLEAN);
 define('DEV', $isDev);
 define('DOMAIN', $_ENV['DOMAIN'] ?? 'http://localhost');
 
+// 자동 로그아웃 관련: 세션 유지 시간 (초)
+// 60분
+define('SESSION_LIFETIME', 3600);
+
 // 2. 디렉토리 경로 최적화
 define('ROOT_PATH', dirname(__DIR__, 1)); // 최상위 루트 폴더 경로
 define('ROOT_FOLDER', 'public');
