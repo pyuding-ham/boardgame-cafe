@@ -24,7 +24,7 @@
                 <div class="mb-4">
                     <label for="username" class="form-label fw-bold required">아이디</label>
                     <div class="input-group {{ errors.username ? 'is-invalid' : '' }}">
-                        <input type="text" class="form-control" id="username" name="username" value="{{ user.username }}" required>
+                        <input type="text" class="form-control" id="username" name="username" value="{{ user.username }}" maxlength="20" required>
                         <button type="button" class="btn btn-outline-secondary btn-duplicate-check" type="button" id="btnCheckUsername">아이디 중복체크</button>
                     </div>
                     {% if errors.username %}
@@ -38,7 +38,7 @@
                 <div class="mb-4">
                     <label for="email" class="form-label fw-bold required">이메일</label>
                     <div class="input-group {{ errors.email ? 'is-invalid' : '' }}">
-                        <input type="email" class="form-control" id="email" name="email" value="{{ user.email }}" required>
+                        <input type="email" class="form-control" id="email" name="email" value="{{ user.email }}" maxlength="100" required>
                         <button type="button" class="btn btn-outline-secondary btn-duplicate-check" type="button" id="btnCheckEmail">이메일 중복체크</button>
                     </div>
                     {% if errors.email %}
@@ -50,7 +50,7 @@
                 <div class="mb-4">
                     <label for="password" class="form-label fw-bold required">비밀번호</label>
                     <div class="input-group {{ errors.password ? 'is-invalid' : '' }}">
-                        <input type="password" class="form-control" id="password" name="password" value="{{ user.password }}" required>
+                        <input type="password" class="form-control" id="password" name="password" value="{{ user.password }}" maxlength="72" required>
                         <button type="button" class="btn position-absolute end-0 top-50 translate-middle-y me-3 toggle-password">
                             <i class="bi bi-eye-fill text-muted"></i>
                         </button>
@@ -66,7 +66,7 @@
                 <div class="mb-5">
                     <label for="confirm" class="form-label fw-bold required">비밀번호 확인</label>
                     <div class="input-group {{ errors.confirm ? 'is-invalid' : '' }}">
-                        <input type="password" class="form-control" id="confirm" name="confirm" value="{{ user.confirm }}" required>
+                        <input type="password" class="form-control" id="confirm" name="confirm" value="{{ user.confirm }}" maxlength="72" required>
                         <button type="button" class="btn position-absolute end-0 top-50 translate-middle-y me-3 toggle-password">
                             <i class="bi bi-eye-fill text-muted"></i>
                         </button>
