@@ -25,9 +25,9 @@
                 {% else %}
                     <!-- 로그인 했을 때 -->
                     <a href="{{ doc_root }}mypage">마이페이지</a>
-                    {% if session.role == 'ADMIN' %}
-                        <a href="{{ doc_root }}admin">관리자</a>
-                    {% endif %}
+                    {# if session.role == 'ADMIN' #}
+                        <!-- <a href="{{ doc_root }}admin">관리자</a> -->
+                    {# endif #}
                     <a href="{{ doc_root }}logout">로그아웃</a>
                 {% endif %}
             </div>
@@ -41,17 +41,18 @@
             <nav>
                 <ul id="menu">
                     {% for menu in menus %}
-                        {% if menu.page_code == 'reservation' %}
-                            {% if is_logged_in %}
-                                <li><a href="{{ doc_root }}reservation">예약하기</a></li>
-                            {% endif %}
-                        {% elseif menu.page_code == 'order' %}
-                            {% if table_no is defined and table_no is not empty %}
-                                <li></li><a href="{{ doc_root }}order.php?table={{ table_no }}">주문하기</a></li>
-                            {% endif %}
-                        {% else %}
-                            <li><a href="{{ doc_root }}{{ menu.page_url }}">{{ menu.menu_title }}</a></li>
-                        {% endif %}
+                        {# if menu.page_code == 'reservation' #}
+                            {# if is_logged_in #}
+                                <!-- <li><a href="{{ doc_root }}reservation">예약하기</a></li> -->
+                            {# endif #}
+                        {# elseif menu.page_code == 'order' #}
+                            {# if table_no is defined and table_no is not empty #}
+                                <!-- <li></li><a href="{{ doc_root }}order.php?table={{ table_no }}">주문하기</a></li> -->
+                            {# endif #}
+                        {# else #}
+                            <!-- <li><a href="{{ doc_root }}{{ menu.page_url }}">{{ menu.menu_title }}</a></li> -->
+                        {# endif #}
+                        <li><a href="{{ doc_root }}{{ menu.page_url }}">{{ menu.menu_title }}</a></li>
                     {% endfor %}
                 </ul>
             </nav>
