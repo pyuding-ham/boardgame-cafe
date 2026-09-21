@@ -36,7 +36,12 @@
 
     <div class="form-group">
         <label for="password">비밀번호</label>
-        <input type="password" id="password" name="password" required>
+        <div class="input-group">
+            <input type="password" id="password" class="form-control pe-5" name="password" autocomplete="current-password" required>
+            <button type="button" class="btn position-absolute end-0 top-50 translate-middle-y me-3 toggle-password">
+                <i class="bi bi-eye-slash-fill text-muted"></i>
+            </button>
+        </div>
     </div>
     <button type="submit">로그인</button>
 
@@ -63,6 +68,28 @@ function showToast(message) {
         toast.remove();
     }, 2800);
 }
+
+// 비밀번호 입력 란에 비밀번호 보이기 토글
+const toggleButtons = document.querySelectorAll('.toggle-password');
+
+toggleButtons.forEach(button => {
+    button.addEventListener('click', function () {
+        const passwordInput = this.parentElement.querySelector('input');
+        const icon = this.querySelector('i');
+
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            // 채워진 눈 감은 모양으로 변경
+            icon.classList.remove('bi-eye-slash-fill');
+            icon.classList.add('bi-eye-fill');
+        } else {
+            passwordInput.type = 'password';
+            // 채워진 눈 뜬 모양으로 변경
+            icon.classList.remove('bi-eye-fill');
+            icon.classList.add('bi-eye-slash-fill');
+        }
+    });
+});
 
 document.getElementById('loginForm').addEventListener('submit', function(e) {
     const usernameInput = document.getElementById('username');
