@@ -106,7 +106,8 @@
 }
 
 body {
-    letter-spacing: -0.04rem;
+    letter-spacing: -0.02rem;
+    font-size: 1.0625rem;
 }
 
 /* 상단 메뉴바 */
