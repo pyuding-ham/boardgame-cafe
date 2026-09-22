@@ -35,6 +35,7 @@
 
 /* 공통 스타일 */
 :root {
+    --header-height: 98px;
     --primary-color: #FF007F;
     --primary-color-dark: #D10068;
     --primary-color-darker: #B5005A;
@@ -42,6 +43,10 @@
     --secondary-color-hover: #00C4AA;
     --bs-font-sans-serif: "Pretendard", sans-serif;
     --bs-body-font-family: var(--bs-font-sans-serif);
+}
+
+html {
+    scroll-padding-top: var(--header-height);
 }
 
 .bg-primary {
@@ -153,6 +158,13 @@ header {
 header .user-menu {
     margin-left: auto;
 }
+
+
+/* 본문 */
+main {
+    padding-top: var(--header-height);
+}
+
 
 /* 푸터 */
 footer {
