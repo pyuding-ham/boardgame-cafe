@@ -1,10 +1,47 @@
+@font-face {
+    font-family: 'Pretendard';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.0/Pretendard-Light.woff2') format('woff2');
+    font-weight: 300;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Pretendard';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.0/Pretendard-Regular.woff2') format('woff2');
+    font-weight: 400;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Pretendard';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.0/Pretendard-Medium.woff2') format('woff2');
+    font-weight: 500;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Pretendard';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.0/Pretendard-SemiBold.woff2') format('woff2');
+    font-weight: 600;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Pretendard';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.0/Pretendard-Bold.woff2') format('woff2');
+    font-weight: 700;
+    font-display: swap;
+}
+
 /* 공통 스타일 */
 :root {
-  --primary-color: #FF007F;
-  --primary-color-dark: #D10068;
-  --primary-color-darker: #B5005A;
-  --secondary-color: #00F5D4;
-  --secondary-color-hover: #00C4AA;
+    --primary-color: #FF007F;
+    --primary-color-dark: #D10068;
+    --primary-color-darker: #B5005A;
+    --secondary-color: #00F5D4;
+    --secondary-color-hover: #00C4AA;
+    --bs-font-sans-serif: "Pretendard", sans-serif;
+    --bs-body-font-family: var(--bs-font-sans-serif);
 }
 
 .bg-primary {
