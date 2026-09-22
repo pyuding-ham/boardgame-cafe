@@ -71,9 +71,54 @@
 body {
     letter-spacing: -0.04rem;
 }
+
+/* 상단 메뉴바 */
+header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1030;
+    background: #fff;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.navbar {
+    padding: 1.5rem 0;
+}
+
+/* 본문 바로가기 */
+.skip-link {
+    position: absolute;
+    left: -9999px;
+    z-index: 1050;
+    background: #fff;
+    color: #212529;
+}
+.skip-link:focus {
+    left: 0;
+    top: 0;
+}
+
 /* 로고 */
-.logo img {
+.logo img,
+.navbar-brand img {
     width: 200px;
+}
+
+/* 메인 메뉴 */
+.navbar-nav#menu .nav-link {
+    padding: 0.5rem 1.2rem;
+}
+
+/* 우측 메뉴 */
+header .user-menu {
+    margin-left: auto;
+}
+
+/* 푸터 */
+footer {
+    padding: 2.5rem 0;
 }
 
 .container {
