@@ -33,6 +33,21 @@
     font-display: swap;
 }
 
+@font-face {
+    font-family: 'GMarketSans';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansLight.woff') format('woff');
+    font-weight: 300;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'GMarketSans';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansMedium.woff') format('woff');
+    font-weight: 500;
+    font-display: swap;
+}
+
+
 /* 공통 스타일 */
 :root {
     --header-height: 98px;
@@ -170,6 +185,77 @@ main {
 footer {
     padding: 2.5rem 0;
 }
+
+
+/* 메인 */
+/* 슬라이드 */
+#mainSlide .carousel-item img {
+    width: 100%;
+    height: 700px;
+    object-fit: cover;
+}
+.slide-pattern {
+    position: absolute;
+    inset: 0;
+    background-image:
+        url("/img/main/pattern_slash.svg"),
+        linear-gradient(rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.35));
+    background-repeat: repeat, no-repeat;
+    pointer-events: none;
+}
+.slide-pattern--dark {
+    background-image:
+        url("/img/main/pattern_slash.svg"),
+        linear-gradient(rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.55));
+}
+#mainSlide .carousel-caption {
+    bottom: 15rem;
+    font-family: 'GMarketSans';
+    opacity: 0;
+}
+#mainSlide .carousel-item.active .carousel-caption {
+    animation: caption-fade-in 1.5s ease 0.3s forwards;
+}
+@keyframes caption-fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+#mainSlide .carousel-caption p {
+    margin-bottom: 0;
+}
+#mainSlide .carousel-caption .slide-sm {
+    margin-bottom: 0.85rem;
+    font-size: 1rem;
+    letter-spacing: 0.14rem;
+}
+#mainSlide .carousel-caption .slide-title {
+    margin: 0;
+    font-size: 4.5rem;
+    font-weight: 500;
+    line-height: 1.2;
+}
+#mainSlide .carousel-caption .slide-desc {
+    font-size: 1.35rem;
+    font-weight: 300;
+}
+#mainSlide .carousel-caption .btn-group {
+    gap: .5rem;
+    margin-top: 2rem;
+}
+#mainSlide .carousel-caption .btn {
+    width: 130px;
+    font-family: "Pretendard", sans-serif;
+    font-weight: 300;
+    color: #fff;
+    border-color: #fff;
+}
+#mainSlide .carousel-caption .btn:hover,
+#mainSlide .carousel-caption .btn:focus,
+#mainSlide .carousel-caption .btn:active {
+    color: var(--secondary-color);
+    border-color: var(--secondary-color);
+}
+
 
 .container {
     width: 100%;

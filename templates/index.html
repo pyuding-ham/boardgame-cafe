@@ -6,7 +6,67 @@
 {% if status == 'contact_us_success' %}
     <script>window.addEventListener('DOMContentLoaded', () => showToast('메일문의가 완료되었습니다.'));</script>
 {% endif %}
-    <p>보드트립의 메인 페이지입니다. (배포 테스트 중 2)</p>
+
+<!-- 슬라이드 영역 -->
+<div id="mainSlide" class="carousel slide carousel-fade" data-bs-ride="carousel">
+    <div class="carousel-indicators">
+        <button type="button" data-bs-target="#mainSlide" data-bs-slide-to="0" class="active" aria-current="true" aria-label="1번째 슬라이드"></button>
+        <button type="button" data-bs-target="#mainSlide" data-bs-slide-to="1" aria-label="2번째 슬라이드"></button>
+        <button type="button" data-bs-target="#mainSlide" data-bs-slide-to="2" aria-label="3번째 슬라이드"></button>
+    </div>
+
+    <div class="carousel-inner">
+        <div class="carousel-item active">
+            <img src="{{ doc_root }}img/main/slide_01.jpg" alt="보드게임을 플레이하는 테이블">
+            <div class="slide-pattern slide-pattern--dark" aria-hidden="true"></div>
+            <div class="carousel-caption">
+                <p class="slide-sm">Boardgame Cafe</p>
+                <h1 class="slide-title">보드트립</h1>
+                <p class="slide-desc">테이블에서 떠나는 특별한 여행</p>
+                <div class="btn-group">
+                    <a href="/board/boardgame" class="btn">게임소개</a>
+                    <a href="/board/branch" class="btn">지점소개</a>
+                </div>
+            </div>
+        </div>
+        <div class="carousel-item">
+            <img src="{{ doc_root }}img/main/slide_02.jpg" alt="보드게임을 플레이하는 테이블">
+            <div class="slide-pattern" aria-hidden="true"></div>
+            <div class="carousel-caption">
+                <p class="slide-sm">Boardgame Cafe</p>
+                <h1 class="slide-title">보드트립</h1>
+                <p class="slide-desc">꼬치 요리사나 보석수집가로 변신하는 설레는 공간</p>
+                <div class="btn-group">
+                    <a href="/board/boardgame" class="btn">게임소개</a>
+                    <a href="/board/branch" class="btn">지점소개</a>
+                </div>
+            </div>
+        </div>
+        <div class="carousel-item">
+            <img src="{{ doc_root }}img/main/slide_03.jpg" alt="보드게임을 플레이하는 테이블">
+            <div class="slide-pattern" aria-hidden="true"></div>
+            <div class="carousel-caption">
+                <p class="slide-sm">Boardgame Cafe</p>
+                <h1 class="slide-title">보드트립</h1>
+                <p class="slide-desc">소중한 사람들과 보내는 즐거운 시간</p>
+                <div class="btn-group">
+                    <a href="/board/boardgame" class="btn">게임소개</a>
+                    <a href="/board/branch" class="btn">지점소개</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <button class="carousel-control-prev" type="button" data-bs-target="#mainSlide" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">이전</span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#mainSlide" data-bs-slide="next">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">다음</span>
+    </button>
+</div>
+
 {% endblock %}
 
 {% block scripts %}
