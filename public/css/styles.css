@@ -85,12 +85,18 @@ html {
 .mb-6 {
   margin-bottom: 4.5rem !important;
 }
+.my-6 {
+  margin-top: 4.5rem !important;
+  margin-bottom: 4.5rem !important;
+}
 .mb-7 {
   margin-bottom: 6rem !important;
 }
 
 .btn {
     border-radius: 0;
+    --bs-btn-font-size: 1.0625rem;
+    --bs-btn-line-height: 1.65;
 }
 
 .btn:not(.btn-sm) {
@@ -112,13 +118,19 @@ html {
     border-color: var(--primary-color) !important;
 }
 
+.btn.btn-duplicate-check {
+    font-size: .8em;
+    --bs-btn-padding-y: 0.4rem;
+    --bs-btn-padding-x: 0.8rem;
+}
+
 .btn-duplicate-check:hover {
     background-color: #16161A;
     border-color: #16161A;
 }
 
-.btn-duplicate-check {
-    font-size: .875em;
+label.fw-bold {
+    font-weight: 600 !important;
 }
 
 .form-control,
@@ -305,6 +317,22 @@ footer .copyright {
     max-width: 1170px;
     margin: 0 auto;
 }
+
+
+/* 상세 공통 */
+.user__header .title {
+    margin-bottom: 0;
+    font-size: 2rem;
+    font-weight: 600;
+}
+
+
+/* 회원가입 */
+.register-container #registerForm {
+    max-width: 550px;
+    margin: 0 auto;
+}
+
 
 .nav-fill .nav-item .nav-link:hover {
     background-color: rgba(var(--bs-secondary-bg-rgb),var(--bs-bg-opacity));
@@ -527,7 +555,7 @@ footer .copyright {
 .board-view__header .title,
 .board-write__header .title {
     font-size: 2rem;
-    line-height: 1.5;
+    line-height: 1.3;
 }
 .board-view__header .bottom {
     color: #6c757d;
