@@ -16,38 +16,57 @@
         });
     </script>
 {% elseif status == 'session_expired' %}
-    <div class="alert alert-danger" role="alert">
-        장시간 미사용으로 자동 로그아웃되었습니다.
+    <div class="text-danger small fw-bold d-flex align-items-center justify-content-center p-2 mb-3 bg-danger bg-opacity-10 rounded">
+        <i class="bi bi-exclamation-circle-fill me-2"></i>
+        <span>장시간 미사용으로 자동 로그아웃되었습니다.</span>
     </div>
 {% endif %}
 
-{# 로그인 에러 메시지 #}
-{% if errors.login %}
-<div class="alert alert-danger" role="alert">
-    {{ errors.login }}
-</div>
-{% endif %}
+<div class="container login-container my-6">
 
-<form action="" method="POST" id="loginForm">
-    <div class="form-group">
-        <label for="username">아이디</label>
-        <input type="text" id="username" name="username" value="{{ username }}" required>
-    </div>
-
-    <div class="form-group">
-        <label for="password">비밀번호</label>
-        <div class="input-group">
-            <input type="password" id="password" class="form-control pe-5" name="password" autocomplete="current-password" required>
-            <button type="button" class="btn position-absolute end-0 top-50 translate-middle-y me-3 toggle-password">
-                <i class="bi bi-eye-slash-fill text-muted"></i>
-            </button>
+    <!-- 타이틀 영역 -->
+    <div class="user__header mb-5">
+        <div class="top text-center">
+            <h1 class="title">로그인</h1>
         </div>
     </div>
-    <button type="submit">로그인</button>
 
-    <a href="{{ doc_root }}user-find-id" class="btn">아이디 찾기</a>
-    <a href="{{ doc_root }}password-find" class="btn">비밀번호 찾기</a>
-</form>
+    {# 로그인 에러 메시지 #}
+    {% if errors.login is defined and errors.login %}
+    <div class="text-danger small fw-bold d-flex align-items-center justify-content-center p-2 mb-3 bg-danger bg-opacity-10 rounded">
+        <i class="bi bi-exclamation-circle-fill me-2"></i>
+        <span>{{ errors.login }}</span>
+    </div>
+    {% endif %}
+    
+    <form method="POST" id="loginForm">
+        <div class="mb-4">
+            <label for="username" class="form-label fw-bold required">아이디</label>
+            <input type="text" id="username" class="form-control" id="username" name="username" name="username" value="{{ username }}" required>
+        </div>
+    
+        <div class="mb-5">
+            <label for="password" class="form-label fw-bold required">비밀번호</label>
+            <div class="input-group">
+                <input type="password" id="password" class="form-control pe-5" name="password" autocomplete="current-password" required>
+                <button type="button" class="btn position-absolute end-0 top-50 translate-middle-y me-3 toggle-password">
+                    <i class="bi bi-eye-slash-fill text-muted"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- 하단 버튼 -->
+        <div class="user__footer d-flex justify-content-center mb-5">
+            <button class="btn btn-primary w-100" type="submit">로그인</button>
+        </div>
+    
+        <div class="login-find">
+            <a href="{{ doc_root }}user-find-id">아이디 찾기</a>
+            <a href="{{ doc_root }}password-find">비밀번호 찾기</a>
+        </div>
+    </form>
+
+</div>
 {% endblock %}
 
 {% block scripts %}
