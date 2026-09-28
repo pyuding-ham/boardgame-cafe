@@ -406,6 +406,13 @@ footer .copyright {
 }
 
 
+/* 아이디 찾기 */
+.user-find-id-container {
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+
 /* 마이페이지 */
 .profile-img img {
     width: 110px;
