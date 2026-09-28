@@ -431,6 +431,13 @@ footer .copyright {
 }
 
 
+/* 회원정보 변경 */
+.user-edit-container #userEditForm {
+    max-width: 550px;
+    margin: 0 auto;
+}
+
+
 .nav-fill .nav-item .nav-link:hover {
     background-color: rgba(var(--bs-secondary-bg-rgb),var(--bs-bg-opacity));
 }
