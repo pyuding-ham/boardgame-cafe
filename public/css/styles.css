@@ -408,6 +408,13 @@ footer .copyright {
 
 /* 아이디 찾기 */
 .user-find-id-container {
+    max-width: 424px;
+    margin: 0 auto;
+}
+
+
+/* 비밀번호 찾기 */
+.password-find-container #findPasswordForm {
     max-width: 400px;
     margin: 0 auto;
 }
