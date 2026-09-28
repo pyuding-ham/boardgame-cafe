@@ -32,7 +32,7 @@
             <ul class="list-style-vertical">
                 <li><span>아이디</span> {{ user.username }}</li>
                 <li><span>이메일</span> {{ user.email }}</li>
-                <li><span>회원등급</span> {{ user.role }}</li>
+                <li><span>회원등급</span> {{ user.role == 'ADMIN' ? '관리자' : '회원'  }}</li>
                 <li><span>가입일</span> {{ user.created_at|date('Y-m-d') }}</li>
             </ul>
         </div>
