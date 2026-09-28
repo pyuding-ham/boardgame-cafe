@@ -420,6 +420,13 @@ footer .copyright {
 }
 
 
+/* 비밀번호 변경 */
+.password-reset-container {
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+
 /* 마이페이지 */
 .profile-img img {
     width: 110px;
