@@ -95,11 +95,11 @@ html {
 
 .btn {
     border-radius: 0;
-    --bs-btn-font-size: 1.0625rem;
-    --bs-btn-line-height: 1.65;
 }
 
 .btn:not(.btn-sm) {
+    --bs-btn-font-size: 1.0625rem;
+    --bs-btn-line-height: 1.65;
     --bs-btn-padding-y: 0.6rem;
     --bs-btn-padding-x: 1.2rem;
 }
@@ -359,7 +359,7 @@ footer .copyright {
 }
 
 
-/* 상세 공통 */
+/* 회원 페이지 공통 */
 .user__header .title {
     margin-bottom: 0;
     font-size: 2rem;
@@ -445,6 +445,9 @@ footer .copyright {
 }
 
 
+.nav-pills {
+    --bs-nav-pills-link-active-bg: var(--primary-color);
+}
 .nav-fill .nav-item .nav-link:hover {
     background-color: rgba(var(--bs-secondary-bg-rgb),var(--bs-bg-opacity));
 }
@@ -557,10 +560,41 @@ footer .copyright {
     100% { opacity: 0; transform: translateY(-20px); }
 }
 
+
+/* 서브 페이지 공통 */
+.sub__header .title {
+    margin-bottom: 0;
+    font-size: 2.2rem;
+    font-weight: 600;
+}
+
+
 /* 게시판 목록 */
+.board-container .badge {
+    font-weight: 600;
+}
+.board-container .badge.bg-dark {
+    font-weight: 500;
+}
+
+.board-container .card .ratio {
+    overflow: hidden;
+}
+.board-container .card .card-img-top {
+    transition: transform 0.3s ease;
+}
+.board-container .card > a:hover .card-img-top {
+    transform: scale(1.1);
+}
 .board-container .card-body .card-title {
     font-size: 1.4rem;
 }
+.board-container .card > a:hover .card-title {
+    color: var(--primary-color);
+}
+
+
+
 .board-container table {
     font-size: 0.95rem;
 }
