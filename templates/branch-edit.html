@@ -5,14 +5,14 @@
 {% endblock %}
 
 {% block content %}
-<div class="container write-container mt-5 mb-5">
+<div class="container board-edit-container my-6">
     <!-- 게시판 타이틀 영역 -->
-    <div class="board-write__board mb-4">
+    <div class="board-edit__board mb-3">
         <h3 class="title mb-0">{{ board_title }}</h3>
     </div>
 
     <!-- 글수정 상단 영역 -->
-    <div class="board-write__header mb-5">
+    <div class="board-edit__header mb-5">
         <div class="top">
             <h2 class="title mb-0">글수정</h2>
         </div>
@@ -31,7 +31,7 @@
 
         <!-- 제목 영역 -->
         <div class="mb-4">
-            <label for="title" class="form-label fw-bold">제목</label>
+            <label for="title" class="form-label fw-bold required">제목</label>
             <input type="text" class="form-control {{ (errors.title is defined and errors.title) ? 'is-invalid' : '' }}" id="title" name="title" value="{{ post.title is defined ? post.title : '' }}" maxlength="100" required>
             {% if errors.title is defined and errors.title %}
                 <div class="invalid-feedback fw-bold">
@@ -73,7 +73,7 @@
         
         <!-- 주소 영역 -->
         <div class="mb-4">
-            <label for="title" class="form-label fw-bold">주소</label>
+            <label for="title" class="form-label fw-bold required">지점주소</label>
             <input type="text" class="form-control {{ (errors.address is defined and errors.address) ? 'is-invalid' : '' }}" id="address" name="address" value="{{ post.address is defined ? post.address : '' }}" maxlength="255" required>
             {% if errors.address is defined and errors.address %}
                 <div class="invalid-feedback fw-bold">
@@ -84,7 +84,7 @@
 
         <!-- 본문 에디터 영역 -->
         <div class="mb-4">
-            <label class="form-label fw-bold">내용</label>
+            <label class="form-label fw-bold required">내용</label>
             <div class="editor-wrapper {{ (errors.content is defined and errors.content) ? 'border border-danger rounded' : '' }}">
                 <div id="editor">
                     {{ (post.content is defined) ? post.content|raw : '' }}
@@ -100,7 +100,7 @@
         </div>
 
         <!-- 상세 이미지 영역 -->
-        <div class="mb-4">
+        <div class="mb-5">
             <label for="title" class="form-label fw-bold">상세 이미지 <span class="text-muted small fw-normal">(최대 10개, 파일 당 5MB 제한)</span></label>
             <span class="image-count">
                 <span id="imageCount">0</span> / 10
@@ -134,7 +134,7 @@
         </div>
 
         <!-- 하단 버튼 -->
-        <div class="board-write__footer d-flex justify-content-center gap-2">
+        <div class="board-edit__footer d-flex justify-content-center gap-2">
             <a href="{{ doc_root }}board/{{ board_name }}" class="btn btn-outline-secondary px-4">취소하기</a>
             <button class="btn btn-primary px-4" type="submit" id="btnSubmit">수정하기</button>
         </div>
