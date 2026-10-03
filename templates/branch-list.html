@@ -11,25 +11,27 @@
     <script>window.addEventListener('DOMContentLoaded', () => showToast('글 삭제가 완료되었습니다.'));</script>
 {% endif %}
 
-<div class="container board-container my-5">
+<div class="container board-container my-6">
     <!-- 타이틀 영역 -->
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2 class="fw-bold mb-0">{{ board_title }}</h2>
+    <div class="sub__header mb-5">
+        <div class="top text-center">
+            <h1 class="title">{{ board_title }}</h1>
+        </div>
     </div>
     
-    <p class="text-muted small mb-3">총 <strong class="text-primary">{{ total_count }}</strong>개의 글</p>
+    <p class="text-secondary small mb-3">총 <strong class="text-primary">{{ total_count }}</strong>개의 글</p>
 
     <!-- 게시글 영역 -->
-    <div class="container my-4">
+    <div class="container my-4 px-0">
         {% if list is empty %}
         <!-- 게시글이 없거나 검색 결과가 없는 경우 -->
-        <div class="text-center text-muted py-5">
+        <div class="text-center text-secondary py-5">
             <i class="bi bi-exclamation-circle d-block fs-4 mb-2"></i>
             검색 결과가 없거나 등록된 게시글이 없습니다.
         </div>
         {% else %}
         <!-- 등록된 게시글이 있는 경우 -->
-        <div class="row row-cols-1 row-cols-md-3 g-4">
+        <div class="row row-cols-1 row-cols-md-3 gy-5">
             {% for item in list %}
                 <div class="col">
                     <div class="card h-100 border-0 rounded-0">
@@ -54,7 +56,7 @@
 
     <!-- 페이지네이션 -->
     {% if total_pages > 1 %}
-        <nav class="d-flex justify-content-center gap-1 mt-4 mb-4">
+        <nav class="d-flex justify-content-center gap-1 my-5">
 
             {# 1. 처음 화살표 #}
             {% if current_page > 1 %}
@@ -90,7 +92,7 @@
     {% endif %}
 
     <!-- 검색 및 글쓰기 버튼 영역 -->
-    <div class="board-search d-flex justify-content-center align-items-center position-relative mt-4">
+    <div class="board-search d-flex justify-content-center align-items-center position-relative mt-5">
 
         <!-- 1. 검색 폼 -->
         <form action="{{ doc_root }}board/{{ board_name }}" method="post" class="row g-1 justify-content-center">
@@ -115,7 +117,7 @@
         <!-- 2. 글쓰기 버튼 -->
         <!-- 관리자 권한만 글쓰기 버튼 노출 -->
         {% if session.role == 'ADMIN' %}
-            <a href="{{ doc_root }}board/{{ board_name }}/write" class="btn btn-primary btn-sm rounded-1 px-3 text-nowrap position-absolute end-0">
+            <a href="{{ doc_root }}board/{{ board_name }}/write" class="btn btn-primary btn-sm px-3 text-nowrap position-absolute rounded-0 end-0">
                 <i class="bi bi-pencil"></i> 글쓰기
             </a>
         {% endif %}
