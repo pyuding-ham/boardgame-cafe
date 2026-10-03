@@ -5,10 +5,10 @@
 {% endblock %}
 
 {% block content %}
-<div class="container write-container mt-5 mb-5">
+<div class="container board-write-container my-6">
 
     <!-- 게시판 타이틀 영역 -->
-    <div class="board-write__board mb-4">
+    <div class="board-write__board mb-3">
         <h3 class="title mb-0">{{ board_title }}</h3>
     </div>
 
@@ -61,7 +61,7 @@
                 <div class="col-12 col-md-6 col-lg-3">
                     <div class="form-group">
                         <label class="form-label fw-bold required" for="categorySelect">카테고리</label>
-                        <select class="form-select {{ (errors.category is defined and errors.category) ? 'is-invalid' : '' }}" id="categorySelect" name="category_id" required>
+                        <select class="form-select rounded-0 {{ (errors.category is defined and errors.category) ? 'is-invalid' : '' }}" id="categorySelect" name="category_id" required>
                             <option value="" disabled selected>선택</option>
                             {% for category in post.category %}
                                 <option value="{{ category.id }}" {% if post.category_selected and category.id == post.category_selected %}selected{% endif %}>{{ category.name }}</option>
@@ -79,7 +79,7 @@
                 <div class="col-12 col-md-6 col-lg-3">
                     <div class="form-group">
                         <label class="form-label fw-bold" for="levelSelect">난이도</label>
-                        <select class="form-select {{ (errors.level is defined and errors.level) ? 'is-invalid' : '' }}" id="levelSelect" name="level_id">
+                        <select class="form-select rounded-0 {{ (errors.level is defined and errors.level) ? 'is-invalid' : '' }}" id="levelSelect" name="level_id">
                             <option value="" selected>선택</option>
                             {% for level in post.level %}
                                 <option value="{{ level.id }}" {% if post.level_selected and level.id == post.level_selected %}selected{% endif %}>{{ level.name }}</option>
@@ -189,7 +189,7 @@
         </div>
 
         <!-- 해시태그 영역 -->
-        <div class="mb-4">
+        <div class="mb-5">
             <label for="title" class="form-label fw-bold">해시태그</label>
             <input type="text" class="form-control {{ (errors.hashtag is defined and errors.hashtag) ? 'is-invalid' : '' }}" id="hashtag" name="hashtag" value="{{ post.hashtag is defined ? post.hashtag : '' }}" placeholder="예) 카드게임, 가족게임" maxlength="255">
             {% if errors.hashtag is defined and errors.hashtag %}
@@ -197,7 +197,7 @@
                     <i class="bi bi-exclamation-circle me-1"></i> {{ errors.hashtag }}
                 </div>
             {% else %}
-                <div class="form-text">해시태그는 쉼표(,)로 구분됩니다.</div>
+                <div class="form-text">해시태그는 쉼표(,)로 구분되며 최대 255자까지 입력할 수 있습니다.</div>
             {% endif %}
         </div>
 
