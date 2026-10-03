@@ -1,40 +1,46 @@
 {% extends 'layout.html' %}
 
 {% block content %}
-<div class="container board-view-container my-5">
-    <!-- 타이틀 영역 -->
-    <div class="board-view__title-zone d-flex justify-content-between align-items-center mb-3">
-        <h2 class="fw-bold mb-0">{{ board_title }}</h2>
+<div class="container board-view-container my-6">
+    <!-- 게시판 타이틀 영역 -->
+    <div class="board-view__board mb-3">
+        <h2 class="title mb-0">{{ board_title }}</h2>
     </div>
 
     <!-- 게시글 상단 영역 -->
-    <div class="board-view__header border p-4 rounded bg-light mb-4">
-        <div class="d-flex align-items-center gap-2 mb-3">
+    <div class="board-view__header mb-5">
+        <div class="d-flex align-items-center gap-3 mb-3">
             {% if post.is_pinned == 1 %}
-                <span class="badge bg-secondary text-white fw-normal">공지</span>
+                <span class="badge bg-primary text-white fw-normal rounded-0">공지</span>
             {% endif %}
-            <h4 class="fw-bold mb-0">{{ post.title }}</h4>
+            <div class="top">
+                <h1 class="title mb-0">{{ post.title }}</h1>
+            </div>
         </div>
         
-        <div class="row pt-3 border-top text-secondary small g-2">
-            <div class="col-12 col-md-6">
-                <span class="me-3"><strong class="text-dark">작성자</strong> {{ post.nickname }}</span>
+        <div class="bottom small row mt-4">
+            <div class="writer col-12 col-md-6">
+                <span class="me-3">
+                    <strong>작성자</strong> {{ post.nickname }}
+                </span>
             </div>
-            <div class="col-12 col-md-6 text-md-end">
-                <span class="text-muted"><strong class="text-dark">작성일</strong> {{ post.created_at|date('Y-m-d H:i') }}</span>
+            <div class="day col-12 col-md-6 text-md-end">
+                <span class="text-secondary">
+                    <strong>작성일</strong> {{ post.created_at|date('Y-m-d H:i') }}
+                </span>
             </div>
         </div>
     </div>
 
     <!-- 첨부파일 영역 -->
     {% if post.files is not empty %}
-        <div class="board-view__files border p-3 rounded bg-light mb-4">
+        <div class="board-view__files p-3 bg-light mb-4">
             <div class="fw-bold text-dark small mb-2"><i class="bi bi-paperclip"></i> 첨부파일 ({{ post.files|length }})</div>
             <div class="d-flex flex-column gap-1">
                 {% for file in post.files %}
                     <div class="small">
                         <a href="{{ file.file_path|replace({'public': ''}) }}" class="text-decoration-none text-secondary link-primary" download="{{ file.org_name }}">
-                            <i class="bi bi-file-earmark-arrow-down text-muted me-1"></i> {{ file.org_name }}
+                            <i class="bi bi-file-earmark-arrow-down text-secondary me-1"></i> {{ file.org_name }}
                         </a>
                     </div>
                 {% endfor %}
@@ -43,16 +49,16 @@
     {% endif %}
 
     <!-- 게시글 본문 영역 -->
-    <div class="board-view__content border p-4 rounded bg-white mb-4 fs-6">{{ post.content|raw }}</div>
+    <div class="board-view__content border p-4 bg-white mb-5">{{ post.content|raw }}</div>
 
     <!-- 게시글 하단 버튼 구역 -->
-    <div class="board-view__footer d-flex justify-content-between align-items-center pt-3 border-top">
-        <a href="{{ doc_root }}board/{{ board_name }}" class="btn btn-secondary px-4 rounded-1 small">목록으로</a>
+    <div class="board-view__footer d-flex justify-content-between gap-2">
+        <a href="{{ doc_root }}board/{{ board_name }}" class="btn btn-secondary px-4 rounded-0">목록으로</a>
         
         {% if session.role == 'ADMIN' %}
             <div>
-                <a href="{{ doc_root }}board/{{ board_name }}/edit/{{ post.id }}" class="btn btn-outline-primary me-1 rounded-1 small">수정</a>
-                <a href="{{ doc_root }}board/{{ board_name }}/delete/{{ post.id }}" class="btn btn-outline-danger rounded-1 small" onclick="return confirm('이 공지사항을 정말 삭제하시겠습니까?');">삭제</a>
+                <a href="{{ doc_root }}board/{{ board_name }}/edit/{{ post.id }}" class="btn btn-outline-primary px-4 me-1 rounded-0">수정</a>
+                <a href="{{ doc_root }}board/{{ board_name }}/delete/{{ post.id }}" class="btn btn-outline-danger px-4 rounded-0" onclick="return confirm('해당 게시글을 정말 삭제하시겠습니까?');">삭제</a>
             </div>
         {% endif %}
     </div>
