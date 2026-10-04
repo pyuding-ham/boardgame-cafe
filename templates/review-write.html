@@ -5,9 +5,9 @@
 {% endblock %}
 
 {% block content %}
-<div class="container write-container mt-5 mb-5">
+<div class="container board-write-container my-6">
     <!-- 게시판 타이틀 영역 -->
-    <div class="board-write__board mb-4">
+    <div class="board-write__board mb-3">
         <h3 class="title mb-0">{{ board_title }}</h3>
     </div>
 
@@ -34,7 +34,7 @@
 
         <!-- 대표 이미지 영역 -->
         <div class="mb-4">
-            <label for="thumbnail" class="form-label fw-bold">대표 이미지 <span class="text-muted small fw-normal">(파일 당 5MB 제한)</span></label>
+            <label for="thumbnail" class="form-label fw-bold">대표 이미지 <span class="text-secondary small fw-normal">(파일 당 5MB 제한)</span></label>
 
             <div class="upload-box {{ (errors.thumbnail is defined and errors.thumbnail) ? 'is-invalid' : '' }}" onclick="document.getElementById('thumbnail').click()">
                 <input type="file" id="thumbnail" name="thumbnail" accept="image/*" hidden>

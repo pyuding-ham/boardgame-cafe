@@ -5,10 +5,10 @@
 {% endblock %}
 
 {% block content %}
-<div class="container write-container mt-5 mb-5">
+<div class="container write-container my-6">
 
     <!-- 게시판 타이틀 영역 -->
-    <div class="board-write__board mb-4">
+    <div class="board-write__board mb-3">
         <h3 class="title mb-0">{{ board_title }}</h3>
     </div>
 
@@ -34,7 +34,7 @@
 
         <!-- 대표 이미지 영역 -->
         <div class="mb-4">
-            <label for="title" class="form-label fw-bold">대표 이미지 <span class="text-muted small fw-normal">(파일 당 5MB 제한)</span></label><br>
+            <label for="title" class="form-label fw-bold">대표 이미지 <span class="text-secondary small fw-normal">(파일 당 5MB 제한)</span></label><br>
             <div class="upload-box {{ (errors.thumbnail is defined and errors.thumbnail) ? 'is-invalid' : '' }}" id="thumbnailUploadBox">
                 {% set hasThumbnail = post.thumbnail is defined and post.thumbnail %}
 
@@ -80,7 +80,7 @@
         </div>
 
         <!-- 본문 에디터 영역 -->
-        <div class="mb-4">
+        <div class="mb-5">
             <label class="form-label fw-bold required">내용</label>
             <div class="editor-wrapper {{ (errors.content is defined and errors.content) ? 'border border-danger rounded' : '' }}">
                 <div id="editor">
@@ -97,7 +97,7 @@
         </div>
 
         <!-- 하단 버튼 -->
-        <div class="board-write__footer d-flex justify-content-center gap-2">
+        <div class="board-edit__footer d-flex justify-content-center gap-2">
             <a href="{{ doc_root }}board/{{ board_name }}" class="btn btn-outline-secondary px-4">취소하기</a>
             <button class="btn btn-primary px-4" type="submit" id="btnSubmit">수정하기</button>
         </div>
