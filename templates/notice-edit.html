@@ -5,119 +5,121 @@
 {% endblock %}
 
 {% block content %}
-<div class="container notice-write-container mt-5 mb-5">
-    <div class="row justify-content-center">
-        <div class="col-12 col-sm-10 col-md-8">
-             <!-- 타이틀 영역 -->
-            <div class="board-view__title-zone d-flex justify-content-between mb-3">
-                <h2 class="fw-bold mb-0">{{ board_title }}</h2>
+<div class="container notice-write-container my-6">
+    <!-- 게시판 타이틀 영역 -->
+    <div class="board-edit__board mb-3">
+        <h3 class="title mb-0">{{ board_title }}</h3>
+    </div>
+
+    <!-- 글수정 상단 영역 -->
+    <div class="board-edit__header mb-5">
+        <div class="top">
+            <h2 class="title mb-0">글수정</h2>
+        </div>
+    </div>
+
+    <!-- 글수정 영역 -->
+    <form method="POST" id="noticeWriteForm" enctype="multipart/form-data">
+        {% if errors.system is defined and errors.system %}
+            <div class="mb-4">
+                <div class="text-danger small fw-bold d-flex align-items-center justify-content-center p-2 mb-3 bg-danger bg-opacity-10 rounded">
+                    <i class="bi bi-exclamation-circle-fill me-2"></i>
+                    <span>{{ errors.system }}</span>
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- 게시글 상단에 고정 -->
+        <div class="mb-4 bg-light p-3 rounded d-flex align-items-center justify-content-between">
+            <span class="fw-bold text-secondary small"><i class="bi bi-gear-fill me-1"></i> 게시글 공지 등록</span>
+            <div class="form-check form-switch m-0">
+                <input class="form-check-input" type="checkbox" role="switch" id="is_pinned" name="is_pinned" value="1" {{ (post.is_pinned is defined and post.is_pinned == 1) ? 'checked' : '' }}>
+                <label class="form-check-label fw-bold text-dark small" for="is_pinned">이 게시글을 상단에 고정합니다.</label>
+            </div>
+        </div>
+
+        <!-- 제목 영역 -->
+        <div class="mb-4">
+            <label for="title" class="form-label fw-bold required">제목</label>
+            <input type="text" class="form-control {{ (errors.title is defined and errors.title) ? 'is-invalid' : '' }}" id="title" name="title" value="{{ post.title is defined ? post.title : '' }}" maxlength="100" required>
+            {% if errors.title is defined and errors.title %}
+                <div class="invalid-feedback fw-bold">
+                    <i class="bi bi-exclamation-circle me-1"></i> {{ errors.title }}
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- 본문 에디터 영역 -->
+        <div class="mb-4">
+            <label class="form-label fw-bold required">내용</label>
+            <div class="editor-wrapper {{ (errors.content is defined and errors.content) ? 'border border-danger rounded' : '' }}">
+                <div id="editor">
+                    {{ (post.content is defined) ? post.content|raw : '' }}
+                </div>
+            </div>
+            <input type="hidden" name="content" id="contentInput">
+            
+            {% if errors.content is defined and errors.content %}
+                <div class="text-danger small fw-bold mt-2">
+                    <i class="bi bi-exclamation-circle me-1"></i> {{ errors.content }}
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- 동적 첨부파일 영역 -->
+        <div class="mb-5">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                <label class="form-label fw-bold m-0">첨부파일 <span class="text-secondary small fw-normal">(최대 3개, 파일 당 10MB 제한)</span></label>
+                <button type="button" class="btn btn-sm btn-outline-primary" id="btn-add-file">
+                    <i class="bi bi-plus-circle-fill me-1"></i> 파일 추가
+                </button>
             </div>
 
-            <!-- 글쓰기 영역 -->
-            <form method="POST" id="noticeWriteForm" enctype="multipart/form-data">
-                {% if errors.system is defined and errors.system %}
-                    <div class="mb-4">
-                        <div class="text-danger small fw-bold d-flex align-items-center justify-content-center p-2 mb-3 bg-danger bg-opacity-10 rounded">
-                            <i class="bi bi-exclamation-circle-fill me-2"></i>
-                            <span>{{ errors.system }}</span>
-                        </div>
-                    </div>
-                {% endif %}
-
-                <!-- 게시글 상단에 고정 -->
-                <div class="mb-4 bg-light p-3 rounded d-flex align-items-center justify-content-between">
-                    <span class="fw-bold text-secondary small"><i class="bi bi-gear-fill me-1"></i> 게시글 설정</span>
-                    <div class="form-check form-switch m-0">
-                        <input class="form-check-input" type="checkbox" role="switch" id="is_pinned" name="is_pinned" value="1" {{ (post.is_pinned is defined and post.is_pinned == 1) ? 'checked' : '' }}>
-                        <label class="form-check-label fw-bold text-dark small" for="is_pinned">이 게시글을 상단에 고정합니다.</label>
-                    </div>
-                </div>
-
-                <!-- 제목 영역 -->
-                <div class="mb-4">
-                    <label for="title" class="form-label fw-bold">제목</label>
-                    <input type="text" class="form-control {{ (errors.title is defined and errors.title) ? 'is-invalid' : '' }}" id="title" name="title" value="{{ post.title is defined ? post.title : '' }}" maxlength="100" required>
-                    {% if errors.title is defined and errors.title %}
-                        <div class="invalid-feedback fw-bold">
-                            <i class="bi bi-exclamation-circle me-1"></i> {{ errors.title }}
-                        </div>
-                    {% endif %}
-                </div>
-
-                <!-- 본문 에디터 영역 -->
-                <div class="mb-4">
-                    <label class="form-label fw-bold">내용</label>
-                    <div class="editor-wrapper {{ (errors.content is defined and errors.content) ? 'border border-danger rounded' : '' }}">
-                        <div id="editor">
-                            {{ (post.content is defined) ? post.content|raw : '' }}
-                        </div>
-                    </div>
-                    <input type="hidden" name="content" id="contentInput">
-                    
-                    {% if errors.content is defined and errors.content %}
-                        <div class="text-danger small fw-bold mt-2">
-                            <i class="bi bi-exclamation-circle me-1"></i> {{ errors.content }}
-                        </div>
-                    {% endif %}
-                </div>
-
-                <!-- 동적 첨부파일 영역 -->
-                <div class="mb-5">
-                    <div class="d-flex align-items-center justify-content-between mb-2">
-                        <label class="form-label fw-bold m-0">첨부파일 <span class="text-muted small fw-normal">(최대 3개, 파일 당 10MB 제한)</span></label>
-                        <button type="button" class="btn btn-sm btn-outline-primary" id="btn-add-file">
-                            <i class="bi bi-plus-circle-fill me-1"></i> 파일 추가
-                        </button>
-                    </div>
-
-                    <!-- 기존 첨부파일 영역 -->
-                    {% if post.files is defined and post.files %}
-                    <div class="existing-file-container">
-                        <div class="existing-files mb-3">
-                            {% for file in post.files %}
-                                <div class="existing-file-row d-flex align-items-center gap-2 mb-1">
-                                    <i class="bi bi-paperclip text-muted"></i>
-                                    <span class="flex-grow-1 text-muted small">
-                                        {{ file.org_name }}
-                                    </span>
-                                    <button type="button" class="btn btn-sm btn-outline-danger btn-remove-existing-file" data-file-id="{{ file.id }}">
-                                        <i class="bi bi-dash-circle-fill"></i>
-                                    </button>
-                                </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-                    {% endif %}
-
-                    <div id="delete-file-container"></div>
-
-                    <!-- 새 첨부파일 등록 영역 -->
-                    <div id="file-input-container">
-                        <div class="file-row d-flex align-items-center gap-2 mb-2">
-                            <input class="form-control form-control-sm" type="file" name="attached_files[]">
-                            <button type="button" class="btn btn-sm btn-outline-danger btn-remove-file">
+            <!-- 기존 첨부파일 영역 -->
+            {% if post.files is defined and post.files %}
+            <div class="existing-file-container">
+                <div class="existing-files mb-3">
+                    {% for file in post.files %}
+                        <div class="existing-file-row d-flex align-items-center gap-2 mb-1">
+                            <i class="bi bi-paperclip text-secondary"></i>
+                            <span class="flex-grow-1 text-secondary small">
+                                {{ file.org_name }}
+                            </span>
+                            <button type="button" class="btn btn-sm btn-outline-danger btn-remove-existing-file" data-file-id="{{ file.id }}">
                                 <i class="bi bi-dash-circle-fill"></i>
                             </button>
                         </div>
-                    </div>
-
-                    <!-- 에러 메시지 영역 -->
-                    {% if errors.files is defined and errors.files %}
-                        <div class="text-danger small fw-bold mt-2">
-                            <i class="bi bi-exclamation-circle me-1"></i> {{ errors.files }}
-                        </div>
-                    {% endif %}
+                    {% endfor %}
                 </div>
+            </div>
+            {% endif %}
 
-                <!-- 하단 버튼 -->
-                <div class="d-flex justify-content-center gap-2 mt-5">
-                    <a href="{{ doc_root }}board/{{ board_name }}" class="btn btn-outline-secondary px-4">취소하기</a>
-                    <button class="btn btn-primary px-4" type="submit" id="btnSubmit">수정하기</button>
+            <div id="delete-file-container"></div>
+
+            <!-- 새 첨부파일 등록 영역 -->
+            <div id="file-input-container">
+                <div class="file-row d-flex align-items-center gap-2 mb-2">
+                    <input class="form-control form-control-sm" type="file" name="attached_files[]">
+                    <button type="button" class="btn btn-sm btn-outline-danger btn-remove-file">
+                        <i class="bi bi-dash-circle-fill"></i>
+                    </button>
                 </div>
-            </form>
+            </div>
 
+            <!-- 에러 메시지 영역 -->
+            {% if errors.files is defined and errors.files %}
+                <div class="text-danger small fw-bold mt-2">
+                    <i class="bi bi-exclamation-circle me-1"></i> {{ errors.files }}
+                </div>
+            {% endif %}
         </div>
-    </div>
+
+        <!-- 하단 버튼 -->
+        <div class="board-edit_footer d-flex justify-content-center gap-2">
+            <a href="{{ doc_root }}board/{{ board_name }}" class="btn btn-outline-secondary px-4">취소하기</a>
+            <button class="btn btn-primary px-4" type="submit" id="btnSubmit">수정하기</button>
+        </div>
+    </form>
 </div>
 {% endblock %}
 
@@ -222,7 +224,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 existsInput.remove();
 
                 if (row) {
-                    row.classList.remove('text-decoration-line-through', 'text-muted');
+                    row.classList.remove('text-decoration-line-through', 'text-secondary');
                 }
 
                 targetBtn.innerHTML = '<i class="bi bi-dash-circle-fill"></i>';
@@ -241,7 +243,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 deleteFileContainer.appendChild(input);
 
                 if (row) {
-                    row.classList.add('text-decoration-line-through', 'text-muted');
+                    row.classList.add('text-decoration-line-through', 'text-secondary');
                 }
 
                 targetBtn.innerHTML = '<i class="bi bi-arrow-counterclockwise"></i>';
