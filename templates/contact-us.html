@@ -1,11 +1,13 @@
 {% extends 'layout.html' %}
 
 {% block content %}
-<div class="container contact-us-container mt-5 mb-5">
+<div class="container contact-us-container my-6">
 
     <!-- 타이틀 영역 -->
-    <div class="contact-us__header mb-5">
-        <h2 class="fw-bold mb-0">메일문의</h2>
+    <div class="sub__header mb-6">
+        <div class="top text-center">
+            <h1 class="title">메일문의</h1>
+        </div>
     </div>
 
     {% if errors.system %}
@@ -87,7 +89,7 @@
         </div>
 
         <!-- 하단 버튼 -->
-        <div class="board-write__footer d-flex justify-content-center gap-2">
+        <div class="d-flex justify-content-center gap-2">
             <button class="btn btn-primary px-4" type="submit" id="btnSubmit">문의하기</button>
         </div>
     </form>
