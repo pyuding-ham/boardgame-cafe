@@ -1,17 +1,17 @@
 {% extends 'layout.html' %}
 
 {% block content %}
-<div class="container board-view-container board-blog-view-container my-5">
 {# 토스트 팝업 #}
 <div id="toast-container" class="toast-container"></div>
 
+<div class="container board-view-container my-6">
     <!-- 게시판 타이틀 영역 -->
-    <div class="board-view__board mb-4">
-        <h3 class="title mb-0">{{ board_title }}</h3>
+    <div class="board-view__board mb-3">
+        <h2 class="title mb-0">{{ board_title }}</h2>
     </div>
 
     <!-- 게시글 상단 영역 -->
-    <div class="board-view__header mb-4 p-4 border rounded-0 bg-light">
+    <div class="board-view__header mb-5">
         <!-- 카테고리 -->
         <span class="badge mb-2 px-3 py-2 bg-primary rounded-0">
             {{ post.category_name }}
@@ -19,20 +19,20 @@
 
         <!-- 제목 -->
         <div class="top">
-            <h2 class="title mb-0">{{ post.title }}</h2>
+            <h1 class="title mb-0">{{ post.title }}</h1>
         </div>
         
-        <div class="row mt-3 pt-3 g-0 border-top text-secondary small">
+        <div class="row mt-4 g-0 text-secondary small">
 
             <div class="col-12 col-sm-4">
                 <!-- 작성자 -->
-                <span class="me-3"><strong class="text-dark">작성자</strong> {{ post.nickname }}</span>
+                <span class="me-3"><strong>작성자</strong> {{ post.nickname }}</span>
             </div>
 
             <div class="col-12 col-sm-8 d-flex justify-content-end align-items-center gap-2">
                 <!-- 작성일시 -->
                 <span class="regdate">
-                    <strong class="text-dark">작성일</strong> {{ post.created_at|date('Y-m-d H:i') }}
+                    <strong>작성일</strong> {{ post.created_at|date('Y-m-d H:i') }}
                 </span>
 
                 <!-- 조회수 -->
@@ -72,7 +72,7 @@
     <!-- 댓글 입력 영역 -->
     <!-- 회원만 댓글 입력 버튼 노출 -->
     {% if is_logged_in %}
-        <div class="board-view__comment_insert mt-4 mb-4">
+        <div class="board-view__comment_insert mt-4 mb-5">
             <div class="comment-inbox">
                 <form method="POST" id="writeCommentForm" data-post-id="{{ post.id }}">
 
@@ -88,7 +88,7 @@
     {% endif %}
 
     <!-- 게시글 하단 버튼 구역 -->
-    <div class="board-view__footer mt-5 d-flex justify-content-between gap-2">
+    <div class="board-view__footer d-flex justify-content-between gap-2">
 
         <a href="{{ doc_root }}board/{{ board_name }}" class="btn btn-secondary px-4 small">목록으로</a>
         
@@ -97,12 +97,12 @@
 
                 <!-- 작성한 회원만 수정 버튼 노출 -->
                 {% if post.user_id == session.id %}
-                    <a href="{{ doc_root }}board/{{ board_name }}/edit/{{ post.id }}" class="btn btn-outline-primary rounded-0">수정</a>
+                    <a href="{{ doc_root }}board/{{ board_name }}/edit/{{ post.id }}" class="btn btn-outline-primary px-4 rounded-0">수정</a>
                 {% endif %}
 
                 <!-- 작성한 회원 또는 관리자만 삭제 버튼 노출 -->
                 {% if post.user_id == session.id or session.role == 'ADMIN' %}
-                    <a href="{{ doc_root }}board/{{ board_name }}/delete/{{ post.id }}" class="btn btn-outline-danger rounded-0" onclick="return confirm('이 글을 정말 삭제하시겠습니까?');">삭제</a>
+                    <a href="{{ doc_root }}board/{{ board_name }}/delete/{{ post.id }}" class="btn btn-outline-danger px-4 rounded-0" onclick="return confirm('이 글을 정말 삭제하시겠습니까?');">삭제</a>
                 {% endif %}
 
             </div>
