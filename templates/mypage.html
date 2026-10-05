@@ -17,10 +17,10 @@
     </div>
 
     <!-- 닉네임 영역 -->
-    <h2 class="mypage-nickname text-center">{{ user.nickname }} 님, 방문을 환영합니다.</h2>
+    <h2 class="mypage-nickname text-center">{{ user.nickname }} 님,<br class="d-md-none"> 방문을 환영합니다.</h2>
 
     <!-- 프로필 이미지 및 텍스트 정보 -->
-    <div class="d-flex justify-content-center align-items-center">
+    <div class="profile-box d-flex justify-content-center align-items-center">
         <div class="flex-shrink-0 profile-img">
             {% if user.profile_image %}
                 <img src="/uploads/profiles/{{ user.profile_image }}" alt="{{ user.nickname }}님의 프로필 이미지" class="rounded-circle">
