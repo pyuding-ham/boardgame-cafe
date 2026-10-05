@@ -943,3 +943,130 @@ footer .copyright {
     aspect-ratio: 1 / 1;
     position: relative;
 }
+
+
+/* 태블릿 이하 */
+@media (max-width: 991px) {
+    :root {
+        --navbar-height: 64px;
+    }
+
+    .navbar .container {
+        display: flex;
+        align-items: center;
+        min-height: var(--navbar-height);
+    }
+
+    .navbar-brand {
+        position: static;
+    }
+
+    .navbar-brand img {
+        width: 140px;
+    }
+
+    .navbar-toggler {
+        margin-left: auto;
+        border: 0;
+    }
+
+    .navbar-toggler:focus {
+        box-shadow: none;
+    }
+
+    .navbar-toggler[aria-expanded="true"] .navbar-toggler-icon {
+        background-color: var(--primary-color);
+        background-image: none;
+        -webkit-mask: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='%23000' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e") center / contain no-repeat;
+        mask: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='%23000' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e") center / contain no-repeat;
+    }
+
+    .navbar-collapse {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: #fff;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.06);
+    }
+
+    .navbar-nav#menu {
+        width: 100%;
+        margin: 0;
+    }
+
+    .navbar-nav#menu .nav-link {
+        padding: 0.9rem 1.25rem;
+    }
+
+    #mainSlide .carousel-caption .slide-title {
+        font-size: 3.4rem;
+    }
+
+    #mainSlide .carousel-caption .slide-desc {
+        font-size: 1.15rem;
+    }
+}
+
+/* 모바일 */
+@media (max-width: 767px) {
+    #mainSlide .carousel-item img {
+        height: calc(100svh - var(--header-height));
+        min-height: 460px;
+    }
+
+    #mainSlide .carousel-caption {
+        left: 1.25rem;
+        right: 1.25rem;
+    }
+
+    #mainSlide .carousel-caption .slide-sm {
+        margin-bottom: 0.55rem;
+        font-size: 0.85rem;
+        letter-spacing: 0.08rem;
+    }
+
+    #mainSlide .carousel-caption .slide-title {
+        font-size: 2.6rem;
+    }
+
+    #mainSlide .carousel-caption .slide-desc {
+        font-size: 1rem;
+        line-height: 1.45;
+    }
+
+    #mainSlide .carousel-caption .btn-group {
+        flex-wrap: wrap;
+        justify-content: center;
+        margin-top: 1.35rem;
+    }
+
+    #mainSlide .carousel-caption .btn {
+        width: 100px;
+        font-size: 0.9rem;
+    }
+
+    #mainSlide .carousel-control-prev,
+    #mainSlide .carousel-control-next {
+        display: none;
+    }
+
+    footer {
+        padding: 1.75rem 0;
+    }
+
+    footer .container {
+        flex-direction: column;
+        align-items: center !important;
+        gap: 0.75rem;
+        text-align: center;
+    }
+
+    footer .logo img {
+        width: 120px;
+    }
+
+    footer .copyright {
+        font-size: 0.8rem;
+    }
+}
