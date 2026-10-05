@@ -15,6 +15,31 @@
 <body>
     <header>
         <a class="skip-link" href="#content">본문 바로가기</a>
+        <div class="user-bar bg-dark">
+            <div class="container">
+                <ul class="navbar-nav user-menu">
+                    {% if not is_logged_in %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ doc_root }}login"><i class="bi bi-box-arrow-in-right" aria-hidden="true"></i>로그인</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ doc_root }}register"><i class="bi bi-person-plus" aria-hidden="true"></i>회원가입</a>
+                        </li>
+                    {% else %}
+                        <!-- 로그인 했을 때 -->
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ doc_root }}mypage"><i class="bi bi-person" aria-hidden="true"></i>마이페이지</a>
+                        </li>
+                        {# if session.role == 'ADMIN' #}
+                            <!-- <li class="nav-item"><a class="nav-link" href="{{ doc_root }}admin">관리자</a></li> -->
+                        {# endif #}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ doc_root }}logout"><i class="bi bi-box-arrow-right" aria-hidden="true"></i>로그아웃</a>
+                            </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
         <nav class="navbar navbar-expand-lg navbar-light bg-white">
             <div class="container">
                 <a class="navbar-brand" href="{{ doc_root }}">
@@ -49,27 +74,6 @@
                             </li>
                         {# endfor #}
                     </ul> -->
-                    <ul class="navbar-nav user-menu">
-                        {% if not is_logged_in %}
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ doc_root }}login">로그인</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ doc_root }}register">회원가입</a>
-                            </li>
-                        {% else %}
-                            <!-- 로그인 했을 때 -->
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ doc_root }}mypage">마이페이지</a>
-                            </li>
-                            {# if session.role == 'ADMIN' #}
-                                <!-- <li class="nav-item"><a class="nav-link" href="{{ doc_root }}admin">관리자</a></li> -->
-                            {# endif #}
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ doc_root }}logout">로그아웃</a>
-                            </li>
-                        {% endif %}
-                    </ul>
                 </div>
             </div>
         </nav>

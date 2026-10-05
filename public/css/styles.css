@@ -50,7 +50,9 @@
 
 /* 공통 스타일 */
 :root {
-    --header-height: 89.5px;
+    --user-bar-height: 34px;
+    --navbar-height: 89.5px;
+    --header-height: calc(var(--user-bar-height) + var(--navbar-height));
     --footer-height: 110px;
     --primary-color: #FF007F;
     --primary-color-dark: #D10068;
@@ -195,7 +197,7 @@ header {
 }
 
 .navbar {
-    padding: 1.5rem 0;
+    padding: 0;
 }
 
 .navbar .container {
@@ -206,8 +208,8 @@ header {
     position: absolute;
 }
 
-.navbar-nav {
-    margin: 0 auto;    
+.navbar-nav#menu {
+    margin: 0 0 0 auto;
 }
 
 /* 본문 바로가기 */
@@ -223,6 +225,50 @@ header {
     top: 0;
 }
 
+
+/* 회원 메뉴 바 */
+.user-bar {
+    height: var(--user-bar-height);
+}
+
+.user-bar .container {
+    display: flex;
+    justify-content: flex-end;
+    height: 100%;
+}
+
+.user-bar .user-menu {
+    flex-direction: row;
+    align-items: center;
+    height: 100%;
+    margin: 0;
+}
+
+.user-bar .user-menu .nav-link {
+    display: flex;
+    align-items: center;
+    gap: 0.2rem;
+    padding: 0 0.5rem;
+    color: rgba(255, 255, 255, 0.88);
+    font-size: 0.8rem;
+    line-height: 1;
+}
+
+.user-bar .user-menu .nav-item:last-child .nav-link {
+    padding-right: 0;
+}
+
+.user-bar .user-menu .nav-link i {
+    font-size: 0.85rem;
+}
+
+.user-bar .user-menu .nav-link:hover,
+.user-bar .user-menu .nav-link:focus,
+.user-bar .user-menu .nav-link:active {
+    color: #fff;
+}
+
+
 /* 로고 */
 .navbar-brand img {
     width: 180px;
@@ -231,32 +277,15 @@ header {
 
 /* 메인 메뉴 */
 .navbar-nav#menu .nav-link {
-    padding: 0.5rem 1.2rem;
+    padding: 2rem;
     color: var(--bs-dark-rgb);
 }
 
 .navbar-nav#menu .nav-link:hover,
 .navbar-nav#menu .nav-link:focus,
 .navbar-nav#menu .nav-link:active {
-    color: var(--primary-color);
-}
-
-
-/* 우측 메뉴 */
-header .user-menu {
-    right: 1.5rem;
-    position: absolute;
-    margin-left: auto;
-}
-
-header .user-menu .nav-link {
-    font-size: 0.9rem;
-}
-
-header .user-menu .nav-link:hover,
-header .user-menu .nav-link:focus,
-header .user-menu .nav-link:active {
-    text-decoration: underline;
+    color: #fff;
+    background-color: var(--primary-color);
 }
 
 
