@@ -35,7 +35,7 @@
     {% if errors.login is defined and errors.login %}
     <div class="text-danger small fw-bold d-flex align-items-center justify-content-center p-2 mb-3 bg-danger bg-opacity-10 rounded">
         <i class="bi bi-exclamation-circle-fill me-2"></i>
-        <span>{{ errors.login }}</span>
+        <span>{{ errors.login|raw }}</span>
     </div>
     {% endif %}
     

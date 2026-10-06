@@ -72,7 +72,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['status'])) {
                 if ($current_fail_count >= 6) {
                     $errors['login'] = '6회 연속 로그인 실패로 인해 10분간 접속이 차단되었습니다.';
                 } elseif ($current_fail_count >= 3) {
-                    $errors['login'] = '6회 연속 로그인 실패 시 10분간 접속이 차단됩니다. (현재 ' . $current_fail_count . '회)';
+                    $errors['login'] = '6회 연속 로그인 실패 시 10분간 접속이 차단됩니다. <br class="d-md-none">(현재 ' . $current_fail_count . '회)';
                 } else {
                     $errors['login'] = '아이디 또는 비밀번호가 일치하지 않습니다.';
                 }
