@@ -1024,12 +1024,39 @@ footer .copyright {
         margin-bottom: 1.25rem !important;
     }
 
+    .my-4 {
+        margin-top: 1.25rem !important;
+        margin-bottom: 1.25rem !important;
+    }
+
+    .pt-4 {
+        padding-top: 1.25rem !important;
+    }
+
+    .mt-4 {
+        margin-top: 1.25rem !important;
+    }
+
+    .p-4 {
+        padding: 1.25rem !important;
+    }
+
+    .py-3 {
+        padding-top: 0.85rem !important;
+        padding-bottom: 0.85rem !important;
+    }
+
     .mb-5 {
         margin-bottom: 2rem !important;
     }
 
     .mt-5 {
         margin-top: 2rem !important;
+    }
+
+    .my-5 {
+        margin-top: 2rem !important;
+        margin-bottom: 2rem !important;
     }
 
     .p-5 {
@@ -1117,5 +1144,37 @@ footer .copyright {
     }
     .mypage-container .profile-box .profile-details {
         margin-left: 0 !important;
+    }
+
+
+    /* 게시판 공통 */
+    .board-search {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .upload-box,
+    #detailAddBox {
+        width: calc((100% - 20px) / 3);
+    }
+
+    #detailPreview .detail-item {
+        flex: 0 0 calc((100% - 20px) / 3);
+    }
+
+    .board-search form {
+        max-width: none;
+    }
+
+    .board-search > a.btn {
+        position: relative !important;
+        right: auto !important;
+        width: 100%;
+    }
+
+
+    /* 게임소개 */
+    #boardgameTab .nav-item {
+        flex: 1 1 calc(50% - 0.25rem);
     }
 }
