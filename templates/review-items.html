@@ -64,13 +64,15 @@
             <!-- 우측 영역 -->
             <div class="col-auto">
                 <!-- 썸네일 -->
-                <div id="thumb" class="ratio ratio-1x1">
-                    {% if item.thumbnail ?? null is not empty %}
-                        <img src="{{ item.thumbnail|replace({'public': ''}) }}" alt="{{ item.title }}" class="object-fit-cover">
-                    {% else %}
-                        <img src="/img/defaults/post_1x1.svg" class="object-fit-cover" alt="게시글 기본 이미지">
-                    {% endif %}
-                </div>
+                <a href="{{ doc_root }}board/{{ board_name }}/view/{{ item.id }}">
+                    <div id="thumb" class="ratio ratio-1x1">
+                        {% if item.thumbnail ?? null is not empty %}
+                            <img src="{{ item.thumbnail|replace({'public': ''}) }}" alt="{{ item.title }}" class="object-fit-cover">
+                        {% else %}
+                            <img src="/img/defaults/post_1x1.svg" class="object-fit-cover" alt="게시글 기본 이미지">
+                        {% endif %}
+                    </div>
+                </a>
             </div>
 
         </div>

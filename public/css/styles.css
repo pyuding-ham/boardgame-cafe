@@ -715,10 +715,20 @@ footer .copyright {
     line-height: 1;
     text-overflow: ellipsis;
 }
-.board-blog-container .card #thumb {
+.board-blog-container .card .col-auto {
     width: 130px;
     max-width: 130px;
 }
+.board-blog-container .card #thumb {
+    overflow: hidden;
+}
+.board-blog-container .card #thumb img {
+    transition: transform 0.3s ease;
+}
+.board-blog-container .card .col-auto > a:hover #thumb img {
+    transform: scale(1.1);
+}
+
 
 /* 게시글 쓰기 에디터 */
 .editor-wrapper #editor {
@@ -1199,6 +1209,27 @@ footer .copyright {
     .board-write__footer > .btn,
     .board-edit__footer > .btn {
         flex: 1 1 50%;
+    }
+
+    .board-blog-container .card > .row {
+        flex-wrap: wrap !important;
+        flex-direction: column;
+    }
+
+    .board-blog-container .card > .row > .col-auto {
+        flex: 0 0 100%;
+        width: 100%;
+        max-width: none;
+        order: -1;
+    }
+
+    .board-blog-container .card #thumb {
+        --bs-aspect-ratio: 50%;
+        margin-bottom: 1rem;
+    }
+
+    .board-blog-container .card .card-body {
+        padding-right: 0 !important;
     }
 
 
