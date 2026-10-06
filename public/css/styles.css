@@ -631,7 +631,9 @@ footer .copyright {
 
 
 .board-container table {
+    width: 100%;
     font-size: 0.95rem;
+    table-layout: fixed;
 }
 .board-container table th:first-child {
     width: 90px;
@@ -1151,6 +1153,28 @@ footer .copyright {
     .board-search {
         flex-direction: column;
         gap: 1rem;
+    }
+
+    nav:has(.page-num-link) {
+        flex-wrap: wrap;
+        row-gap: 0.5rem !important;
+    }
+
+    .board-container table th:nth-child(1),
+    .board-container table td:nth-child(1),
+    .board-container table th:nth-child(3),
+    .board-container table td:nth-child(3) {
+        display: none;
+    }
+
+    .board-container table th:nth-child(4) {
+        width: 100px;
+    }
+
+    .notice-pin {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 0.75rem;
     }
 
     .upload-box,
