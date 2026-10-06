@@ -1045,6 +1045,10 @@ footer .copyright {
         padding-top: 1.25rem !important;
     }
 
+    .pb-4 {
+        padding-bottom: 1.25rem !important;
+    }
+
     .mt-4 {
         margin-top: 1.25rem !important;
     }
