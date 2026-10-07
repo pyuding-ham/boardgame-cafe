@@ -484,7 +484,14 @@ class BoardController {
                         break;
                     }
 
-                    $ext      = pathinfo($name, PATHINFO_EXTENSION);
+                    $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
+                    $allowed_ext = ['pdf', 'hwp', 'hwpx', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'zip', 'jpg', 'jpeg', 'png'];
+
+                    if (!in_array($ext, $allowed_ext, true)) {
+                        $errors['files'] = '첨부할 수 없는 파일 형식입니다.';
+                        break;
+                    }
+
                     $new_name = 'notice_' . uniqid('', true) . '.' . $ext; 
                     $file_path = $upload_dir . $new_name;
 
@@ -1094,7 +1101,14 @@ class BoardController {
                         break;
                     }
 
-                    $ext       = pathinfo($name, PATHINFO_EXTENSION);
+                    $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
+                    $allowed_ext = ['pdf', 'hwp', 'hwpx', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'zip', 'jpg', 'jpeg', 'png'];
+
+                    if (!in_array($ext, $allowed_ext, true)) {
+                        $errors['files'] = '첨부할 수 없는 파일 형식입니다.';
+                        break;
+                    }
+
                     $new_name  = 'notice_' . uniqid('', true) . '.' . $ext; 
                     $file_path = $upload_dir . $new_name;
 

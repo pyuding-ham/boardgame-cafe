@@ -88,6 +88,8 @@
                     <i class="bi bi-exclamation-circle me-1"></i> {{ errors.files }}
                 </div>
             {% endif %}
+
+            <p class="text-secondary text-md-end small mb-0">* pdf, hwp, hwpx, doc, docx, xls, xlsx, ppt, pptx, txt, zip, jpg, jpeg, png 형식만 첨부 가능합니다.</p>
         </div>
 
         <!-- 하단 버튼 -->
@@ -185,8 +187,14 @@ document.addEventListener('DOMContentLoaded', function() {
             const file = e.target.files[0];
             const maxSize = 10 * 1024 * 1024;
 
+            const allowedExt = ['pdf', 'hwp', 'hwpx', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'zip', 'jpg', 'jpeg', 'png'];
+            const ext = file ? file.name.split('.').pop().toLowerCase() : '';
+
             if (file && file.size > maxSize) {
                 alert('파일 당 최대 용량은 10MB를 초과할 수 없습니다.');
+                e.target.value = '';
+            } else if (file && !allowedExt.includes(ext)) {
+                alert('첨부할 수 없는 파일 형식입니다.');
                 e.target.value = '';
             }
         }
