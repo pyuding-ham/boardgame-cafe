@@ -755,6 +755,12 @@ footer .copyright {
     color: #6c757d;
 }
 
+/* 게시글 본문 영역 */
+.board-view__content p {
+    margin-bottom: 0;
+    padding-bottom: 1rem;
+}
+
 /* 블로그형 게시글 상세 */
 .board-blog-view-container .board-view__header .title {
     font-size: 1.6rem;
