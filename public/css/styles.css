@@ -870,6 +870,26 @@ footer .copyright {
 .board-view-container .board-view__content :is(h1, h2, h3) strong {
     font-weight: 600;
 }
+.board-view-container .board-view__content table {
+    width: 100%;
+    margin-bottom: 1rem;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    white-space: normal;
+}
+.board-view-container .board-view__content th,
+.board-view-container .board-view__content td {
+    padding: 0.6rem 0.75rem;
+    border: 1px solid #e2e8f0;
+    vertical-align: top;
+    white-space: normal;
+}
+.board-view-container .board-view__content th {
+    background-color: #f7f8fa;
+    font-weight: 600;
+    text-align: left;
+}
 .board-view-container .board-view__content img,
 .ql-editor img {
     max-width: 100%;
