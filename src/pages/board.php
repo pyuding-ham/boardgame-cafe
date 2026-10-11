@@ -9,7 +9,7 @@ use BoardgameCafe\Exceptions\AuthorizationException;
 use BoardgameCafe\Exceptions\AuthenticationException;
 use BoardgameCafe\Exceptions\ErrorCode;
 
-// 글쓰기에서 보낸 상태 저장
+// 글쓰기, 글수정에서 보낸 상태 저장
 $status = $_SESSION['_flash_status'] ?? null;
 if ($status) {
     unset($_SESSION['_flash_status']);
@@ -58,6 +58,7 @@ if (in_array($boardName, $allowed_boards)) {
         }
 
         $data = array_merge($data, $boardController->view($identifier, $boardName, (int)$currentUserId, true));
+        $data['status'] = $status;
         
         if (!$data) {
             throw new PostNotFoundException(ErrorCode::POST_NOT_FOUND_READ->value);

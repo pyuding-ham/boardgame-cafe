@@ -3,6 +3,9 @@
 {% block content %}
 {# 토스트 팝업 #}
 <div id="toast-container" class="toast-container"></div>
+{% if status == 'update_success' %}
+    <script>window.addEventListener('DOMContentLoaded', () => showToast('글 수정이 완료되었습니다.'));</script>
+{% endif %}
 
 <div class="container board-view-container my-6">
     <!-- 게시판 타이틀 영역 -->
