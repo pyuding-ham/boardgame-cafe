@@ -1434,6 +1434,7 @@ class BoardController {
         if (isset($result['success']) && $result['success'] === true) {
             return [
                 'success' => true,
+                'slug' => $slug,
             ];
         } else {
             return [

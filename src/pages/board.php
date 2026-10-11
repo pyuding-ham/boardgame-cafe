@@ -156,7 +156,11 @@ if (in_array($boardName, $allowed_boards)) {
             }
             
             if ($result['success']) {
-                redirect("board/{$boardName}", [
+                $viewKey = ($boardName === 'boardgame')
+                    ? ($result['slug'] ?? $postSlug)
+                    : $postId;
+
+                redirect("board/{$boardName}/view/{$viewKey}", [
                     'status' => 'update_success'
                 ]);
             } else {
