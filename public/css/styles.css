@@ -758,7 +758,11 @@ footer .copyright {
 /* 게시글 본문 영역 */
 .board-view__content p {
     margin-bottom: 0;
-    padding-bottom: 1rem;
+    padding-bottom: 0.6rem;
+}
+.board-view__content p:empty + p:empty,
+.board-view__content p:has(> br:only-child) + p:has(> br:only-child) {
+    padding-bottom: 1.2rem;
 }
 
 /* 블로그형 게시글 상세 */
@@ -861,7 +865,7 @@ footer .copyright {
 }
 .board-view-container .board-view__content {
     min-height: 300px;
-    line-height: 1.8;
+    line-height: 1.7;
     white-space: pre-wrap;
 }
 .board-view-container .board-view__content h3 {
