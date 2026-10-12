@@ -868,6 +868,9 @@ footer .copyright {
     line-height: 1.7;
     white-space: pre-wrap;
 }
+.board-view-container .board-view__content :is(h1, h2, h3) {
+    margin-bottom: 1rem;
+}
 .board-view-container .board-view__content h3 {
     font-size: 1.5rem;
 }
