@@ -28,7 +28,7 @@
                         </h3>
 
                         <!-- 내용 -->
-                        <p class="card-text text-secondary small text-start mb-4 overflow-hidden">{{ item.content|striptags|slice(0, 250) }}</p>
+                        <p class="card-text text-secondary small text-start mb-4 overflow-hidden">{{ item.content|striptags|replace({'&nbsp;': ' '})|slice(0, 250) }}</p>
                         
                     </a>
 
