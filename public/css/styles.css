@@ -690,10 +690,6 @@ footer .copyright {
     min-width: 0;
 }
 
-.board-blog-container .card-body .badge.category-6 { background-color: #3498db !important; }
-.board-blog-container .card-body .badge.category-7 { background-color: #2ecc71 !important; }
-.board-blog-container .card-body .badge.category-8 { background-color: #f1c40f !important; }
-
 .board-blog-container .card-body > a:focus,
 .board-blog-container .card-body > a:hover {
     color: initial !important;
