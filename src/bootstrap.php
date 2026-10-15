@@ -178,5 +178,10 @@ if (DEV === true) {
 // 8. HTMLPurifier 보안 객체 생성
 $purifierConfig = \HTMLPurifier_Config::createDefault();
 $purifierConfig->set('Core.Encoding', 'UTF-8');
-$purifierConfig->set('HTML.Allowed', 'p,b,i,strong,em,span,img[src|alt|width|height],br,ul,ol,li');
+$purifierConfig->set('HTML.Allowed', 'p,br,h1,h2,h3,strong,b,em,i,u,s,blockquote,pre,code,ul,ol,li,span,img[src|alt|width|height],table,thead,tbody,tr,th[colspan|rowspan],td[colspan|rowspan]');
+$purifierCache = APP_ROOT . '/var/cache/htmlpurifier';
+if (!is_dir($purifierCache)) {
+    mkdir($purifierCache, 0775, true);
+}
+$purifierConfig->set('Cache.SerializerPath', $purifierCache);
 $purifier = new \HTMLPurifier($purifierConfig);

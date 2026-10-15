@@ -370,6 +370,7 @@ class Board
         $image_stmt = $this->db->runSql($image_sql, ['post_id' => $post['id']]);
         
         $post['images'] = $image_stmt ? $image_stmt->fetchAll() : [];
+        $post['content'] = $this->purifyContent($post['content'] ?? '');
 
         return $post;
     }
@@ -496,6 +497,7 @@ class Board
         $image_stmt = $this->db->runSql($image_sql, ['post_id' => $id]);
         
         $post['images'] = $image_stmt ? $image_stmt->fetchAll() : [];
+        $post['content'] = $this->purifyContent($post['content'] ?? '');
 
         return $post;
     }
@@ -529,6 +531,8 @@ class Board
         if (!$this->canWritePost($user_id, $board_name)) {
             throw new AuthorizationException(ErrorCode::ACCESS_DENIED->value);
         }
+
+        $data['content'] = $this->purifyContent($data['content'] ?? '');
 
         // 4. 게시글 삽입
         $post_sql = "INSERT INTO post (
@@ -735,6 +739,8 @@ class Board
         if (!$this->canModifyPost($user_id, $post_owner, $board_name)) {
             throw new AuthorizationException(ErrorCode::ACCESS_DENIED->value);
         }
+
+        $data['content'] = $this->purifyContent($data['content'] ?? '');
 
         // 4. 게시글 수정
         $post_sql = "UPDATE post
@@ -1532,5 +1538,15 @@ class Board
         }
 
         unlink($full_path);
+    }
+
+    /**
+     * 게시글 본문에서 에디터 허용 태그만 남김
+     */
+    private function purifyContent(?string $html): string
+    {
+        global $purifier;
+
+        return $purifier->purify((string) $html);
     }
 }
