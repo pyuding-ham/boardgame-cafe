@@ -1470,7 +1470,7 @@ class BoardController {
         }
 
         // 3. 삭제 권한 체크
-        if (!$board_service->canModifyPost($userId, $post_owner, $boardName)) {
+        if (!$board_service->canDeletePost($userId, $post_owner, $boardName)) {
            throw new AuthorizationException(ErrorCode::ACCESS_DENIED->value);
         }
         

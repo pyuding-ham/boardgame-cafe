@@ -1149,7 +1149,7 @@ class Board
         }
 
         // 3. 삭제 권한 체크
-        if (!$this->canModifyPost($user_id, $post_owner, $board_name)) {
+        if (!$this->canDeletePost($user_id, $post_owner, $board_name)) {
             throw new AuthorizationException(ErrorCode::ACCESS_DENIED->value);
         }
 
@@ -1256,16 +1256,35 @@ class Board
     }
 
     /**
-     * 게시글 수정/삭제 가능 여부 확인
+     * 게시글 수정 가능 여부 확인
      */
     public function canModifyPost(int $user_id, array $post_owner, string $board_name): bool
     {
-        // 게임소개, 지점소개 공지사항은 관리자만 수정/삭제 가능
+        // 게임소개, 지점소개 공지사항은 관리자만 수정 가능 (수정 당시 권한)
         if ($board_name === 'boardgame' || $board_name === 'branch' || $board_name === 'notice') {
             return $this->user->isAdmin($user_id);
         }
 
-        // 이외의 게시판은 작성자 본인만 수정/삭제 가능
+        // 이외의 게시판은 작성자 본인만 수정 가능
+        return (int)$post_owner['user_id'] === $user_id;
+    }
+
+    /**
+     * 게시글 삭제 가능 여부 확인
+     */
+    public function canDeletePost(int $user_id, array $post_owner, string $board_name): bool
+    {
+        // 게임소개, 지점소개 공지사항은 관리자만 삭제 가능 (삭제 당시 권한)
+        if ($board_name === 'boardgame' || $board_name === 'branch' || $board_name === 'notice') {
+            return $this->user->isAdmin($user_id);
+        }
+
+        // 이외의 게시판은 관리자가 삭제 가능
+        if ($this->user->isAdmin($user_id)) {
+            return true;
+        }
+
+        // 관리자가 아니어도 본인이면 삭제 가능
         return (int)$post_owner['user_id'] === $user_id;
     }
 
