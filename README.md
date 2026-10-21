@@ -4,6 +4,8 @@
 
 운영 주소: https://boardtrip.shop
 
+기능명세서: [docs/spec.md](docs/spec.md)
+
 ## 주요 기능
 
 - 회원가입, 로그인, 아이디 찾기, 비밀번호 재설정
