@@ -21,7 +21,7 @@
 
 ## 기술 스택
 
-- PHP 8.4.20
+- PHP 8.4.27
 - MariaDB (로컬 개발은 MySQL)
 - Twig
 - Bootstrap
