@@ -17,6 +17,18 @@ $path = substr($path, strlen(DOC_ROOT));
 $path = trim($path, '/'); 
 $parts = explode('/', $path);
 
+// nginx가 디렉터리 기본 문서를 열지 않아 /portfolio 가 프론트 컨트롤러로 들어온다.
+if ($path === 'portfolio') {
+    if (!str_ends_with($raw_uri, '/')) {
+        header('Location: /portfolio/', true, 301);
+        exit;
+    }
+
+    header('Content-Type: text/html; charset=UTF-8');
+    readfile(__DIR__ . '/portfolio/index.html');
+    exit;
+}
+
 $boardController = new BoardController($cms);
 
 // 상단 메뉴바 전역 변수 설정
