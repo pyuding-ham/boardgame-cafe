@@ -1,4 +1,3 @@
-* { box-sizing: border-box; }
 body {
   margin: 0;
   background: #f6f6f4;
@@ -257,8 +256,6 @@ body {
   align-items: center;
 }
 .modal-mobile figcaption {
-  flex: 0 0 auto;
-  width: 100%;
   margin: 6px 0 0;
   font-size: 12px;
   font-weight: 600;
@@ -269,13 +266,9 @@ body {
 }
 .modal-mobile img {
   display: block;
-  width: auto;
   max-width: 100%;
-  height: auto;
   max-height: calc(100% - 22px);
   min-height: 0;
-  object-fit: contain;
-  object-position: top right;
   border: 1px solid #ecece8;
 }
 .modal-subs {
@@ -284,7 +277,6 @@ body {
 }
 .modal-subs img {
   margin: 0 0 10px;
-  break-inside: avoid;
 }
 @media (max-width: 800px) {
   .work { grid-template-columns: 1fr; gap: 20px; }
