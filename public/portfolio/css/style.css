@@ -203,7 +203,12 @@ body {
   word-break: keep-all;
 }
 .work-modal .modal-dialog {
-  max-width: min(800px, calc(100% - 2rem));
+  max-width: 800px;
+}
+@media (min-width: 576px) {
+  .work-modal .modal-dialog {
+    max-width: min(800px, calc(100% - 2rem));
+  }
 }
 .work-modal .modal-content {
   border: 0;
