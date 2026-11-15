@@ -313,3 +313,22 @@ body {
   .modal-subs img { margin-bottom: 8px; }
   .to-top { right: 16px; bottom: 16px; }
 }
+@media (max-width: 576px) {
+  .modal-pair { flex-direction: column; }
+  .modal-pair .modal-main {
+    flex: 0 0 auto;
+    width: 100%;
+    max-width: 100%;
+  }
+  .modal-mobile {
+    flex: 0 0 auto;
+    width: min(180px, 70%);
+    min-height: auto;
+    align-self: center;
+  }
+  .modal-mobile-fit { position: static; }
+  .modal-mobile img {
+    max-height: none;
+  }
+  .modal-subs img:nth-child(2) { break-after: column; }
+}
