@@ -287,41 +287,63 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script>
+    // 모달 개수 만큼 실행
     document.querySelectorAll(".modal").forEach(function (modal) {
+      // 닫기 버튼에 포커스가 남은 채 모달이 닫힐 때 생성되는 크롬 경고 방지로 포커스를 빼고 inert를 걸음
       modal.addEventListener("hide.bs.modal", function () {
+        // 현재 포커스가 있는 요소 저장
         var active = document.activeElement;
+
         if (active && modal.contains(active)) {
+          // 포커스 해제
           active.blur();
         }
+
         modal.setAttribute("inert", "");
       });
+
+      // 모달이 완전히 닫힌 뒤 다음에 열 수 있도록 inert 제거
       modal.addEventListener("hidden.bs.modal", function () {
         modal.removeAttribute("inert");
       });
     });
+
+    // 스크롤이 400px을 넘으면 맨 위 버튼을 표시
     var toTop = document.querySelector(".to-top");
+
     function syncToTop() {
       toTop.classList.toggle("is-visible", window.scrollY > 400);
     }
+
     window.addEventListener("scroll", syncToTop, { passive: true });
     syncToTop();
+
+    // 클릭하면 맨 위로 부드럽게 이동
     toTop.addEventListener("click", function () {
       window.scrollTo({ top: 0, behavior: "smooth" });
     });
+
+    // 동작 줄이기가 꺼져 있을 때만 작품을 차례로 등장
     if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      // 스크린샷에서 설명으로 넘어가기까지 시간
       var shotStep = 550;
+      // 설명에서 다음 작품으로 넘어가기까지 시간
       var infoStep = 400;
-      var works = Array.prototype.slice.call(document.querySelectorAll(".work"));
+      var works = Array.from(document.querySelectorAll(".work"));
       var index = 0;
       var playing = false;
+
       function play() {
         if (playing || index >= works.length) {
           return;
         }
+
         var work = works[index];
         var shot = work.querySelector(".work-shot");
         var info = work.querySelector(".work-info");
         var rect = shot.getBoundingClientRect();
+
+        // 화면 위로 지나갔으면 바로 표시하고 다음 작품으로 진행
         if (rect.bottom < 0) {
           shot.classList.add("is-shown");
           info.classList.add("is-shown");
@@ -329,9 +351,13 @@
           play();
           return;
         }
+
+        // 아직 화면 아래면 스크롤될 때까지 기다림
         if (rect.top >= window.innerHeight) {
           return;
         }
+
+        // 화면에 들어오면 스크린샷, 설명, 다음 작품 순서로 진행
         playing = true;
         shot.classList.add("is-shown");
         setTimeout(function () {
@@ -343,6 +369,7 @@
           }, infoStep);
         }, shotStep);
       }
+
       window.addEventListener("scroll", play, { passive: true });
       window.addEventListener("resize", play);
       play();
